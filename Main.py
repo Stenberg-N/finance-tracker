@@ -42,7 +42,7 @@ def insert_transaction():
 
     category = input("Enter the category (e.g. Food, Bills): ")
     description = input("Description: ")
-    amount = float(input("Enter the amount: "))
+    amount = float(input("Enter the amount. In case of decimals use dot(.) instead of comma(,): "))
 
     db_cursor.execute('''
         INSERT INTO transactions (date, category, description, amount)
@@ -162,8 +162,8 @@ while True:
         export_transactions_to_csv()
     elif choice == '6':
         print("Are you sure you want to delete all of your data?")
-        final_choice = input("If you are, input the letter 'y'. If not, input the letter 'n' and press enter: ")
-        if final_choice.lower() == 'y':
+        final_choice = input("If you are, write 'delete my data'. If not, input the letter 'n' and press enter: ")
+        if final_choice.lower() == 'delete my data':
             clear_all_transactions()
         else:
             print("Your data has not been removed.")
