@@ -7,6 +7,10 @@ import datetime
 script_directory = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(script_directory, 'finance.db')
 
+exports_path = os.path.join(script_directory, 'exports')
+if not os.path.exists(exports_path):
+    os.makedirs(exports_path)
+
 def init_db():
     connect_to_database = sqlite3.connect(db_path)
     db_cursor = connect_to_database.cursor()
