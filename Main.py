@@ -3,6 +3,7 @@
 import sqlite3
 import os
 import datetime
+import csv
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(script_directory, 'finance.db')
@@ -119,6 +120,24 @@ def clear_all_transactions():
     connect_to_database.close()
     print("All transactions have been deleted and the database file has been compacted.")
 
+def export_transactions_to_csv():
+    connect_to_database = sqlite3.connect(db_path)
+    db_cursor = connect_to_database.cursor()
+    db_cursor.execute('SELECT * FROM transactions')
+    rows = db_cursor.fetchall()
+    connect_to_database.close()
+
+    filename = input("Enter filename for CSV export (e.g. transactions.csv):")
+    if not filename.endswith('.csv'):
+        filename += '.csv'
+    filepath = os.path.join(exports_path, filename)
+
+    with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile, delimiter=';') # ';' is used as the delimiter to make differentiating categories easier.
+        writer.writerow(['ID', 'Date', 'Category', 'Description', 'Amount'])
+        writer.writerows(rows)
+    print(f"Transactions have been exported to {filepath}")
+
 init_db()
 
 while True:
@@ -126,8 +145,9 @@ while True:
     print("2. View all transactions")
     print("3. View transactions by month")
     print("4. View transactions by week")
-    print("5. Clear all transactions")
-    print("6. Exit")
+    print("5. Export transactions to CSV")
+    print("6. Clear all transactions")
+    print("7. Exit")
     choice = input("Choose option: ")
 
     if choice == '1':
@@ -139,6 +159,8 @@ while True:
     elif choice == '4':
         view_transactions_by_week()
     elif choice == '5':
+        export_transactions_to_csv()
+    elif choice == '6':
         print("Are you sure you want to delete all of your data?")
         final_choice = input("If you are, input the letter 'y'. If not, input the letter 'n' and press enter: ")
         if final_choice.lower() == 'y':
@@ -146,7 +168,7 @@ while True:
         else:
             print("Your data has not been removed.")
             continue
-    elif choice == '6':
+    elif choice == '7':
         break
     else:
         print("Invalid input.")
