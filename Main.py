@@ -2,6 +2,7 @@
 
 import sqlite3
 import os
+import datetime
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(script_directory, 'finance.db')
@@ -49,7 +50,7 @@ def view_all_transactions():
         print(row)
     connect_to_database.close()
 
-def view_transaction_by_month():
+def view_transactions_by_month():
     connect_to_database = sqlite3.connect(db_path)
     db_cursor = connect_to_database.cursor()
     month_year = input("Enter month and year (MM-YYYY): ")
@@ -61,6 +62,40 @@ def view_transaction_by_month():
         print("No transactions found for this period.")
     else:
         for row in rows:
+            print(row)
+    connect_to_database.close()
+
+def view_transactions_by_week():
+    connect_to_database = sqlite3.connect(db_path)
+    db_cursor = connect_to_database.cursor()
+    week_year = input("Enter the week and the year (WW-YYYY):  ")
+    try:
+        week, year = map(int, week_year.split('-'))
+        start_date = datetime.datetime.strptime(f'{year}-W{week - 1}-1', "%Y-W%W-%w").date()
+        end_date = start_date + datetime.timedelta(days=6)
+    except Exception:
+        print("Invalid input. Please use the format WW-YYYY (e.g. 12-2025).")
+        return
+    
+    start_str = start_date.strftime("%d-%m-%Y")
+    end_str = end_date.strftime("%d-%m-%Y")
+
+    db_cursor.execute('SELECT * FROM transactions')
+    rows = db_cursor.fetchall()
+    filtered = []
+    for row in rows:
+        try:
+            row_date = datetime.datetime.strptime(row[1], "%d-%m-%Y").date()
+            if start_date <= row_date <= end_date:
+                filtered.append(row)
+        except Exception:
+            continue
+
+    print(f"\n=== Transaction history for week {week} of {year} ({start_str} to {end_str}) ===")
+    if not filtered:
+        print("No transactions found for this week.")
+    else:
+        for row in filtered:
             print(row)
     connect_to_database.close()
 
@@ -77,10 +112,11 @@ init_db()
 
 while True:
     print("\n1. Add transaction")
-    print("2. View transactions")
+    print("2. View all transactions")
     print("3. View transactions by month")
-    print("4. Clear all transactions")
-    print("5. Exit")
+    print("4. View transactions by week")
+    print("5. Clear all transactions")
+    print("6. Exit")
     choice = input("Choose option: ")
 
     if choice == '1':
@@ -88,8 +124,10 @@ while True:
     elif choice == '2':
         view_all_transactions()
     elif choice == '3':
-        view_transaction_by_month()
+        view_transactions_by_month()
     elif choice == '4':
+        view_transactions_by_week()
+    elif choice == '5':
         print("Are you sure you want to delete all of your data?")
         final_choice = input("If you are, input the letter 'y'. If not, input the letter 'n' and press enter: ")
         if final_choice.lower() == 'y':
@@ -97,7 +135,7 @@ while True:
         else:
             print("Your data has not been removed.")
             continue
-    elif choice == '5':
+    elif choice == '6':
         break
     else:
         print("Invalid input.")
