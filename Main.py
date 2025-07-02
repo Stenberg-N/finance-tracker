@@ -31,7 +31,14 @@ def insert_transaction():
     connect_to_database = sqlite3.connect(db_path)
     db_cursor = connect_to_database.cursor()
     
-    date = input("Enter the date (DD-MM-YYYY): ")
+    while True:
+        date = input("Enter the date (DD-MM-YYYY): ")
+        try:
+            datetime.datetime.strptime(date, "%d-%m-%Y")
+            break
+        except ValueError:
+            print("Invalid input. Please use the format DD-MM-YYYY (e.g. 31-01-2025).")
+
     category = input("Enter the category (e.g. Food, Bills): ")
     description = input("Description: ")
     amount = float(input("Enter the amount: "))
