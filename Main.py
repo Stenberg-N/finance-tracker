@@ -4,6 +4,8 @@ import sqlite3
 import os
 import datetime
 import csv
+import openpyxl
+from fpdf import FPDF
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(script_directory, 'finance.db')
@@ -138,6 +140,61 @@ def export_transactions_to_csv():
         writer.writerows(rows)
     print(f"Transactions have been exported to {filepath}")
 
+def export_transactions_to_excel():
+    connect_to_database = sqlite3.connect(db_path)
+    db_cursor = connect_to_database.cursor()
+    db_cursor.execute('SELECT * FROM transactions')
+    rows = db_cursor.fetchall()
+    connect_to_database.close()
+
+    filename = input("Enter filename for Excel export (e.g. transactions.xlsx): ")
+    if not filename.endswith('xlsx'):
+        filename += '.xlsx'
+    filepath = os.path.join(exports_path, filename)
+
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+    worksheet.append(['ID', 'Date', 'Category', 'Description', 'Amount'])
+    for row in rows:
+        worksheet.append(row)
+    workbook.save(filepath)
+    print(f"Transactions have been exported to {filepath}")
+
+def export_transactions_to_pdf():
+    connect_to_database = sqlite3.connect(db_path)
+    db_cursor = connect_to_database.cursor()
+    db_cursor.execute('SELECT * FROM transactions')
+    rows = db_cursor.fetchall()
+    connect_to_database.close()
+
+    filename = input("Enter filename for PDF export (e.g, transactions.pdf): ")
+    if not filename.endswith('.pdf'):
+        filename += '.pdf'
+    filepath = os.path.join(exports_path, filename)
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="Transaction History", ln=True, align='C')
+    pdf.ln(10)
+    pdf.set_font("Arial", size=10)
+    headers = ['ID', 'Date', 'Category', 'Description', 'Amount']
+    pdf.cell(10, 10, headers[0], 1)
+    pdf.cell(30, 10, headers[1], 1)
+    pdf.cell(30, 10, headers[2], 1)
+    pdf.cell(80, 10, headers[3], 1)
+    pdf.cell(30, 10, headers[4], 1)
+    pdf.ln()
+    for row in rows:
+        pdf.cell(10, 10, str(row[0]), 1)
+        pdf.cell(30, 10, row[1], 1)
+        pdf.cell(30, 10, row[2], 1)
+        pdf.cell(80, 10, row[3], 1)
+        pdf.cell(30, 10, str(row[4]), 1)
+        pdf.ln()
+    pdf.output(filepath)
+    print(f"Transactions have been exported to {filepath}")
+
 init_db()
 
 while True:
@@ -145,7 +202,7 @@ while True:
     print("2. View all transactions")
     print("3. View transactions by month")
     print("4. View transactions by week")
-    print("5. Export transactions to CSV")
+    print("5. Export transactions")
     print("6. Clear all transactions")
     print("7. Exit")
     choice = input("Choose option: ")
@@ -159,7 +216,14 @@ while True:
     elif choice == '4':
         view_transactions_by_week()
     elif choice == '5':
-        export_transactions_to_csv()
+        print("Export data as 1) CSV, 2) Excel, 3) PDF")
+        exportchoice = input("Choose export format: ")
+        if exportchoice == '1':
+            export_transactions_to_csv()
+        elif exportchoice == '2':
+            export_transactions_to_excel()
+        elif exportchoice == '3':
+            export_transactions_to_pdf()
     elif choice == '6':
         print("Are you sure you want to delete all of your data?")
         final_choice = input("If you are, write 'delete my data'. If not, input the letter 'n' and press enter: ")
