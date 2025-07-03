@@ -129,7 +129,7 @@ def export_transactions_to_csv():
     rows = db_cursor.fetchall()
     connect_to_database.close()
 
-    filename = input("Enter filename for CSV export (e.g. transactions.csv):")
+    filename = input("Enter filename for CSV export (e.g. transactions.csv): ")
     if not filename.endswith('.csv'):
         filename += '.csv'
     filepath = os.path.join(exports_path, filename)
