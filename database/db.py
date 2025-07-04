@@ -1,14 +1,14 @@
 # Database
 
-import os
 import sqlite3
 import datetime
-
-script_directory = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(script_directory, 'finance.db')
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config
 
 def init_db():
-    connect_to_database = sqlite3.connect(db_path)
+    connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('''
         CREATE TABLE IF NOT EXISTS transactions (
@@ -24,7 +24,7 @@ def init_db():
     connect_to_database.close()
 
 def insert_transaction():
-    connect_to_database = sqlite3.connect(db_path)
+    connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     
     while True:
@@ -48,7 +48,7 @@ def insert_transaction():
     connect_to_database.close()
 
 def view_all_transactions():
-    connect_to_database = sqlite3.connect(db_path)
+    connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT * FROM transactions')
     rows = db_cursor.fetchall()
@@ -58,7 +58,7 @@ def view_all_transactions():
     connect_to_database.close()
 
 def view_transactions_by_month():
-    connect_to_database = sqlite3.connect(db_path)
+    connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     month_year = input("Enter month and year (MM-YYYY): ")
     search_pattern = f'%-{month_year}'
@@ -73,7 +73,7 @@ def view_transactions_by_month():
     connect_to_database.close()
 
 def view_transactions_by_week():
-    connect_to_database = sqlite3.connect(db_path)
+    connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     week_year = input("Enter the week and the year (WW-YYYY):  ")
     try:
@@ -107,7 +107,7 @@ def view_transactions_by_week():
     connect_to_database.close()
 
 def clear_all_transactions():
-    connect_to_database = sqlite3.connect(db_path)
+    connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('DELETE FROM transactions')
     connect_to_database.commit()
