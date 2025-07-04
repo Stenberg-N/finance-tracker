@@ -5,8 +5,8 @@ import os
 import csv
 import openpyxl
 from fpdf import FPDF
-from database import db_path
-from database import script_directory
+from database.db import db_path
+from database.db import script_directory
 
 exports_path = os.path.join(script_directory, 'exports')
 if not os.path.exists(exports_path):
