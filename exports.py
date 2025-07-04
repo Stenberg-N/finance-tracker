@@ -5,15 +5,10 @@ import os
 import csv
 import openpyxl
 from fpdf import FPDF
-from database.db import db_path
-from database.db import script_directory
-
-exports_path = os.path.join(script_directory, 'exports')
-if not os.path.exists(exports_path):
-    os.makedirs(exports_path)
+import config
 
 def export_transactions_to_csv():
-    connect_to_database = sqlite3.connect(db_path)
+    connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT * FROM transactions')
     rows = db_cursor.fetchall()
@@ -22,7 +17,7 @@ def export_transactions_to_csv():
     filename = input("Enter filename for CSV export (e.g. transactions.csv): ")
     if not filename.endswith('.csv'):
         filename += '.csv'
-    filepath = os.path.join(exports_path, filename)
+    filepath = os.path.join(config.exports_path, filename)
 
     with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile, delimiter=';') # ';' is used as the delimiter to make differentiating categories easier.
@@ -31,7 +26,7 @@ def export_transactions_to_csv():
     print(f"Transactions have been exported to {filepath}")
 
 def export_transactions_to_excel():
-    connect_to_database = sqlite3.connect(db_path)
+    connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT * FROM transactions')
     rows = db_cursor.fetchall()
@@ -40,7 +35,7 @@ def export_transactions_to_excel():
     filename = input("Enter filename for Excel export (e.g. transactions.xlsx): ")
     if not filename.endswith('xlsx'):
         filename += '.xlsx'
-    filepath = os.path.join(exports_path, filename)
+    filepath = os.path.join(config.exports_path, filename)
 
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
@@ -51,7 +46,7 @@ def export_transactions_to_excel():
     print(f"Transactions have been exported to {filepath}")
 
 def export_transactions_to_pdf():
-    connect_to_database = sqlite3.connect(db_path)
+    connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT * FROM transactions')
     rows = db_cursor.fetchall()
@@ -60,7 +55,7 @@ def export_transactions_to_pdf():
     filename = input("Enter filename for PDF export (e.g, transactions.pdf): ")
     if not filename.endswith('.pdf'):
         filename += '.pdf'
-    filepath = os.path.join(exports_path, filename)
+    filepath = os.path.join(config.exports_path, filename)
 
     pdf = FPDF()
     pdf.add_page()

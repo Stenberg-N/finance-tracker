@@ -2,6 +2,12 @@
 
 from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions
 from exports import export_transactions_to_csv, export_transactions_to_excel, export_transactions_to_pdf
+import os
+import config
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+config.db_path = os.path.join(script_directory, 'database', 'finance.db')
+config.exports_path = os.path.join(script_directory, 'exports')
 
 init_db()
 
