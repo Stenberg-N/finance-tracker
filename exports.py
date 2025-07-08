@@ -7,14 +7,13 @@ import openpyxl
 from fpdf import FPDF
 import config
 
-def export_transactions_to_csv():
+def export_transactions_to_csv(filename):
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT * FROM transactions')
     rows = db_cursor.fetchall()
     connect_to_database.close()
 
-    filename = input("Enter filename for CSV export (e.g. transactions.csv): ")
     if not filename.endswith('.csv'):
         filename += '.csv'
     filepath = os.path.join(config.exports_path, filename)
@@ -23,16 +22,14 @@ def export_transactions_to_csv():
         writer = csv.writer(csvfile, delimiter=';') # ';' is used as the delimiter to make differentiating categories easier.
         writer.writerow(['ID', 'Date', 'Category', 'Description', 'Amount'])
         writer.writerows(rows)
-    print(f"Transactions have been exported to {filepath}")
 
-def export_transactions_to_excel():
+def export_transactions_to_excel(filename):
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT * FROM transactions')
     rows = db_cursor.fetchall()
     connect_to_database.close()
 
-    filename = input("Enter filename for Excel export (e.g. transactions.xlsx): ")
     if not filename.endswith('xlsx'):
         filename += '.xlsx'
     filepath = os.path.join(config.exports_path, filename)
@@ -43,16 +40,14 @@ def export_transactions_to_excel():
     for row in rows:
         worksheet.append(row)
     workbook.save(filepath)
-    print(f"Transactions have been exported to {filepath}")
 
-def export_transactions_to_pdf():
+def export_transactions_to_pdf(filename):
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT * FROM transactions')
     rows = db_cursor.fetchall()
     connect_to_database.close()
 
-    filename = input("Enter filename for PDF export (e.g, transactions.pdf): ")
     if not filename.endswith('.pdf'):
         filename += '.pdf'
     filepath = os.path.join(config.exports_path, filename)
@@ -78,4 +73,3 @@ def export_transactions_to_pdf():
         pdf.cell(30, 10, str(row[4]), 1)
         pdf.ln()
     pdf.output(filepath)
-    print(f"Transactions have been exported to {filepath}")
