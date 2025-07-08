@@ -23,22 +23,9 @@ def init_db():
     connect_to_database.commit()
     connect_to_database.close()
 
-def insert_transaction():
+def insert_transaction(date, category, description, amount):
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
-    
-    while True:
-        date = input("Enter the date (DD-MM-YYYY): ")
-        try:
-            datetime.datetime.strptime(date, "%d-%m-%Y")
-            break
-        except ValueError:
-            print("Invalid input. Please use the format DD-MM-YYYY (e.g. 31-01-2025).")
-
-    category = input("Enter the category (e.g. Food, Bills): ")
-    description = input("Description: ")
-    amount = float(input("Enter the amount. In case of decimals use dot(.) instead of comma(,): "))
-
     db_cursor.execute('''
         INSERT INTO transactions (date, category, description, amount)
         VALUES (?, ?, ?, ?)
@@ -52,41 +39,28 @@ def view_all_transactions():
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT * FROM transactions')
     rows = db_cursor.fetchall()
-    print("\n=== Transaction history ===")
-    for row in rows:
-        print(row)
     connect_to_database.close()
+    return rows
 
-def view_transactions_by_month():
+def view_transactions_by_month(month, year):
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
-    month_year = input("Enter month and year (MM-YYYY): ")
-    search_pattern = f'%-{month_year}'
+    search_pattern = f'%-{month:02d}-{year}'
     db_cursor.execute('SELECT * FROM transactions WHERE date LIKE ?', (search_pattern,))
     rows = db_cursor.fetchall()
-    print(f"\n=== Transaction history for {month_year} ===")
-    if not rows:
-        print("No transactions found for this period.")
-    else:
-        for row in rows:
-            print(row)
     connect_to_database.close()
+    return rows
 
-def view_transactions_by_week():
+def view_transactions_by_week(week, year):
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
-    week_year = input("Enter the week and the year (WW-YYYY):  ")
     try:
-        week, year = map(int, week_year.split('-'))
         start_date = datetime.datetime.strptime(f'{year}-W{week - 1}-1', "%Y-W%W-%w").date()
         end_date = start_date + datetime.timedelta(days=6)
     except Exception:
-        print("Invalid input. Please use the format WW-YYYY (e.g. 12-2025).")
-        return
+        connect_to_database.close()
+        return []
     
-    start_str = start_date.strftime("%d-%m-%Y")
-    end_str = end_date.strftime("%d-%m-%Y")
-
     db_cursor.execute('SELECT * FROM transactions')
     rows = db_cursor.fetchall()
     filtered = []
@@ -98,13 +72,8 @@ def view_transactions_by_week():
         except Exception:
             continue
 
-    print(f"\n=== Transaction history for week {week} of {year} ({start_str} to {end_str}) ===")
-    if not filtered:
-        print("No transactions found for this week.")
-    else:
-        for row in filtered:
-            print(row)
     connect_to_database.close()
+    return filtered
 
 def clear_all_transactions():
     connect_to_database = sqlite3.connect(config.db_path)
@@ -113,4 +82,3 @@ def clear_all_transactions():
     connect_to_database.commit()
     connect_to_database.execute('VACUUM')
     connect_to_database.close()
-    print("All transactions have been deleted and the database file has been compacted.")
