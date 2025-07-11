@@ -7,6 +7,8 @@ import config
 import customtkinter as ctk
 import datetime
 from tkinter import ttk
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
@@ -24,6 +26,10 @@ app.geometry("1200x800")
 button_frame = ctk.CTkFrame(app)
 button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
 
+pie_chart_btn = ctk.CTkButton(button_frame, text="Pie chart", command=lambda: show_chart('pie'))
+bar_plot_btn = ctk.CTkButton(button_frame, text="Bar plot", command=lambda: show_chart('bar'))
+pie_chart_btn.pack_forget()
+bar_plot_btn.pack_forget()
 content_frame = ctk.CTkFrame(app)
 content_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
 
@@ -31,6 +37,13 @@ def clear_content():
     for widget in content_frame.winfo_children():
         widget.destroy()
 
+def toggle_chart_buttons():
+    if pie_chart_btn.winfo_ismapped():
+        pie_chart_btn.pack_forget()
+        bar_plot_btn.pack_forget()
+    else:
+        pie_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
+        bar_plot_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
 def show_add_transaction():
     clear_content()
     ctk.CTkLabel(content_frame, text="Date (DD-MM-YYYY):").pack()
@@ -238,12 +251,78 @@ def show_delete_data():
 
     ctk.CTkButton(content_frame, text="Delete", command=delete_data, fg_color="red").pack(pady=40)
 
+def show_chart(chart_type):
+    clear_content()
+    if chart_type == 'pie':
+    
+            clear_content()
+            ctk.CTkLabel(content_frame, text="Pie chart").pack()
+
+            rows = view_all_transactions()
+
+            totals_for_category = {}
+            for row in rows:
+                category = row[2]
+                description = row[3]
+                amount = row [4]
+                key = (category, description)
+                totals_for_category[key] = totals_for_category.get(key, 0) + amount
+
+            labels = list(f"{cat}: {desc}" for (cat, desc) in totals_for_category.keys())
+            sizes = list(totals_for_category.values())
+
+            if not labels:
+                ctk.CTkLabel(content_frame, text="No data to display.").pack()
+                return
+
+            fig = Figure(figsize=(10, 7), dpi=100)
+            ax = fig.add_subplot(111)
+            ax.pie(sizes, labels=labels, autopct='%1.1f%%')
+            canvas = FigureCanvasTkAgg(fig, master=content_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack()
+
+    elif chart_type == 'bar':
+
+            clear_content()
+            ctk.CTkLabel(content_frame, text="Bar plot").pack()
+
+            rows = view_all_transactions()
+
+            totals_for_category = {}
+            for row in rows:
+                category = row[2]
+                description = row[3]
+                amount = row [4]
+                key = (category, description)
+                totals_for_category[key] = totals_for_category.get(key, 0) + amount
+
+            labels = list(f"{cat}: {desc}" for (cat, desc) in totals_for_category.keys())
+            amounts = list(totals_for_category.values())
+
+            if not labels:
+                ctk.CTkLabel(content_frame, text="No data to display.").pack()
+                return
+            
+            fig = Figure(figsize=(10, 7), dpi=100)
+            ax = fig.add_subplot(111)
+            ax.bar(labels, amounts, color="skyblue")
+            ax.set_xlabel("Category")
+            ax.set_ylabel("Total Amount")
+            ax.set_title("Total Amount by Category")
+            ax.tick_params(axis="x", rotation=10)
+
+            canvas = FigureCanvasTkAgg(fig, master=content_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack()
 
 ctk.CTkButton(button_frame, text="Add transaction", command=show_add_transaction).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show by month", command=show_transactions_by_month).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show by week", command=show_transactions_by_week).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Exports", command=show_export_options).pack(padx=15, pady=12)
+charts_btn = ctk.CTkButton(button_frame, text="Charts", command=toggle_chart_buttons)
+charts_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Delete all transaction data", command=show_delete_data).pack(padx=15, pady=12)
 
 app.mainloop()
