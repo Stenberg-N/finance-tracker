@@ -16,23 +16,38 @@ def init_db():
             date TEXT,
             category TEXT,
             description TEXT,
-            amount REAL
-
+            amount REAL,
+            type TEXT DEFAULT 'expense'
         )
     ''')
     connect_to_database.commit()
     connect_to_database.close()
 
-def insert_transaction(date, category, description, amount):
+def insert_transaction(date, category, description, amount, type_):
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('''
-        INSERT INTO transactions (date, category, description, amount)
-        VALUES (?, ?, ?, ?)
-    ''', (date, category, description, amount))
+        INSERT INTO transactions (date, category, description, amount, type)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (date, category, description, amount, type_))
 
     connect_to_database.commit()
     connect_to_database.close()
+
+def migrate_add_type_column():
+    connect_to_database = sqlite3.connect(config.db_path)
+    db_cursor = connect_to_database.cursor()
+    db_cursor.execute("ALTER TABLE transactions ADD COLUMN type TEXT DEFAULT 'expense'")
+    connect_to_database.commit()
+    connect_to_database.close()
+
+def type_column_exists():
+    connect_to_database = sqlite3.connect(config.db_path)
+    db_cursor = connect_to_database.cursor()
+    db_cursor.execute("PRAGMA table_info(transactions)")
+    columns = [info[1] for info in db_cursor.fetchall()]
+    connect_to_database.close()
+    return 'type' in columns
 
 def view_all_transactions():
     connect_to_database = sqlite3.connect(config.db_path)

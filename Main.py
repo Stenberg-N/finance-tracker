@@ -1,6 +1,6 @@
 # Finance tracker
 
-from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions
+from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions, type_column_exists, migrate_add_type_column
 from exports import export_transactions_to_csv, export_transactions_to_excel, export_transactions_to_pdf
 import os
 import config
@@ -15,13 +15,15 @@ config.db_path = os.path.join(script_directory, 'database', 'finance.db')
 config.exports_path = os.path.join(script_directory, 'exports')
 
 init_db()
+if not type_column_exists():
+    migrate_add_type_column()
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
 
 app = ctk.CTk()
 app.title("Finance Tracker")
-app.geometry("1200x800")
+app.geometry("1600x900")
 
 button_frame = ctk.CTkFrame(app)
 button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
@@ -62,6 +64,11 @@ def toggle_filter_by_buttons():
 
 def show_add_transaction():
     clear_content()
+    ctk.CTkLabel(content_frame, text="Type:").pack()
+    type_var = ctk.StringVar(value="Select")
+    type_option = ctk.CTkOptionMenu(content_frame, variable=type_var, values=["income", "expense"])
+    type_option.pack()
+
     ctk.CTkLabel(content_frame, text="Date (DD-MM-YYYY):").pack()
     date_entry = ctk.CTkEntry(content_frame)
     date_entry.pack()
@@ -100,7 +107,14 @@ def show_add_transaction():
             error.after(2000, error.destroy)
             return
 
-        insert_transaction(date, category, description, amount)
+        type_value = type_var.get()
+        if type_value == "Select":
+            error = ctk.CTkLabel(content_frame, text="Please select a type!", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+            return
+        
+        insert_transaction(date, category, description, amount, type_value)
         success = ctk.CTkLabel(content_frame, text="Transaction was successfully added!", text_color="green")
         success.pack()
         success.after(1000, show_add_transaction)
@@ -109,7 +123,7 @@ def show_add_transaction():
 
 def show_all_transactions_table():
     clear_content()
-    tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5"), show="headings")
+    tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5", "c6"), show="headings")
     tree.column("#1", anchor=ctk.CENTER)
     tree.heading("#1", text="ID")
     tree.column("#2", anchor=ctk.CENTER)
@@ -120,6 +134,8 @@ def show_all_transactions_table():
     tree.heading("#4", text="Description")
     tree.column("#5", anchor=ctk.CENTER)
     tree.heading("#5", text="Amount")
+    tree.column("#6", anchor=ctk.CENTER)
+    tree.heading("#6", text="Type")
     tree.pack(expand=True, fill="both")
 
     rows = view_all_transactions()
@@ -154,7 +170,7 @@ def show_transactions_by(filter_by):
                 if isinstance(widget, ttk.Treeview):
                     widget.destroy()
 
-            tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5"), show="headings")
+            tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5", "c6"), show="headings")
             tree.column("#1", anchor=ctk.CENTER)
             tree.heading("#1", text="ID")
             tree.column("#2", anchor=ctk.CENTER)
@@ -165,6 +181,8 @@ def show_transactions_by(filter_by):
             tree.heading("#4", text="Description")
             tree.column("#5", anchor=ctk.CENTER)
             tree.heading("#5", text="Amount")
+            tree.column("#6", anchor=ctk.CENTER)
+            tree.heading("#6", text="Type")
             tree.pack(expand=True, fill="both")
 
             rows = view_transactions_by_month(month, year)
@@ -199,7 +217,7 @@ def show_transactions_by(filter_by):
                 if isinstance(widget, ttk.Treeview):
                     widget.destroy()
 
-            tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5"), show="headings")
+            tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5", "c6"), show="headings")
             tree.column("#1", anchor=ctk.CENTER)
             tree.heading("#1", text="ID")
             tree.column("#2", anchor=ctk.CENTER)
@@ -210,6 +228,8 @@ def show_transactions_by(filter_by):
             tree.heading("#4", text="Description")
             tree.column("#5", anchor=ctk.CENTER)
             tree.heading("#5", text="Amount")
+            tree.column("#6", anchor=ctk.CENTER)
+            tree.heading("#6", text="Type")
             tree.pack(expand=True, fill="both")
 
             rows = view_transactions_by_week(week, year)
@@ -273,68 +293,63 @@ def show_delete_data():
 
 def show_chart(chart_type):
     clear_content()
-    if chart_type == 'pie':
-    
-            clear_content()
-            ctk.CTkLabel(content_frame, text="Pie chart").pack()
+    type_filter_var = ctk.StringVar(value="all")
 
-            rows = view_all_transactions()
+    def draw_chart():
+        for widget in content_frame.winfo_children():
+            if getattr(widget, "is_chart_widget", False):
+                widget.destroy()
 
-            totals_for_category = {}
-            for row in rows:
-                category = row[2]
-                description = row[3]
-                amount = row [4]
-                key = (category, description)
-                totals_for_category[key] = totals_for_category.get(key, 0) + amount
+        rows = view_all_transactions()
+        selected_type = type_filter_var.get()
+        if selected_type != "all":
+            rows = [row for row in rows if row[5] == selected_type]
 
-            labels = list(f"{cat}: {desc}" for (cat, desc) in totals_for_category.keys())
-            sizes = list(totals_for_category.values())
+        totals_for_category = {}
+        for row in rows:
+            category = row[2]
+            description = row[3]
+            amount = row[4]
+            key = (category, description)
+            totals_for_category[key] = totals_for_category.get(key, 0) + amount
 
-            if not labels:
-                ctk.CTkLabel(content_frame, text="No data to display.").pack()
-                return
+        labels = list(f"{cat}: {desc}" for (cat, desc) in totals_for_category.keys())
+        values = list(totals_for_category.values())
 
-            fig = Figure(figsize=(10, 7), dpi=100)
-            ax = fig.add_subplot(111)
-            ax.pie(sizes, labels=labels, autopct='%1.1f%%')
-            canvas = FigureCanvasTkAgg(fig, master=content_frame)
-            canvas.draw()
-            canvas.get_tk_widget().pack()
+        if not labels:
+            label = ctk.CTkLabel(content_frame, text="No data to display.").pack()
+            label.is_chart_widget = True
+            label.pack()
+            return
 
-    elif chart_type == 'bar':
-
-            clear_content()
-            ctk.CTkLabel(content_frame, text="Bar plot").pack()
-
-            rows = view_all_transactions()
-
-            totals_for_category = {}
-            for row in rows:
-                category = row[2]
-                description = row[3]
-                amount = row [4]
-                key = (category, description)
-                totals_for_category[key] = totals_for_category.get(key, 0) + amount
-
-            labels = list(f"{cat}: {desc}" for (cat, desc) in totals_for_category.keys())
-            amounts = list(totals_for_category.values())
-
-            if not labels:
-                ctk.CTkLabel(content_frame, text="No data to display.").pack()
-                return
-            
-            fig = Figure(figsize=(10, 7), dpi=100)
-            ax = fig.add_subplot(111)
-            ax.bar(labels, amounts, color="skyblue")
+        fig = Figure(figsize=(10, 7), dpi=100)
+        ax = fig.add_subplot(111)
+        if chart_type == 'pie':
+            ax.pie(values, labels=labels, autopct='%1.1f%%')
+        elif chart_type == 'bar':
+            ax.bar(labels, values, color="skyblue")
             ax.set_xlabel("Category")
             ax.set_ylabel("Total Amount")
             ax.set_title("Total Amount by Category")
             ax.tick_params(axis="x", rotation=10)
 
-            canvas = FigureCanvasTkAgg(fig, master=content_frame)
-            canvas.draw()
-            canvas.get_tk_widget().pack()
+        canvas = FigureCanvasTkAgg(fig, master=content_frame)
+        canvas.draw()
+        widget = canvas.get_tk_widget()
+        widget.is_chart_widget = True
+        widget.pack()
+
+    filter_frame = ctk.CTkFrame(content_frame)
+    filter_frame.pack()
+    ctk.CTkLabel(filter_frame, text="Show:").pack(side=ctk.LEFT)
+    ctk.CTkOptionMenu(
+        filter_frame,
+        variable=type_filter_var,
+        values=["all", "income", "expense"],
+        command=lambda _: draw_chart()
+    ).pack(side=ctk.LEFT)
+
+    draw_chart()
 
 ctk.CTkButton(button_frame, text="Add transaction", command=show_add_transaction).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)

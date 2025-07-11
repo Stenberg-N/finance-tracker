@@ -20,7 +20,7 @@ def export_transactions_to_csv(filename):
 
     with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile, delimiter=';') # ';' is used as the delimiter to make differentiating categories easier.
-        writer.writerow(['ID', 'Date', 'Category', 'Description', 'Amount'])
+        writer.writerow(['ID', 'Date', 'Category', 'Description', 'Amount', 'Type'])
         writer.writerows(rows)
 
 def export_transactions_to_excel(filename):
@@ -36,7 +36,7 @@ def export_transactions_to_excel(filename):
 
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
-    worksheet.append(['ID', 'Date', 'Category', 'Description', 'Amount'])
+    worksheet.append(['ID', 'Date', 'Category', 'Description', 'Amount', 'Type'])
     for row in rows:
         worksheet.append(row)
     workbook.save(filepath)
@@ -58,18 +58,20 @@ def export_transactions_to_pdf(filename):
     pdf.cell(200, 10, txt="Transaction History", ln=True, align='C')
     pdf.ln(10)
     pdf.set_font("Arial", size=10)
-    headers = ['ID', 'Date', 'Category', 'Description', 'Amount']
+    headers = ['ID', 'Date', 'Category', 'Description', 'Amount', 'Type']
     pdf.cell(10, 10, headers[0], 1)
     pdf.cell(30, 10, headers[1], 1)
     pdf.cell(30, 10, headers[2], 1)
-    pdf.cell(80, 10, headers[3], 1)
+    pdf.cell(50, 10, headers[3], 1)
     pdf.cell(30, 10, headers[4], 1)
+    pdf.cell(30, 10, headers[5], 1)
     pdf.ln()
     for row in rows:
         pdf.cell(10, 10, str(row[0]), 1)
         pdf.cell(30, 10, row[1], 1)
         pdf.cell(30, 10, row[2], 1)
-        pdf.cell(80, 10, row[3], 1)
+        pdf.cell(50, 10, row[3], 1)
         pdf.cell(30, 10, str(row[4]), 1)
+        pdf.cell(30, 10, row[5], 1)
         pdf.ln()
     pdf.output(filepath)
