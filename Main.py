@@ -30,6 +30,12 @@ pie_chart_btn = ctk.CTkButton(button_frame, text="Pie chart", command=lambda: sh
 bar_plot_btn = ctk.CTkButton(button_frame, text="Bar plot", command=lambda: show_chart('bar'))
 pie_chart_btn.pack_forget()
 bar_plot_btn.pack_forget()
+
+by_month_btn = ctk.CTkButton(button_frame, text="Month", command=lambda: show_transactions_by('month'))
+by_week_btn = ctk.CTkButton(button_frame, text="Week", command=lambda: show_transactions_by('week'))
+by_month_btn.pack_forget()
+by_week_btn.pack_forget()
+
 content_frame = ctk.CTkFrame(app)
 content_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
 
@@ -44,6 +50,16 @@ def toggle_chart_buttons():
     else:
         pie_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         bar_plot_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
+
+
+def toggle_filter_by_buttons():
+    if by_month_btn.winfo_ismapped():
+        by_month_btn.pack_forget()
+        by_week_btn.pack_forget()
+    else:
+        by_month_btn.pack(after=filter_by_btn, pady=2, anchor=ctk.E)
+        by_week_btn.pack(after=filter_by_btn, pady=2, anchor=ctk.E)
+
 def show_add_transaction():
     clear_content()
     ctk.CTkLabel(content_frame, text="Date (DD-MM-YYYY):").pack()
@@ -110,93 +126,97 @@ def show_all_transactions_table():
     for row in rows:
         tree.insert("", ctk.END, values=row)
 
-def show_transactions_by_month():
+def show_transactions_by(filter_by):
     clear_content()
-    ctk.CTkLabel(content_frame, text="Month (MM):").pack()
-    month_entry = ctk.CTkEntry(content_frame)
-    month_entry.pack()
-    ctk.CTkLabel(content_frame, text="Year (YYYY):").pack()
-    year_entry = ctk.CTkEntry(content_frame)
-    year_entry.pack()
+    if filter_by == 'month':
 
-    def fetch_and_show_month():
-        try:
-            month = int(month_entry.get())
-            year = int(year_entry.get())
-            if not (1 <= month <= 12):
-                raise ValueError
-        except ValueError:
-            error = ctk.CTkLabel(content_frame, text="Invalid month or year!", text_color="red")
-            error.pack()
-            error.after(2000, error.destroy)
-            return
-        
-        for widget in content_frame.winfo_children():
-            if isinstance(widget, ttk.Treeview):
-                widget.destory()
+        clear_content()
+        ctk.CTkLabel(content_frame, text="Month (MM):").pack()
+        month_entry = ctk.CTkEntry(content_frame)
+        month_entry.pack()
+        ctk.CTkLabel(content_frame, text="Year (YYYY):").pack()
+        year_entry = ctk.CTkEntry(content_frame)
+        year_entry.pack()
 
-        tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5"), show="headings")
-        tree.column("#1", anchor=ctk.CENTER)
-        tree.heading("#1", text="ID")
-        tree.column("#2", anchor=ctk.CENTER)
-        tree.heading("#2", text="Date")
-        tree.column("#3", anchor=ctk.CENTER)
-        tree.heading("#3", text="Category")
-        tree.column("#4", anchor=ctk.CENTER)
-        tree.heading("#4", text="Description")
-        tree.column("#5", anchor=ctk.CENTER)
-        tree.heading("#5", text="Amount")
-        tree.pack(expand=True, fill="both")
+        def fetch_and_show_month():
+            try:
+                month = int(month_entry.get())
+                year = int(year_entry.get())
+                if not (1 <= month <= 12):
+                    raise ValueError
+            except ValueError:
+                error = ctk.CTkLabel(content_frame, text="Invalid month or year!", text_color="red")
+                error.pack()
+                error.after(2000, error.destroy)
+                return
+            
+            for widget in content_frame.winfo_children():
+                if isinstance(widget, ttk.Treeview):
+                    widget.destroy()
 
-        rows = view_transactions_by_month(month, year)
-        for row in rows:
-            tree.insert("", ctk.END, values=row)
+            tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5"), show="headings")
+            tree.column("#1", anchor=ctk.CENTER)
+            tree.heading("#1", text="ID")
+            tree.column("#2", anchor=ctk.CENTER)
+            tree.heading("#2", text="Date")
+            tree.column("#3", anchor=ctk.CENTER)
+            tree.heading("#3", text="Category")
+            tree.column("#4", anchor=ctk.CENTER)
+            tree.heading("#4", text="Description")
+            tree.column("#5", anchor=ctk.CENTER)
+            tree.heading("#5", text="Amount")
+            tree.pack(expand=True, fill="both")
 
-    ctk.CTkButton(content_frame, text="Show transactions", command=fetch_and_show_month).pack(pady=10)
+            rows = view_transactions_by_month(month, year)
+            for row in rows:
+                tree.insert("", ctk.END, values=row)
+    
+        ctk.CTkButton(content_frame, text="Show transactions", command=fetch_and_show_month).pack(pady=10)
 
-def show_transactions_by_week():
-    clear_content()
-    ctk.CTkLabel(content_frame, text="Week (WW):").pack()
-    week_entry = ctk.CTkEntry(content_frame)
-    week_entry.pack()
-    ctk.CTkLabel(content_frame, text="Year (YYYY):").pack()
-    year_entry = ctk.CTkEntry(content_frame)
-    year_entry.pack()
+    elif filter_by == 'week':
 
-    def fetch_and_show_week():
-        try:
-            week = int(week_entry.get())
-            year = int(year_entry.get())
-            if not (1 <= week <= 52):
-                raise ValueError
-        except ValueError:
-            error = ctk.CTkLabel(content_frame, text="Invalid week or year!", text_color="red")
-            error.pack()
-            error.after(2000, error.destroy)
-            return
-        
-        for widget in content_frame.winfo_children():
-            if isinstance(widget, ttk.Treeview):
-                widget.destroy()
+        clear_content()
+        ctk.CTkLabel(content_frame, text="Week (WW):").pack()
+        week_entry = ctk.CTkEntry(content_frame)
+        week_entry.pack()
+        ctk.CTkLabel(content_frame, text="Year (YYYY):").pack()
+        year_entry = ctk.CTkEntry(content_frame)
+        year_entry.pack()
 
-        tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5"), show="headings")
-        tree.column("#1", anchor=ctk.CENTER)
-        tree.heading("#1", text="ID")
-        tree.column("#2", anchor=ctk.CENTER)
-        tree.heading("#2", text="Date")
-        tree.column("#3", anchor=ctk.CENTER)
-        tree.heading("#3", text="Category")
-        tree.column("#4", anchor=ctk.CENTER)
-        tree.heading("#4", text="Description")
-        tree.column("#5", anchor=ctk.CENTER)
-        tree.heading("#5", text="Amount")
-        tree.pack(expand=True, fill="both")
+        def fetch_and_show_week():
+            try:
+                week = int(week_entry.get())
+                year = int(year_entry.get())
+                if not (1 <= week <= 52):
+                    raise ValueError
+            except ValueError:
+                error = ctk.CTkLabel(content_frame, text="Invalid week or year!", text_color="red")
+                error.pack()
+                error.after(2000, error.destroy)
+                return
+            
+            for widget in content_frame.winfo_children():
+                if isinstance(widget, ttk.Treeview):
+                    widget.destroy()
 
-        rows = view_transactions_by_week(week, year)
-        for row in rows:
-            tree.insert("", ctk.END, values=row)
+            tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5"), show="headings")
+            tree.column("#1", anchor=ctk.CENTER)
+            tree.heading("#1", text="ID")
+            tree.column("#2", anchor=ctk.CENTER)
+            tree.heading("#2", text="Date")
+            tree.column("#3", anchor=ctk.CENTER)
+            tree.heading("#3", text="Category")
+            tree.column("#4", anchor=ctk.CENTER)
+            tree.heading("#4", text="Description")
+            tree.column("#5", anchor=ctk.CENTER)
+            tree.heading("#5", text="Amount")
+            tree.pack(expand=True, fill="both")
 
-    ctk.CTkButton(content_frame, text="Show transactions", command=fetch_and_show_week).pack(pady=10)
+            rows = view_transactions_by_week(week, year)
+            for row in rows:
+                tree.insert("", ctk.END, values=row)
+
+        ctk.CTkButton(content_frame, text="Show transactions", command=fetch_and_show_week).pack(pady=10)
 
 def show_export_options():
     clear_content()
@@ -318,8 +338,8 @@ def show_chart(chart_type):
 
 ctk.CTkButton(button_frame, text="Add transaction", command=show_add_transaction).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
-ctk.CTkButton(button_frame, text="Show by month", command=show_transactions_by_month).pack(padx=15, pady=12)
-ctk.CTkButton(button_frame, text="Show by week", command=show_transactions_by_week).pack(padx=15, pady=12)
+filter_by_btn = ctk.CTkButton(button_frame, text="Show by...", command=toggle_filter_by_buttons)
+filter_by_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Exports", command=show_export_options).pack(padx=15, pady=12)
 charts_btn = ctk.CTkButton(button_frame, text="Charts", command=toggle_chart_buttons)
 charts_btn.pack(padx=15, pady=12)
