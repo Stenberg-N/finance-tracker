@@ -9,6 +9,8 @@ import datetime
 from tkinter import ttk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
+import numpy as np
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
@@ -30,8 +32,18 @@ button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
 
 pie_chart_btn = ctk.CTkButton(button_frame, text="Pie chart", command=lambda: show_chart('pie'))
 bar_plot_btn = ctk.CTkButton(button_frame, text="Bar plot", command=lambda: show_chart('bar'))
+donut_chart_btn = ctk.CTkButton(button_frame, text="Donut chart", command=lambda: show_chart('donut'))
+stacked_bar_btn = ctk.CTkButton(button_frame, text="Stacked Bar chart", command=lambda: show_chart('stacked bar'))
+horizontal_bar_btn = ctk.CTkButton(button_frame, text="Top 5 Expenses chart", command=lambda: show_chart('horizontal bar'))
+surplus_deficit_btn = ctk.CTkButton(button_frame, text="Surplus/Deficit chart", command=lambda: show_chart('surplus deficit'))
+savings_progress_btn = ctk.CTkButton(button_frame, text="Saving chart", command=lambda: show_chart('savings'))
 pie_chart_btn.pack_forget()
 bar_plot_btn.pack_forget()
+donut_chart_btn.pack_forget()
+stacked_bar_btn.pack_forget()
+horizontal_bar_btn.pack_forget()
+surplus_deficit_btn.pack_forget()
+savings_progress_btn.pack_forget()
 
 by_month_btn = ctk.CTkButton(button_frame, text="Month", command=lambda: show_transactions_by('month'))
 by_week_btn = ctk.CTkButton(button_frame, text="Week", command=lambda: show_transactions_by('week'))
@@ -49,9 +61,19 @@ def toggle_chart_buttons():
     if pie_chart_btn.winfo_ismapped():
         pie_chart_btn.pack_forget()
         bar_plot_btn.pack_forget()
+        donut_chart_btn.pack_forget()
+        stacked_bar_btn.pack_forget()
+        horizontal_bar_btn.pack_forget()
+        surplus_deficit_btn.pack_forget()
+        savings_progress_btn.pack_forget()
     else:
         pie_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         bar_plot_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
+        donut_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
+        stacked_bar_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
+        horizontal_bar_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
+        surplus_deficit_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
+        savings_progress_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
 
 
 def toggle_filter_by_buttons():
@@ -306,38 +328,297 @@ def show_chart(chart_type):
             rows = [row for row in rows if row[5] == selected_type]
 
         totals_for_category = {}
+        category_types = {}
+        
         for row in rows:
             category = row[2]
             description = row[3]
             amount = row[4]
+            transaction_type = row[5]
             key = (category, description)
-            totals_for_category[key] = totals_for_category.get(key, 0) + amount
+            
+            if key not in totals_for_category:
+                totals_for_category[key] = 0
+                category_types[key] = {'income': 0, 'expense': 0}
+            
+            totals_for_category[key] += amount
+            category_types[key][transaction_type] += abs(amount)
+
+        category_primary_type = {}
+        for key, type_amounts in category_types.items():
+            if type_amounts['income'] > type_amounts['expense']:
+                category_primary_type[key] = 'income'
+            else:
+                category_primary_type[key] = 'expense'
 
         labels = list(f"{cat}: {desc}" for (cat, desc) in totals_for_category.keys())
         values = list(totals_for_category.values())
 
         if not labels:
-            label = ctk.CTkLabel(content_frame, text="No data to display.").pack()
+            label = ctk.CTkLabel(content_frame, text="No data to display.")
             label.is_chart_widget = True
             label.pack()
             return
 
-        fig = Figure(figsize=(10, 7), dpi=100)
+        chart_frame = ctk.CTkFrame(content_frame)
+        chart_frame.is_chart_widget = True
+        chart_frame.pack(expand=True, fill="both", padx=10, pady=10)
+
+        chart_left_frame = ctk.CTkFrame(chart_frame)
+        chart_left_frame.pack(side=ctk.LEFT, fill="both", expand=True, padx=(0, 10))
+
+        legend_frame = ctk.CTkFrame(chart_frame)
+        legend_frame.pack(side=ctk.RIGHT, fill="both", padx=(10, 0))
+
+        legend_title = ctk.CTkLabel(legend_frame, text="Category Breakdown", font=ctk.CTkFont(size=16, weight="bold"))
+        legend_title.pack(pady=(10, 5))
+
+        legend_scroll = ctk.CTkScrollableFrame(legend_frame, width=300)
+        legend_scroll.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+        total_amount = sum(values)
+
+        # Category items to legend
+        for i, (label, value) in enumerate(zip(labels, values)):
+            percentage = (value / total_amount * 100) if total_amount > 0 else 0
+            
+            category_key = list(totals_for_category.keys())[i]
+            primary_type = category_primary_type[category_key]
+
+            if primary_type == 'expense' and value > 0:
+                amount_text = f"-€{value:,.2f} ({percentage:.1f}%)"
+            else:
+                amount_text = f"€{value:,.2f} ({percentage:.1f}%)"
+            
+            category_frame = ctk.CTkFrame(legend_scroll)
+            category_frame.pack(fill="x", pady=2, padx=5)
+            
+            category_label = ctk.CTkLabel(category_frame, text=label, font=ctk.CTkFont(size=12, weight="bold"))
+            category_label.pack(anchor="w", padx=5, pady=(5, 0))
+            
+            amount_label = ctk.CTkLabel(category_frame, text=amount_text, font=ctk.CTkFont(size=11))
+            amount_label.pack(anchor="w", padx=5, pady=(0, 5))
+
+        fig = Figure(figsize=(4, 3), dpi=100)
         ax = fig.add_subplot(111)
+
+        def format_amount(pct, allvalues):
+            absolute = int(np.round(pct/100.*np.sum(allvalues)))
+            return f"{pct:.1f}%\n(€{absolute:,})"
+        
         if chart_type == 'pie':
-            ax.pie(values, labels=labels, autopct='%1.1f%%')
+
+            wedges, texts, autotexts = ax.pie(values, labels=labels, autopct=lambda pct: format_amount(pct, values), 
+                                             textprops=dict(color="w", size=9, weight="bold"))
+            
+            plt.setp(autotexts, size=9, weight="bold")
+
         elif chart_type == 'bar':
             ax.bar(labels, values, color="skyblue")
             ax.set_xlabel("Category")
-            ax.set_ylabel("Total Amount")
+            ax.set_ylabel("Total Amount (€)")
             ax.set_title("Total Amount by Category")
-            ax.tick_params(axis="x", rotation=10)
+            ax.tick_params(axis="x", rotation=45)
+            
+            # Value labels for bars
+            for i, v in enumerate(values):
+                ax.text(i, v + max(values) * 0.01, f'€{v:,.0f}', ha='center', va='bottom')
 
-        canvas = FigureCanvasTkAgg(fig, master=content_frame)
+        elif chart_type == 'donut':
+            wedges, texts = ax.pie(values, wedgeprops=dict(width=0.5), startangle=-40)
+
+            bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+            kw = dict(arrowprops=dict(arrowstyle="-"), bbox=bbox_props, zorder=0, va="center")
+
+            for i, p in enumerate(wedges):
+                angle = (p.theta2 - p.theta1)/2. + p.theta1
+                y = np.sin(np.deg2rad(angle))
+                x = np.cos(np.deg2rad(angle))
+                horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]
+                connectionstyle = f"angle,angleA=0,angleB={angle}"
+                kw["arrowprops"].update({"connectionstyle": connectionstyle})
+                ax.annotate(labels[i], xy=(x, y), xytext=(1.35*np.sign(x), 1.2*y),
+                            horizontalalignment=horizontalalignment, **kw)
+                
+        elif chart_type == 'stacked bar':
+            category_data = {}
+            for row in rows:
+                category = row[2]
+                amount = row[4]
+                transaction_type = row[5]
+
+                if category not in category_data:
+                    category_data[category] = {'income': 0, 'expense': 0}
+
+                category_data[category][transaction_type] += amount
+
+            categories = list(category_data.keys())
+            income_values = [category_data[cat]['income'] for cat in categories]
+            expense_values = [abs(category_data[cat]['expense']) for cat in categories]
+        
+            x = np.arange(len(categories))
+            width = 0.4
+
+            bars_income = ax.bar(x, income_values, width, label="Income", color="green", alpha=0.7)
+            bars_expense = ax.bar(x, [-exp for exp in expense_values], width, label="Expense", color="red", alpha=0.7)
+
+            ax.set_xlabel("Category")
+            ax.set_ylabel("Amount (€)")
+            ax.set_title("Income vs. Expense by category")
+            ax.set_xticks(x)
+            ax.set_xticklabels(categories, rotation=45, ha='right')
+            ax.legend(loc="upper right")
+            ax.grid(True, alpha=0.3)
+
+            # Value labels for bars
+            for i, (income, expense) in enumerate(zip(income_values, expense_values)):
+                if income > 0:
+                    ax.text(i, income + max(income_values) * 0.01, f'€{income:,.0f}', ha='center', va='bottom', fontsize=8)
+                if expense > 0:
+                    ax.text(i, -expense - max(expense_values) * 0.01, f'€{expense:,.0f}', ha='center', va='bottom', fontsize=8)
+
+        elif chart_type == "horizontal bar":
+            top_expenses = {}
+            for row in rows:
+                category = row[2]
+                description = row[3]
+                amount = row[4]
+                transaction_type = row[5]
+
+                if transaction_type == 'expense':
+                    key = f"{category}: {description}"
+                    if key not in top_expenses:
+                        top_expenses[key] = 0
+                    top_expenses[key] += amount
+
+            sorted_expenses = sorted(top_expenses.items(), key=lambda x: x[1], reverse=True)[:5]
+
+            descriptions = [item[0] for item in sorted_expenses]
+            expense_values = [abs(item[1]) for item in sorted_expenses]
+
+            y = np.arange(len(descriptions))
+            width=0.4
+
+            bars = ax.barh(y, expense_values, width, align='center')
+            ax.set_yticks(y)
+            ax.set_yticklabels(descriptions, fontsize=8)
+            ax.invert_yaxis()
+            ax.set_xlabel("Expense amount (€)")
+            ax.set_title("Top 5 Expenses by Category & Description")
+
+            for i, (bar, value) in enumerate(zip(bars, expense_values)):
+                ax.text(bar.get_width() + max(expense_values) * 0.01, bar.get_y() + bar.get_height()/2, f'€{value:,.0f}', va='center', fontsize=8)
+
+        elif chart_type == "surplus deficit":
+            monthly_data = {}
+            for row in rows:
+                date_str = row[1]
+                amount = row[4]
+                transaction_type = row[5]
+                
+                try:
+                    date_obj = datetime.datetime.strptime(date_str, "%d-%m-%Y")
+                    month_key = f"{date_obj.strftime('%B %Y')}"
+                except ValueError:
+                    continue
+                
+                if month_key not in monthly_data:
+                    monthly_data[month_key] = {'income': 0, 'expense': 0}
+                
+                if transaction_type == 'income':
+                    monthly_data[month_key]['income'] += amount
+                elif transaction_type == 'expense':
+                    monthly_data[month_key]['expense'] += abs(amount)
+            
+            months = []
+            surpluses = []
+            colors = []
+            
+            for month, data in monthly_data.items():
+                months.append(month)
+                surplus = data['income'] - data['expense']
+                surpluses.append(surplus)
+                colors.append('green' if surplus >= 0 else 'red')
+            
+            if not months:
+                label = ctk.CTkLabel(content_frame, text="No data to display.")
+                label.is_chart_widget = True
+                label.pack()
+                return
+
+            bars = ax.bar(months, surpluses, color=colors, alpha=0.7)
+            ax.set_xlabel("Month")
+            ax.set_ylabel("Surplus/Deficit (€)")
+            ax.set_title("Monthly Surplus/Deficit Trends")
+            ax.axhline(y=0, color='black', linestyle='-', alpha=0.3)
+            ax.tick_params(axis='x', rotation=45)
+
+            # Value labels for bars
+            for bar, value in zip(bars, surpluses):
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2., height + (max(surpluses) * 0.01 if height >= 0 else -max(abs(min(surpluses)) * 0.01)),
+                       f'€{value:,.0f}', ha='center', va='bottom' if height >= 0 else 'top', fontsize=8)
+
+            from matplotlib.patches import Patch
+            legend_elements = [Patch(facecolor='green', alpha=0.7, label='Surplus'),
+                             Patch(facecolor='red', alpha=0.7, label='Deficit')]
+            ax.legend(handles=legend_elements, loc='upper right')
+
+        elif chart_type == 'savings':
+            savings_data = {}
+            cumulative_savings = 0
+            
+            sorted_rows = sorted(rows, key=lambda x: datetime.datetime.strptime(x[1], "%d-%m-%Y"))
+            
+            for row in sorted_rows:
+                date_str = row[1]
+                amount = row[4]
+                transaction_type = row[5]
+                
+                try:
+                    date_obj = datetime.datetime.strptime(date_str, "%d-%m-%Y")
+                    date_key = date_obj.strftime("%d-%m-%Y")
+                except ValueError:
+                    continue
+
+                if transaction_type == 'income':
+                    cumulative_savings += amount
+                elif transaction_type == 'expense':
+                    cumulative_savings -= abs(amount)
+                
+                savings_data[date_key] = cumulative_savings
+            
+            if not savings_data:
+                label = ctk.CTkLabel(content_frame, text="No data to display.")
+                label.is_chart_widget = True
+                label.pack()
+                return
+            
+            dates = list(savings_data.keys())
+            savings_values = list(savings_data.values())
+            
+            date_objects = [datetime.datetime.strptime(date, "%d-%m-%Y") for date in dates]
+            
+            ax.plot(date_objects, savings_values, marker='o', linewidth=2, markersize=4, color='green')
+            ax.set_xlabel("Date")
+            ax.set_ylabel("Cumulative Savings (€)")
+            ax.set_title("Savings Progress Over Time")
+            ax.grid(True, alpha=0.3)
+            ax.axhline(y=0, color='black', linestyle='-', alpha=0.5)
+
+            ax.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%d-%m-%Y'))
+            ax.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=max(1, len(dates)//10)))
+            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
+            
+            # Value labels for key points
+            for i, (date, value) in enumerate(zip(date_objects, savings_values)):
+                if i == 0 or i == len(savings_values) - 1 or value == max(savings_values) or value == min(savings_values):
+                    ax.annotate(f'€{value:,.0f}', xy=(date, value), xytext=(10, 10), textcoords='offset points', fontsize=8, bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8), arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
+
+        canvas = FigureCanvasTkAgg(fig, master=chart_left_frame)
         canvas.draw()
         widget = canvas.get_tk_widget()
-        widget.is_chart_widget = True
-        widget.pack()
+        widget.pack(expand=True, fill="both")
 
     filter_frame = ctk.CTkFrame(content_frame)
     filter_frame.pack()
