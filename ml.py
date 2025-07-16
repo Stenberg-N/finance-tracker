@@ -1,8 +1,10 @@
 from database.db import view_all_transactions
 import numpy as np
 import datetime
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, HuberRegressor, Ridge
 from sklearn.preprocessing import PolynomialFeatures
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.ensemble import RandomForestRegressor
 
 def fetch_data():
     rows = view_all_transactions()
@@ -54,4 +56,44 @@ def polynomial_model():
 
     return predicted_expense, months, y
 
+def robust_linear_model():
+    months, x, y = get_months_x_y()
 
+    model = HuberRegressor()
+    model.fit(x, y)
+
+    next_month_index = len(months)
+    predicted_expense = model.predict([[next_month_index]])[0]
+
+    return predicted_expense, months, y
+
+def ridge_model():
+    months, x, y = get_months_x_y()
+
+    model = Ridge(alpha=1.0)
+    model.fit(x, y)
+
+    next_month_index = len(months)
+    predicted_expense = model.predict([[next_month_index]])[0]
+
+    return predicted_expense, months, y
+
+def arima_model():
+    months, x, y = get_months_x_y()
+
+    model = ARIMA(y, order=(1,1,1))
+    model_fit = model.fit()
+    predicted_expense = model_fit.forecast()[0]
+
+    return predicted_expense, months, y
+
+def randomforest_model():
+    months, x, y = get_months_x_y()
+
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(x, y)
+
+    next_month_index = np.array([[len(months)]])
+    predicted_expense = model.predict(next_month_index)[0]
+
+    return predicted_expense, months, y
