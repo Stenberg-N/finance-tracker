@@ -570,7 +570,7 @@ def show_chart(chart_type):
             # Value labels for bars
             for bar, value in zip(bars, surpluses):
                 height = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2., height + (max(surpluses) * 0.01 if height >= 0 else -max(abs(min(surpluses)) * 0.01)),
+                ax.text(bar.get_x() + bar.get_width()/2., height + (max(surpluses) * 0.01 if height >= 0 else -abs(min(surpluses)) * 0.01),
                        f'€{value:,.0f}', ha='center', va='bottom' if height >= 0 else 'top', fontsize=8)
 
             from matplotlib.patches import Patch
