@@ -28,6 +28,16 @@ app = ctk.CTk()
 app.title("Finance Tracker")
 app.geometry("1600x900")
 
+PREDICTION_MODEL_DESCRIPTIONS = {
+    'linear': "Linear Regression: Best for data with a linear trend.",
+    'polynomial': "Polynomial Regression: Captures non-linear trends. Useful if your expenses have curves or seasonal effects.",
+    'robust linear': "Robust Linear Regression: Like linear regression, but less sensitive to outliers.",
+    'ridge': "Ridge Regression: Linear model with regularization. Helps prevent overfitting if or when you have many features.",
+    'arima': "ARIMA: Time series model. Good for data with trends and seasonality.",
+    'randomforest': "Random Forest: Combines many decision trees to make better predictions, even with complex or unusual data.",
+    'ensemble': "Ensemble: Combines multiple models for improved accuracy and robustness.",
+}
+
 button_frame = ctk.CTkFrame(app)
 button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
 
@@ -688,6 +698,8 @@ def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_exp
 
 def show_prediction(prediction_type):
     clear_content()
+    description = PREDICTION_MODEL_DESCRIPTIONS.get(prediction_type, "No description available for this model.")
+    ctk.CTkLabel(content_frame, text=description, wraplength=600, justify="left").pack(pady=(10, 20))
 
     if prediction_type == 'linear':
         predicted_expense, months, actuals = linear_model()
