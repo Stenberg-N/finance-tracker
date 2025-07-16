@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
-from ml import linear_model, polynomial_model, robust_linear_model, ridge_model, arima_model, randomforest_model
+from ml import linear_model, polynomial_model, robust_linear_model, ridge_model, arima_model, randomforest_model, ensemble_model
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
@@ -52,12 +52,14 @@ robust_linear_btn = ctk.CTkButton(button_frame, text="Robust Linear", command=la
 ridge_btn = ctk.CTkButton(button_frame, text="Ridge", command=lambda: show_prediction('ridge'))
 arima_btn = ctk.CTkButton(button_frame, text="ARIMA", command=lambda: show_prediction('arima'))
 randomforest_btn = ctk.CTkButton(button_frame, text="RandomForest", command=lambda: show_prediction('randomforest'))
+ensemble_btn = ctk.CTkButton(button_frame, text="Ensemble", command=lambda: show_prediction('ensemble'))
 linear_regression_btn.pack_forget()
 poly_regression_btn.pack_forget()
 robust_linear_btn.pack_forget()
 ridge_btn.pack_forget()
 arima_btn.pack_forget()
 randomforest_btn.pack_forget()
+ensemble_btn.pack_forget()
 
 by_month_btn = ctk.CTkButton(button_frame, text="Month", command=lambda: show_transactions_by('month'))
 by_week_btn = ctk.CTkButton(button_frame, text="Week", command=lambda: show_transactions_by('week'))
@@ -79,6 +81,7 @@ def toggle_prediction_model_buttons():
         ridge_btn.pack_forget()
         arima_btn.pack_forget()
         randomforest_btn.pack_forget()
+        ensemble_btn.pack_forget()
     else:
         linear_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         poly_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
@@ -86,6 +89,7 @@ def toggle_prediction_model_buttons():
         ridge_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         arima_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         randomforest_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
+        ensemble_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
 
 def toggle_chart_buttons():
     if pie_chart_btn.winfo_ismapped():
@@ -697,6 +701,8 @@ def show_prediction(prediction_type):
         predicted_expense, months, actuals = arima_model()
     elif prediction_type == 'randomforest':
         predicted_expense, months, actuals = randomforest_model()
+    elif prediction_type == 'ensemble':
+        predicted_expense, months, actuals = ensemble_model()
     else:
         return
 

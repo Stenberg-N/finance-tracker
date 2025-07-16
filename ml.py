@@ -97,3 +97,11 @@ def randomforest_model():
     predicted_expense = model.predict(next_month_index)[0]
 
     return predicted_expense, months, y
+
+def ensemble_model():
+    pred1, months, y = ridge_model()
+    pred2, _, _ = randomforest_model()
+    pred3, _, _ = arima_model()
+    ensemble_pred = np.mean([pred1, pred2, pred3])
+
+    return ensemble_pred, months, y
