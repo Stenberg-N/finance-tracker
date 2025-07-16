@@ -11,6 +11,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
+from ml import linear_model, polynomial_model
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
@@ -45,6 +46,11 @@ horizontal_bar_btn.pack_forget()
 surplus_deficit_btn.pack_forget()
 savings_progress_btn.pack_forget()
 
+linear_regression_btn = ctk.CTkButton(button_frame, text="Linear Regression", command=lambda: show_prediction('linear'))
+linear_regression_btn.pack_forget()
+poly_regression_btn = ctk.CTkButton(button_frame, text="Polynomial Regresion", command=lambda: show_prediction('polynomial'))
+poly_regression_btn.pack_forget()
+
 by_month_btn = ctk.CTkButton(button_frame, text="Month", command=lambda: show_transactions_by('month'))
 by_week_btn = ctk.CTkButton(button_frame, text="Week", command=lambda: show_transactions_by('week'))
 by_month_btn.pack_forget()
@@ -56,6 +62,14 @@ content_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
 def clear_content():
     for widget in content_frame.winfo_children():
         widget.destroy()
+
+def toggle_prediction_model_buttons():
+    if linear_regression_btn.winfo_ismapped():
+        linear_regression_btn.pack_forget()
+        poly_regression_btn.pack_forget()
+    else:
+        linear_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
+        poly_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
 
 def toggle_chart_buttons():
     if pie_chart_btn.winfo_ismapped():
@@ -632,6 +646,42 @@ def show_chart(chart_type):
 
     draw_chart()
 
+def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_expense, parent_frame):
+        fig = Figure(figsize=(6, 4), dpi=100)
+        ax = fig.add_subplot(111)
+
+        ax.plot(months_labels, actuals, marker='o', label="Actual expenses", color="blue")
+        ax.plot(months_labels + [next_month_label], list(actuals) + [predicted_expense], marker='o', linestyle="--", color="orange", label="Predicted next month")
+        ax.scatter([next_month_label], [predicted_expense], color="red", zorder=5)
+        ax.set_xlabel("Month")
+        ax.set_ylabel("Expenses (€)")
+        ax.set_title("Monthly expenses & next month prediction")
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        ax.tick_params(axis="x", rotation=45)
+        ax.annotate(f"Predicted: €{predicted_expense:.2f}", xy=(next_month_label, predicted_expense), xytext=(0, 10), textcoords="offset points", ha="center", color="red")
+
+        canvas = FigureCanvasTkAgg(fig, master=parent_frame)
+        canvas.draw()
+        widget = canvas.get_tk_widget()
+        widget.pack(expand=True, fill="both")
+
+def show_prediction(prediction_type):
+    clear_content()
+
+    if prediction_type == 'linear':
+        predicted_expense, months, actuals = linear_model()
+    elif prediction_type == 'polynomial':
+        predicted_expense, months, actuals = polynomial_model()
+    else:
+        return
+
+    months_labels = [datetime.datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in months]
+    next_month = (datetime.datetime.strptime(months[-1], "%Y-%m") + datetime.timedelta(days=31)).replace(day=1)
+    next_month_label = next_month.strftime("%b %Y")
+
+    draw_prediction_plot(months_labels, actuals, next_month_label, predicted_expense, content_frame)
+
 ctk.CTkButton(button_frame, text="Add transaction", command=show_add_transaction).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
 filter_by_btn = ctk.CTkButton(button_frame, text="Show by...", command=toggle_filter_by_buttons)
@@ -639,6 +689,8 @@ filter_by_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Exports", command=show_export_options).pack(padx=15, pady=12)
 charts_btn = ctk.CTkButton(button_frame, text="Charts", command=toggle_chart_buttons)
 charts_btn.pack(padx=15, pady=12)
+predictions_btn = ctk.CTkButton(button_frame, text="Monthly expense predictions", command=toggle_prediction_model_buttons)
+predictions_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Delete all transaction data", command=show_delete_data).pack(padx=15, pady=12)
 
 app.mainloop()
