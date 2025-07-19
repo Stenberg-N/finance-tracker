@@ -344,15 +344,15 @@ def show_chart(chart_type):
             if getattr(widget, "is_chart_widget", False):
                 widget.destroy()
 
-        rows = view_all_transactions()
+        db_table = view_all_transactions()
         selected_type = type_filter_var.get()
         if selected_type != "all":
-            rows = [row for row in rows if row[5] == selected_type]
+            db_table = [row for row in db_table if row[5] == selected_type]
 
         totals_for_category = {}
         category_types = {}
         
-        for row in rows:
+        for row in db_table:
             category = row[2]
             description = row[3]
             amount = row[4]
@@ -464,7 +464,7 @@ def show_chart(chart_type):
                 
         elif chart_type == 'stacked bar':
             category_data = {}
-            for row in rows:
+            for row in db_table:
                 category = row[2]
                 amount = row[4]
                 transaction_type = row[5]
@@ -501,7 +501,7 @@ def show_chart(chart_type):
 
         elif chart_type == "horizontal bar":
             top_expenses = {}
-            for row in rows:
+            for row in db_table:
                 category = row[2]
                 description = row[3]
                 amount = row[4]
@@ -533,7 +533,7 @@ def show_chart(chart_type):
 
         elif chart_type == "surplus deficit":
             monthly_data = {}
-            for row in rows:
+            for row in db_table:
                 date_str = row[1]
                 amount = row[4]
                 transaction_type = row[5]
@@ -590,7 +590,7 @@ def show_chart(chart_type):
             savings_data = {}
             cumulative_savings = 0
             
-            sorted_rows = sorted(rows, key=lambda x: datetime.datetime.strptime(x[1], "%d-%m-%Y"))
+            sorted_rows = sorted(db_table, key=lambda x: datetime.datetime.strptime(x[1], "%d-%m-%Y"))
             
             for row in sorted_rows:
                 date_str = row[1]
