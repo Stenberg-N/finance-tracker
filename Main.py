@@ -48,6 +48,7 @@ stacked_bar_btn = ctk.CTkButton(button_frame, text="Stacked Bar chart", command=
 horizontal_bar_btn = ctk.CTkButton(button_frame, text="Top 5 Expenses chart", command=lambda: show_chart('horizontal bar'))
 surplus_deficit_btn = ctk.CTkButton(button_frame, text="Surplus/Deficit chart", command=lambda: show_chart('surplus deficit'))
 savings_progress_btn = ctk.CTkButton(button_frame, text="Saving chart", command=lambda: show_chart('savings'))
+bar_date_amount_btn = ctk.CTkButton(button_frame, text="Bar plot by month/amount", command=lambda: show_chart('bar by date_amount'))
 pie_chart_btn.pack_forget()
 bar_plot_btn.pack_forget()
 donut_chart_btn.pack_forget()
@@ -55,6 +56,7 @@ stacked_bar_btn.pack_forget()
 horizontal_bar_btn.pack_forget()
 surplus_deficit_btn.pack_forget()
 savings_progress_btn.pack_forget()
+bar_date_amount_btn.pack_forget()
 
 linear_regression_btn = ctk.CTkButton(button_frame, text="Linear", command=lambda: show_prediction('linear'))
 poly_regression_btn = ctk.CTkButton(button_frame, text="Polynomial", command=lambda: show_prediction('polynomial'))
@@ -110,6 +112,7 @@ def toggle_chart_buttons():
         horizontal_bar_btn.pack_forget()
         surplus_deficit_btn.pack_forget()
         savings_progress_btn.pack_forget()
+        bar_date_amount_btn.pack_forget()
     else:
         pie_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         bar_plot_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
@@ -118,6 +121,7 @@ def toggle_chart_buttons():
         horizontal_bar_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         surplus_deficit_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         savings_progress_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
+        bar_date_amount_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
 
 
 def toggle_filter_by_buttons():
@@ -637,6 +641,52 @@ def show_chart(chart_type):
                 if i == 0 or i == len(savings_values) - 1 or value == max(savings_values) or value == min(savings_values):
                     ax.annotate(f'€{value:,.0f}', xy=(date, value), xytext=(10, 10), textcoords='offset points', fontsize=8, bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8), arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
 
+        elif chart_type == 'bar by date_amount':
+            date_data = {}
+
+            sorted_rows = sorted(db_table, key=lambda x: datetime.datetime.strptime(x[1], "%d-%m-%Y"))
+
+            for row in sorted_rows:
+                date_str = row[1]
+                amount = row[4]
+                transaction_type = row[5]
+
+                try:
+                    date_obj = datetime.datetime.strptime(date_str, "%d-%m-%Y")
+                    month_key = date_obj.strftime("%m-%Y")
+                except ValueError:
+                    continue
+
+                if month_key not in date_data:
+                    date_data[month_key] = {'income': 0, 'expense': 0}
+                date_data[month_key][transaction_type] += amount
+
+            dates = list(date_data.keys())
+            income_values = [date_data[date]['income'] for date in dates]
+            expense_values = [abs(date_data[date]['expense']) for date in dates]
+
+            x = np.arange(len(dates))
+            width = 0.4
+
+            bars_income = ax.bar(x, income_values, width, label="Income", color="green", alpha=0.7)
+            bars_expense = ax.bar(x, [-exp for exp in expense_values], width, label="Expense", color="red", alpha=0.7)
+
+            ax.set_xlabel("Date")
+            ax.set_ylabel("Amount (€)")
+            ax.set_title("Income vs. Expense by Month")
+            ax.set_xticks(x)
+            display_labels = [datetime.datetime.strptime(date, "%m-%Y").strftime("%b %Y") for date in dates]
+            ax.set_xticklabels(display_labels, rotation=45, ha='right')
+            ax.legend(loc="upper right")
+            ax.grid(True, alpha=0.3)
+
+            # Value labels for bars
+            for i, (income, expense) in enumerate(zip(income_values, expense_values)):
+                if income > 0:
+                    ax.text(i, income + max(income_values) * 0.01, f'€{income:,.0f}', ha='center', va='bottom', fontsize=8)
+                if expense > 0:
+                    ax.text(i, -expense - max(expense_values) * 0.01, f'€{expense:,.0f}', ha='center', va='bottom', fontsize=8)
+
         canvas = FigureCanvasTkAgg(fig, master=chart_left_frame)
         canvas.draw()
         widget = canvas.get_tk_widget()
@@ -664,6 +714,7 @@ def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_exp
         ax.set_xlabel("Month")
         ax.set_ylabel("Expenses (€)")
         ax.set_title("Monthly expenses & next month prediction")
+        ax.set_yticks(np.arange(min(actuals), max(actuals) + 500, 500))
         ax.legend()
         ax.grid(True, alpha=0.3)
         ax.tick_params(axis="x", rotation=45)
