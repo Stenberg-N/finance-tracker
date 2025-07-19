@@ -187,8 +187,7 @@ def show_add_transaction():
         
     ctk.CTkButton(content_frame, text="Add", command=submit_data).pack(pady=10)
 
-def show_all_transactions_table():
-    clear_content()
+def all_transactions_treeview():
     tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5", "c6"), show="headings")
     tree.column("#1", anchor=ctk.CENTER)
     tree.heading("#1", text="ID")
@@ -203,6 +202,11 @@ def show_all_transactions_table():
     tree.column("#6", anchor=ctk.CENTER)
     tree.heading("#6", text="Type")
     tree.pack(expand=True, fill="both")
+    return tree
+
+def show_all_transactions_table():
+    clear_content()
+    tree = all_transactions_treeview()
 
     rows = view_all_transactions()
     for row in rows:
@@ -236,20 +240,7 @@ def show_transactions_by(filter_by):
                 if isinstance(widget, ttk.Treeview):
                     widget.destroy()
 
-            tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5", "c6"), show="headings")
-            tree.column("#1", anchor=ctk.CENTER)
-            tree.heading("#1", text="ID")
-            tree.column("#2", anchor=ctk.CENTER)
-            tree.heading("#2", text="Date")
-            tree.column("#3", anchor=ctk.CENTER)
-            tree.heading("#3", text="Category")
-            tree.column("#4", anchor=ctk.CENTER)
-            tree.heading("#4", text="Description")
-            tree.column("#5", anchor=ctk.CENTER)
-            tree.heading("#5", text="Amount")
-            tree.column("#6", anchor=ctk.CENTER)
-            tree.heading("#6", text="Type")
-            tree.pack(expand=True, fill="both")
+            tree = all_transactions_treeview()
 
             rows = view_transactions_by_month(month, year)
             for row in rows:
@@ -283,20 +274,7 @@ def show_transactions_by(filter_by):
                 if isinstance(widget, ttk.Treeview):
                     widget.destroy()
 
-            tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5", "c6"), show="headings")
-            tree.column("#1", anchor=ctk.CENTER)
-            tree.heading("#1", text="ID")
-            tree.column("#2", anchor=ctk.CENTER)
-            tree.heading("#2", text="Date")
-            tree.column("#3", anchor=ctk.CENTER)
-            tree.heading("#3", text="Category")
-            tree.column("#4", anchor=ctk.CENTER)
-            tree.heading("#4", text="Description")
-            tree.column("#5", anchor=ctk.CENTER)
-            tree.heading("#5", text="Amount")
-            tree.column("#6", anchor=ctk.CENTER)
-            tree.heading("#6", text="Type")
-            tree.pack(expand=True, fill="both")
+            tree = all_transactions_treeview()
 
             rows = view_transactions_by_week(week, year)
             for row in rows:
