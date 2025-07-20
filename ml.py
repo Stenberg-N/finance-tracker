@@ -89,8 +89,15 @@ def linear_model():
         'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
         },
         {
-        'regressor': [Ridge(), Lasso(max_iter=1000)],
-        'regressor__alpha': [0.1, 1, 10],
+        'regressor': [Ridge(), Lasso(max_iter=10000)],
+        'regressor__alpha': [0.1, 1, 10, 100, 1000],
+        'regressor__fit_intercept': [True, False],
+        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+        },
+        {
+        'regressor': [HuberRegressor()],
+        'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
+        'regressor__epsilon': [1, 1.1, 1.35, 1.5],
         'regressor__fit_intercept': [True, False],
         'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
         }
@@ -161,20 +168,6 @@ def polynomial_model():
     next_features = np.array([[next_month_index, next_rolling_mean]])
 
     predicted_expense = best_pipeline.predict (next_features)[0]
-
-    return predicted_expense, months, y
-
-def robust_linear_model():
-    months, x, y = get_months_x_y()
-
-    model = HuberRegressor()
-    model.fit(x, y)
-
-    next_month_index = len(months)
-    next_rolling_mean = np.mean(y[-3:])
-
-    next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = model.predict (next_features)[0]
 
     return predicted_expense, months, y
 

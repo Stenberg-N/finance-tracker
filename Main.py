@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
-from ml import linear_model, polynomial_model, robust_linear_model, arima_model, randomforest_model, ensemble_model, xgboost_model
+from ml import linear_model, polynomial_model, arima_model, randomforest_model, ensemble_model, xgboost_model
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
@@ -29,9 +29,8 @@ app.title("Finance Tracker")
 app.geometry("1600x900")
 
 PREDICTION_MODEL_DESCRIPTIONS = {
-    'linear': "Linear Regression: Best for data with a linear trend.",
+    'linear': "Linear Regression including Ridge, Lasso and Robust techniques: Best for data with a linear trend. Automatically selects the best regularized or robust linear model.",
     'polynomial': "Polynomial Regression: Captures non-linear trends. Useful if your expenses have curves or seasonal effects.",
-    'robust linear': "Robust Linear Regression: Like linear regression, but less sensitive to outliers.",
     'arima': "ARIMA: Time series model. Good for data with trends and seasonality.",
     'randomforest': "Random Forest: Combines many decision trees to make better predictions, even with complex or unusual data.",
     'ensemble': "Ensemble: Combines multiple models for improved accuracy and robustness.",
@@ -60,14 +59,12 @@ bar_date_amount_btn.pack_forget()
 
 linear_regression_btn = ctk.CTkButton(button_frame, text="Linear", command=lambda: show_prediction('linear'))
 poly_regression_btn = ctk.CTkButton(button_frame, text="Polynomial", command=lambda: show_prediction('polynomial'))
-robust_linear_btn = ctk.CTkButton(button_frame, text="Robust Linear", command=lambda: show_prediction('robust linear'))
 arima_btn = ctk.CTkButton(button_frame, text="ARIMA", command=lambda: show_prediction('arima'))
 randomforest_btn = ctk.CTkButton(button_frame, text="RandomForest", command=lambda: show_prediction('randomforest'))
 ensemble_btn = ctk.CTkButton(button_frame, text="Ensemble", command=lambda: show_prediction('ensemble'))
 xgboost_btn = ctk.CTkButton(button_frame, text="XGBoost", command=lambda: show_prediction('xgboost'))
 linear_regression_btn.pack_forget()
 poly_regression_btn.pack_forget()
-robust_linear_btn.pack_forget()
 arima_btn.pack_forget()
 randomforest_btn.pack_forget()
 ensemble_btn.pack_forget()
@@ -89,7 +86,6 @@ def toggle_prediction_model_buttons():
     if linear_regression_btn.winfo_ismapped():
         linear_regression_btn.pack_forget()
         poly_regression_btn.pack_forget()
-        robust_linear_btn.pack_forget()
         arima_btn.pack_forget()
         randomforest_btn.pack_forget()
         ensemble_btn.pack_forget()
@@ -97,7 +93,6 @@ def toggle_prediction_model_buttons():
     else:
         linear_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         poly_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
-        robust_linear_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         arima_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         randomforest_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         ensemble_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
@@ -734,8 +729,6 @@ def show_prediction(prediction_type):
         predicted_expense, months, actuals = linear_model()
     elif prediction_type == 'polynomial':
         predicted_expense, months, actuals = polynomial_model()
-    elif prediction_type == 'robust linear':
-        predicted_expense, months, actuals = robust_linear_model()
     elif prediction_type == 'arima':
         predicted_expense, months, actuals = arima_model()
     elif prediction_type == 'randomforest':
