@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
-from ml import linear_model, polynomial_model, robust_linear_model, arima_model, randomforest_model, ensemble_model
+from ml import linear_model, polynomial_model, robust_linear_model, arima_model, randomforest_model, ensemble_model, xgboost_model
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
