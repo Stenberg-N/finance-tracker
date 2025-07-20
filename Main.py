@@ -6,7 +6,7 @@ import os
 import config
 import customtkinter as ctk
 import datetime
-from tkinter import ttk
+import tkinter as tk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
@@ -37,17 +37,51 @@ PREDICTION_MODEL_DESCRIPTIONS = {
     'xgboost': "XGBoost: A powerful and efficient gradient boosting algorithm. Excels at capturing complex patterns and interactions in data, often delivering top performance in prediction tasks. Well-suited for both small and large datasets."
 }
 
+class tooltip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tipwindow = None
+        self.widget.bind("<Enter>", self.show_tip)
+        self.widget.bind("<Leave>", self.hide_tip)
+
+    def show_tip(self, event=None):
+        if self.tipwindow or not self.text:
+            return
+        x, y, _, cy = self.widget.bbox("insert") if hasattr(self.widget, "bbox") else (0, 0, 0, 0)
+        x = x + self.widget.winfo_rootx() + 25
+        y = y + cy + self.widget.winfo_rooty() + 25
+        self.tipwindow = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(tw, text=self.text, justify="left", background="#ffffe0", relief="solid", borderwidth=1, font=("tahoma", "10", "normal"))
+        label.pack(ipadx=1)
+
+    def hide_tip(self, event=None):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
 button_frame = ctk.CTkFrame(app)
 button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
 
 pie_chart_btn = ctk.CTkButton(button_frame, text="Pie chart", command=lambda: show_chart('pie'))
+tooltip(pie_chart_btn, "Displays all transactions in a pie chart.")
 bar_plot_btn = ctk.CTkButton(button_frame, text="Bar plot", command=lambda: show_chart('bar'))
+tooltip(bar_plot_btn, "Displays all transactions in a bar plot.")
 donut_chart_btn = ctk.CTkButton(button_frame, text="Donut chart", command=lambda: show_chart('donut'))
+tooltip(donut_chart_btn, "Displays all transactions in a donut chart.")
 stacked_bar_btn = ctk.CTkButton(button_frame, text="Stacked Bar chart", command=lambda: show_chart('stacked bar'))
+tooltip(stacked_bar_btn, "Displays income and expenses by category.")
 horizontal_bar_btn = ctk.CTkButton(button_frame, text="Top 5 Expenses chart", command=lambda: show_chart('horizontal bar'))
+tooltip(horizontal_bar_btn, "Displays the top 5 expenses by category and its description.")
 surplus_deficit_btn = ctk.CTkButton(button_frame, text="Surplus/Deficit chart", command=lambda: show_chart('surplus deficit'))
-savings_progress_btn = ctk.CTkButton(button_frame, text="Saving chart", command=lambda: show_chart('savings'))
-bar_date_amount_btn = ctk.CTkButton(button_frame, text="Bar plot by month/amount", command=lambda: show_chart('bar by date_amount'))
+tooltip(surplus_deficit_btn, "Displays your monthly surplus or deficit (income minus expenses).")
+savings_progress_btn = ctk.CTkButton(button_frame, text="Savings chart", command=lambda: show_chart('savings'))
+tooltip(savings_progress_btn, "Displays your cumulative savings over time, updating after each transaction.")
+bar_date_amount_btn = ctk.CTkButton(button_frame, text="Monthly bar chart", command=lambda: show_chart('bar by date_amount'))
+tooltip(bar_date_amount_btn, "Displays total income and expenses for each month, side by side.")
 pie_chart_btn.pack_forget()
 bar_plot_btn.pack_forget()
 donut_chart_btn.pack_forget()
@@ -58,11 +92,17 @@ savings_progress_btn.pack_forget()
 bar_date_amount_btn.pack_forget()
 
 linear_regression_btn = ctk.CTkButton(button_frame, text="Linear", command=lambda: show_prediction('linear'))
+tooltip(linear_regression_btn, "Automatically select the best linear model: standard, Ridge (L2), Lasso (L1) or robust regression for your data.")
 poly_regression_btn = ctk.CTkButton(button_frame, text="Polynomial", command=lambda: show_prediction('polynomial'))
+tooltip(poly_regression_btn, "Captures non-linear treds. Useful if your expenses have curves or seasonal effects.")
 arima_btn = ctk.CTkButton(button_frame, text="ARIMA", command=lambda: show_prediction('arima'))
+tooltip(arima_btn, "Time series model. Good for data with trends and seasonality.")
 randomforest_btn = ctk.CTkButton(button_frame, text="RandomForest", command=lambda: show_prediction('randomforest'))
+tooltip(randomforest_btn, "Combines many decision trees to make better predictions even with complex or unusual data.")
 ensemble_btn = ctk.CTkButton(button_frame, text="Ensemble", command=lambda: show_prediction('ensemble'))
+tooltip(ensemble_btn, "Combines the Linear, ARIMA, Random Forest and XGBoost models for improved accuracy and robustness.")
 xgboost_btn = ctk.CTkButton(button_frame, text="XGBoost", command=lambda: show_prediction('xgboost'))
+tooltip(xgboost_btn, "Captures complex patterns and interactions in data. Suitable for small and large datasets.")
 linear_regression_btn.pack_forget()
 poly_regression_btn.pack_forget()
 arima_btn.pack_forget()
@@ -187,7 +227,7 @@ def show_add_transaction():
     ctk.CTkButton(content_frame, text="Add", command=submit_data).pack(pady=10)
 
 def all_transactions_treeview():
-    tree = ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5", "c6"), show="headings")
+    tree = tk.ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5", "c6"), show="headings")
     tree.column("#1", anchor=ctk.CENTER)
     tree.heading("#1", text="ID")
     tree.column("#2", anchor=ctk.CENTER)
@@ -236,7 +276,7 @@ def show_transactions_by(filter_by):
                 return
             
             for widget in content_frame.winfo_children():
-                if isinstance(widget, ttk.Treeview):
+                if isinstance(widget, tk.ttk.Treeview):
                     widget.destroy()
 
             tree = all_transactions_treeview()
@@ -270,7 +310,7 @@ def show_transactions_by(filter_by):
                 return
             
             for widget in content_frame.winfo_children():
-                if isinstance(widget, ttk.Treeview):
+                if isinstance(widget, tk.ttk.Treeview):
                     widget.destroy()
 
             tree = all_transactions_treeview()
