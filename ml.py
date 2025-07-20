@@ -198,7 +198,8 @@ def ensemble_model():
     pred1, months, y = linear_model()
     pred2, _, _ = randomforest_model()
     pred3, _, _ = arima_model()
-    ensemble_pred = np.mean([pred1, pred2, pred3])
+    pred4, _, _ = xgboost_model()
+    ensemble_pred = np.mean([pred1, pred2, pred3, pred4])
 
     return ensemble_pred, months, y
 
