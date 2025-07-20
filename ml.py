@@ -126,27 +126,42 @@ def linear_model():
 def polynomial_model():
     months, x, y = get_months_x_y()
     pipeline_poly = Pipeline([
-        ('poly', PolynomialFeatures()),
         ('scaler', StandardScaler()),
+        ('poly', PolynomialFeatures()),
         ('regressor', LinearRegression()),
     ])
 
     param_grid = {
         'regressor__fit_intercept': [True, False],
         'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()],
-        'poly__degree': [2, 3, 4, 5, 6]
+        'poly__degree': [2, 3, 4]
     }
 
-    df, model, best_test_size, best_cv = run_gridsearch(x, y, pipeline_poly, param_grid)
+    df, _, _, _ = run_gridsearch(x, y, pipeline_poly, param_grid)
+    best_row = df.sort_values('mean_test_score', ascending=False).iloc[0]
+    best_params = best_row['params']
+    best_test_size = best_row['test_size']
     with pd.option_context('display.max_colwidth', None, 'display.max_rows', None):
-        print(f"Best test size: {best_test_size}, Best cv: {best_cv}")
-        print(df[['params', 'mean_test_score', 'std_test_score', 'rank_test_score']])
+        print("Best overall params:", best_row['params'])
+        print("Best mean_test_score:", best_row['mean_test_score'])
+        print("Best std_test_score:", best_row['std_test_score'])
+        print("Test size:", best_row['test_size'], "CV:", best_row['cv'])
+
+    best_pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('poly', PolynomialFeatures()),
+        ('regressor', LinearRegression())
+    ])
+    best_pipeline.set_params(**best_params)
+
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=best_test_size, random_state=42)
+    best_pipeline.fit(x_train, y_train)
 
     next_month_index = len(months)
     next_rolling_mean = np.mean(y[-3:])
     next_features = np.array([[next_month_index, next_rolling_mean]])
 
-    predicted_expense = model.predict (next_features)[0]
+    predicted_expense = best_pipeline.predict (next_features)[0]
 
     return predicted_expense, months, y
 
