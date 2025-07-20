@@ -35,6 +35,7 @@ PREDICTION_MODEL_DESCRIPTIONS = {
     'arima': "ARIMA: Time series model. Good for data with trends and seasonality.",
     'randomforest': "Random Forest: Combines many decision trees to make better predictions, even with complex or unusual data.",
     'ensemble': "Ensemble: Combines multiple models for improved accuracy and robustness.",
+    'xgboost': "XGBoost: A powerful and efficient gradient boosting algorithm. Excels at capturing complex patterns and interactions in data, often delivering top performance in prediction tasks. Well-suited for both small and large datasets."
 }
 
 button_frame = ctk.CTkFrame(app)
@@ -63,12 +64,14 @@ robust_linear_btn = ctk.CTkButton(button_frame, text="Robust Linear", command=la
 arima_btn = ctk.CTkButton(button_frame, text="ARIMA", command=lambda: show_prediction('arima'))
 randomforest_btn = ctk.CTkButton(button_frame, text="RandomForest", command=lambda: show_prediction('randomforest'))
 ensemble_btn = ctk.CTkButton(button_frame, text="Ensemble", command=lambda: show_prediction('ensemble'))
+xgboost_btn = ctk.CTkButton(button_frame, text="XGBoost", command=lambda: show_prediction('xgboost'))
 linear_regression_btn.pack_forget()
 poly_regression_btn.pack_forget()
 robust_linear_btn.pack_forget()
 arima_btn.pack_forget()
 randomforest_btn.pack_forget()
 ensemble_btn.pack_forget()
+xgboost_btn.pack_forget()
 
 by_month_btn = ctk.CTkButton(button_frame, text="Month", command=lambda: show_transactions_by('month'))
 by_week_btn = ctk.CTkButton(button_frame, text="Week", command=lambda: show_transactions_by('week'))
@@ -90,6 +93,7 @@ def toggle_prediction_model_buttons():
         arima_btn.pack_forget()
         randomforest_btn.pack_forget()
         ensemble_btn.pack_forget()
+        xgboost_btn.pack_forget()
     else:
         linear_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         poly_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
@@ -97,6 +101,7 @@ def toggle_prediction_model_buttons():
         arima_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         randomforest_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         ensemble_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
+        xgboost_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
 
 def toggle_chart_buttons():
     if pie_chart_btn.winfo_ismapped():
@@ -737,6 +742,8 @@ def show_prediction(prediction_type):
         predicted_expense, months, actuals = randomforest_model()
     elif prediction_type == 'ensemble':
         predicted_expense, months, actuals = ensemble_model()
+    elif prediction_type == 'xgboost':
+        predicted_expense, months, actuals = xgboost_model()
     else:
         return
 
