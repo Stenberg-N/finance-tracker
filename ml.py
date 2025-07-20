@@ -82,10 +82,19 @@ def linear_model():
         ('regressor', LinearRegression())
     ])
 
-    param_grid = {
+    param_grid = [
+        {
+        'regressor': [LinearRegression()],
         'regressor__fit_intercept': [True, False],
         'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
-    }
+        },
+        {
+        'regressor': [Ridge(), Lasso(max_iter=1000)],
+        'regressor__alpha': [0.1, 1, 10],
+        'regressor__fit_intercept': [True, False],
+        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+        }
+    ]
 
     df, _, _, _ = run_gridsearch(x, y, pipeline_linear, param_grid)
     best_row = df.sort_values('mean_test_score', ascending=False).iloc[0]
@@ -154,20 +163,6 @@ def robust_linear_model():
 
     return predicted_expense, months, y
 
-def ridge_model():
-    months, x, y = get_months_x_y()
-
-    model = Ridge(alpha=1.0)
-    model.fit(x, y)
-
-    next_month_index = len(months)
-    next_rolling_mean = np.mean(y[-3:])
-
-    next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = model.predict (next_features)[0]
-
-    return predicted_expense, months, y
-
 def arima_model():
     months, x, y = get_months_x_y()
 
@@ -192,7 +187,7 @@ def randomforest_model():
     return predicted_expense, months, y
 
 def ensemble_model():
-    pred1, months, y = ridge_model()
+    pred1, months, y = linear_model()
     pred2, _, _ = randomforest_model()
     pred3, _, _ = arima_model()
     ensemble_pred = np.mean([pred1, pred2, pred3])
