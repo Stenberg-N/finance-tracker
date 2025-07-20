@@ -7,7 +7,6 @@ from statsmodels.tsa.arima.model import ARIMA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import pandas as pd
 import xgboost as xgb
 
