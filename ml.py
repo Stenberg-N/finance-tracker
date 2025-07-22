@@ -8,7 +8,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 import xgboost as xgb
-from sklearn.base import BaseEstimator, RegressorMixin
 from itertools import product
 import pandas as pd
 
@@ -62,6 +61,7 @@ def run_gridsearch(x, y, pipeline, param_grid):
 
 def linear_model():
     months, x, y = get_months_x_y()
+
     pipeline_linear = Pipeline([
         ('scaler', StandardScaler()),
         ('regressor', LinearRegression())
@@ -69,22 +69,22 @@ def linear_model():
 
     param_grid = [
         {
-        'regressor': [LinearRegression()],
-        'regressor__fit_intercept': [True, False],
-        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+            'regressor': [LinearRegression()],
+            'regressor__fit_intercept': [True, False],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
         },
         {
-        'regressor': [Ridge(), Lasso(max_iter=10000)],
-        'regressor__alpha': [0.1, 1, 10, 100, 1000],
-        'regressor__fit_intercept': [True, False],
-        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+            'regressor': [Ridge(), Lasso(max_iter=10000)],
+            'regressor__alpha': [0.1, 1, 10, 100, 1000],
+            'regressor__fit_intercept': [True, False],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
         },
         {
-        'regressor': [HuberRegressor(max_iter=1000)],
-        'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
-        'regressor__epsilon': [1, 1.1, 1.35, 1.5],
-        'regressor__fit_intercept': [True, False],
-        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+            'regressor': [HuberRegressor(max_iter=1000)],
+            'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
+            'regressor__epsilon': [1, 1.1, 1.35, 1.5],
+            'regressor__fit_intercept': [True, False],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
         }
     ]
 
@@ -107,6 +107,7 @@ def linear_model():
 
 def polynomial_model():
     months, x, y = get_months_x_y()
+
     pipeline_poly = Pipeline([
         ('poly', PolynomialFeatures()),
         ('scaler', StandardScaler()),
@@ -115,19 +116,19 @@ def polynomial_model():
 
     param_grid = [
         {
-        'regressor': [Ridge(), Lasso(max_iter=10000)],
-        'regressor__alpha': [0.1, 1, 10, 100, 1000],
-        'regressor__fit_intercept': [True, False],
-        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()],
-        'poly__degree': [2, 3, 4]
+            'regressor': [Ridge(), Lasso(max_iter=10000)],
+            'regressor__alpha': [0.1, 1, 10, 100, 1000],
+            'regressor__fit_intercept': [True, False],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()],
+            'poly__degree': [2, 3, 4]
         },
         {
-        'regressor': [HuberRegressor(max_iter=1000)],
-        'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
-        'regressor__epsilon': [1, 1.1, 1.35, 1.5],
-        'regressor__fit_intercept': [True, False],
-        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()],
-        'poly__degree': [2, 3, 4]
+            'regressor': [HuberRegressor(max_iter=1000)],
+            'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
+            'regressor__epsilon': [1, 1.1, 1.35, 1.5],
+            'regressor__fit_intercept': [True, False],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()],
+            'poly__degree': [2, 3, 4]
         }
     ]
 
@@ -281,8 +282,7 @@ def xgboost_model():
         ('regressor', xgb.XGBRegressor(
             objective="reg:squarederror",
             eval_metric="rmse",
-            early_stopping_rounds=10
-        ))
+            early_stopping_rounds=10))
     ])
 
     best_pipeline.set_params(**best_params)
