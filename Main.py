@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
-from ml import linear_model, polynomial_model, arima_model, randomforest_model, ensemble_model, xgboost_model
+from ml import linear_model, polynomial_model, sarimax_model, randomforest_model, ensemble_model, xgboost_model
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
@@ -31,7 +31,7 @@ app.geometry("1600x900")
 PREDICTION_MODEL_DESCRIPTIONS = {
     'linear': "Linear Regression including Ridge, Lasso and Robust techniques: Best for data with a linear trend. Automatically selects the best regularized or robust linear model.",
     'polynomial': "Polynomial Regression including Ridge, Lasso and Robust techniques for overfitting and/or outliers: Captures non-linear trends. Useful if your expenses have curves or seasonal effects.",
-    'arima': "ARIMA: Time series model. Good for data with trends and seasonality.",
+    'sarimax': "SARIMAX: Time series model. Good for data with trends and seasonality.",
     'randomforest': "Random Forest: Combines many decision trees to make better predictions, even with complex or unusual data.",
     'ensemble': "Ensemble: Combines multiple models for improved accuracy and robustness.",
     'xgboost': "XGBoost: A powerful and efficient gradient boosting algorithm. Excels at capturing complex patterns and interactions in data, often delivering top performance in prediction tasks. Well-suited for both small and large datasets."
@@ -95,17 +95,17 @@ linear_regression_btn = ctk.CTkButton(button_frame, text="Linear", command=lambd
 tooltip(linear_regression_btn, "Automatically select the best linear model: standard, Ridge (L2), Lasso (L1) or robust regression for your data.")
 poly_regression_btn = ctk.CTkButton(button_frame, text="Polynomial", command=lambda: show_prediction('polynomial'))
 tooltip(poly_regression_btn, "Captures non-linear treds. Useful if your expenses have curves or seasonal effects.")
-arima_btn = ctk.CTkButton(button_frame, text="ARIMA", command=lambda: show_prediction('arima'))
-tooltip(arima_btn, "Time series model. Good for data with trends and seasonality.")
+sarimax_btn = ctk.CTkButton(button_frame, text="SARIMAX", command=lambda: show_prediction('sarimax'))
+tooltip(sarimax_btn, "Time series model. Good for data with trends and seasonality.")
 randomforest_btn = ctk.CTkButton(button_frame, text="RandomForest", command=lambda: show_prediction('randomforest'))
 tooltip(randomforest_btn, "Combines many decision trees to make better predictions even with complex or unusual data.")
 ensemble_btn = ctk.CTkButton(button_frame, text="Ensemble", command=lambda: show_prediction('ensemble'))
-tooltip(ensemble_btn, "Combines the Linear, ARIMA, Random Forest and XGBoost models for improved accuracy and robustness.")
+tooltip(ensemble_btn, "Combines the Linear, SARIMAX, Random Forest and XGBoost models for improved accuracy and robustness.")
 xgboost_btn = ctk.CTkButton(button_frame, text="XGBoost", command=lambda: show_prediction('xgboost'))
 tooltip(xgboost_btn, "Captures complex patterns and interactions in data. Suitable for small and large datasets.")
 linear_regression_btn.pack_forget()
 poly_regression_btn.pack_forget()
-arima_btn.pack_forget()
+sarimax_btn.pack_forget()
 randomforest_btn.pack_forget()
 ensemble_btn.pack_forget()
 xgboost_btn.pack_forget()
@@ -126,14 +126,14 @@ def toggle_prediction_model_buttons():
     if linear_regression_btn.winfo_ismapped():
         linear_regression_btn.pack_forget()
         poly_regression_btn.pack_forget()
-        arima_btn.pack_forget()
+        sarimax_btn.pack_forget()
         randomforest_btn.pack_forget()
         ensemble_btn.pack_forget()
         xgboost_btn.pack_forget()
     else:
         linear_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         poly_regression_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
-        arima_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
+        sarimax_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         randomforest_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         ensemble_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         xgboost_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
@@ -780,8 +780,8 @@ def show_prediction(prediction_type):
         predicted_expense, months, actuals = linear_model()
     elif prediction_type == 'polynomial':
         predicted_expense, months, actuals = polynomial_model()
-    elif prediction_type == 'arima':
-        predicted_expense, months, actuals = arima_model()
+    elif prediction_type == 'sarimax':
+        predicted_expense, months, actuals = sarimax_model()
     elif prediction_type == 'randomforest':
         predicted_expense, months, actuals = randomforest_model()
     elif prediction_type == 'ensemble':
