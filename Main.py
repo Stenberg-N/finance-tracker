@@ -30,7 +30,7 @@ app.geometry("1600x900")
 
 PREDICTION_MODEL_DESCRIPTIONS = {
     'linear': "Linear Regression including Ridge, Lasso and Robust techniques: Best for data with a linear trend. Automatically selects the best regularized or robust linear model.",
-    'polynomial': "Polynomial Regression: Captures non-linear trends. Useful if your expenses have curves or seasonal effects.",
+    'polynomial': "Polynomial Regression including Ridge, Lasso and Robust techniques for overfitting and/or outliers: Captures non-linear trends. Useful if your expenses have curves or seasonal effects.",
     'arima': "ARIMA: Time series model. Good for data with trends and seasonality.",
     'randomforest': "Random Forest: Combines many decision trees to make better predictions, even with complex or unusual data.",
     'ensemble': "Ensemble: Combines multiple models for improved accuracy and robustness.",
