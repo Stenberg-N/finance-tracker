@@ -8,6 +8,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 import xgboost as xgb
+from sklearn.base import BaseEstimator, RegressorMixin
+from itertools import product
 
 def fetch_data():
     rows = view_all_transactions()
@@ -142,12 +144,50 @@ def polynomial_model():
 
     return predicted_expense, months, y
 
+class ARIMARegressor(BaseEstimator, RegressorMixin):
+    def __init__(self, order=(1,1,1)):
+        self.order = order
+
+    def fit(self, x, y):
+        self.model = ARIMA(endog=y, order=self.order).fit()
+        return self
+
+    def predict(self, x):
+        steps = len(x)
+        forecast = self.model.forecast(steps=steps)
+        return np.array(forecast)
+
 def arima_model():
+    p_values = range(0, 3)
+    d_values = range(1, 2)
+    q_values = range(0, 3)
+    order_combinations = list(product(p_values, d_values, q_values))
+
     months, x, y = get_months_x_y()
 
-    model = ARIMA(y, order=(1,1,1))
-    model_fit = model.fit()
-    predicted_expense = model_fit.forecast()[0]
+    dummy_x = np.arange(len(y)).reshape(-1,1)
+
+    pipeline_arima = Pipeline([
+        ('regressor', ARIMARegressor())
+    ])
+
+    param_grid = {
+        'regressor__order': order_combinations
+    }
+
+    best_params = run_gridsearch(dummy_x, y, pipeline_arima, param_grid)
+
+    best_pipeline = Pipeline([
+        ('regressor', ARIMARegressor())
+    ])
+
+    best_pipeline.set_params(**best_params)
+    best_pipeline.fit(dummy_x, y)
+
+    next_month_index = len(months)
+    next_rolling_mean = np.mean(y[-3:])
+    next_features = np.array([[next_month_index, next_rolling_mean]])
+    predicted_expense = best_pipeline.predict (next_features)[0]
 
     return predicted_expense, months, y
 
