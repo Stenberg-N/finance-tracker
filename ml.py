@@ -140,7 +140,7 @@ def polynomial_model():
     next_month_index = len(months)
     next_rolling_mean = np.mean(y[-3:])
     next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = best_pipeline.predict (next_features)[0]
+    predicted_expense = best_pipeline.predict(next_features)[0]
 
     return predicted_expense, months, y
 
@@ -187,7 +187,7 @@ def arima_model():
     next_month_index = len(months)
     next_rolling_mean = np.mean(y[-3:])
     next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = best_pipeline.predict (next_features)[0]
+    predicted_expense = best_pipeline.predict(next_features)[0]
 
     return predicted_expense, months, y
 
@@ -242,6 +242,6 @@ def xgboost_model():
     next_rolling_mean = np.mean(y[-3:])
 
     next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = model.predict (next_features)[0]
+    predicted_expense = model.predict(next_features)[0]
 
     return predicted_expense, months, y
