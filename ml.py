@@ -3,7 +3,7 @@ import numpy as np
 import datetime
 from sklearn.linear_model import LinearRegression, HuberRegressor, Ridge, Lasso
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler, QuantileTransformer, PowerTransformer
-from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
@@ -144,50 +144,42 @@ def polynomial_model():
 
     return predicted_expense, months, y
 
-class ARIMARegressor(BaseEstimator, RegressorMixin):
-    def __init__(self, order=(1,1,1)):
-        self.order = order
+def sarimax_model():
+    months, x, y = get_months_x_y()
 
-    def fit(self, x, y):
-        self.model = ARIMA(endog=y, order=self.order).fit()
-        return self
-
-    def predict(self, x):
-        steps = len(x)
-        forecast = self.model.forecast(steps=steps)
-        return np.array(forecast)
-
-def arima_model():
     p_values = range(0, 3)
-    d_values = range(1, 2)
+    d_values = range(0, 2)
     q_values = range(0, 3)
     order_combinations = list(product(p_values, d_values, q_values))
 
-    months, x, y = get_months_x_y()
+    P_values = range(0, 3)
+    D_values = range(0, 2)
+    Q_values = range(0, 3)
+    s_values = [6, 12]
+    seasonal_order_combinations = list(product(P_values, D_values, Q_values, s_values))
 
-    dummy_x = np.arange(len(y)).reshape(-1,1)
+    best_aic = np.inf
+    best_order = None
+    best_seasonal_order = None
+    best_model = None
 
-    pipeline_arima = Pipeline([
-        ('regressor', ARIMARegressor())
-    ])
-
-    param_grid = {
-        'regressor__order': order_combinations
-    }
-
-    best_params = run_gridsearch(dummy_x, y, pipeline_arima, param_grid)
-
-    best_pipeline = Pipeline([
-        ('regressor', ARIMARegressor())
-    ])
-
-    best_pipeline.set_params(**best_params)
-    best_pipeline.fit(dummy_x, y)
+    for order in order_combinations:
+        for seasonal_order in seasonal_order_combinations:
+            try:
+                model = SARIMAX(endog=y, exog=x, order=order, seasonal_order=seasonal_order, enforce_stationarity=False, enforce_invertibility=False)
+                results = model.fit(disp=False)
+                if results.aic < best_aic:
+                    best_aic = results.aic
+                    best_order = order
+                    best_seasonal_order = seasonal_order
+                    best_model = results
+            except Exception:
+                continue
 
     next_month_index = len(months)
     next_rolling_mean = np.mean(y[-3:])
     next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = best_pipeline.predict(next_features)[0]
+    predicted_expense = best_model.forecast(steps=1, exog=next_features)[0]
 
     return predicted_expense, months, y
 
@@ -226,7 +218,7 @@ def randomforest_model():
 def ensemble_model():
     pred1, months, y = linear_model()
     pred2, _, _ = randomforest_model()
-    pred3, _, _ = arima_model()
+    pred3, _, _ = sarimax_model()
     pred4, _, _ = xgboost_model()
     ensemble_pred = np.mean([pred1, pred2, pred3, pred4])
 
