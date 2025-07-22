@@ -227,13 +227,69 @@ def ensemble_model():
 def xgboost_model():
     months, x, y = get_months_x_y()
 
-    model= xgb.XGBRegressor()
-    model.fit(x, y)
+    pipeline_xgb = Pipeline([
+        ('scaler', StandardScaler()),
+        ('regressor', xgb.XGBRegressor(
+            objective="reg:squarederror",
+            early_stopping_rounds=10,
+            eval_metric="rmse"))
+    ])
+
+    param_grid = {
+        'regressor__n_estimators': [50, 100, 150],
+        'regressor__learning_rate': [0.01, 0.1, 0.3],
+        'regressor__booster': ['gbtree', 'gblinear', 'dart'],
+        'regressor__lambda': [0, 1, 5, 10, 100],
+        'regressor__alpha': [0, 1, 5, 10],
+        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+    }
+
+    tscv = TimeSeriesSplit(n_splits=3)
+
+    for train_index, test_index in tscv.split(x):
+        x_train_full, x_test = x[train_index], x[test_index]
+        y_train_full, y_test = y[train_index], y[test_index]
+
+        val_split = int(len(x_train_full) * 0.9)
+        x_train, x_val = x_train_full[:val_split], x_train_full[val_split:]
+        y_train, y_val = y_train_full[:val_split], y_train_full[val_split:]
+
+    def run_gridsearch_with_early_stopping(x_train, y_train, x_val, y_val, pipeline, param_grid):
+        grid_search = GridSearchCV(
+            pipeline,
+            param_grid,
+            cv=tscv,
+            scoring='neg_mean_squared_error',
+            n_jobs=-1
+        )
+        grid_search.fit(
+            x_train, y_train,
+            regressor__eval_set=[(x_val, y_val)],
+            regressor__verbose=1
+        )
+        return grid_search.best_params_
+
+    best_params = run_gridsearch_with_early_stopping(x_train, y_train, x_val, y_val, pipeline_xgb, param_grid)
+
+    best_pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('regressor', xgb.XGBRegressor(
+            objective="reg:squarederror",
+            eval_metric="rmse",
+            early_stopping_rounds=10
+        ))
+    ])
+
+    best_pipeline.set_params(**best_params)
+    best_pipeline.fit(
+        x_train, y_train,
+        regressor__eval_set=[(x_val, y_val)],
+        regressor__verbose=1
+    )
 
     next_month_index = len(months)
     next_rolling_mean = np.mean(y[-3:])
-
     next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = model.predict(next_features)[0]
+    predicted_expense = best_pipeline.predict(next_features)[0]
 
     return predicted_expense, months, y
