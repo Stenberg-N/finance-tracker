@@ -197,8 +197,8 @@ def randomforest_model():
     ])
 
     param_grid = {
-        'regressor__n_estimators': [100, 200, 300],
-        'regressor__max_depth': [None, 2, 5, 10],
+        'regressor__n_estimators': [100, 200],
+        'regressor__max_depth': [None, 5, 10],
         'regressor__min_samples_split': [2, 5],
         'regressor__min_samples_leaf': [1, 2],
         'regressor__max_features': [1.0, 'sqrt', 'log2'],
