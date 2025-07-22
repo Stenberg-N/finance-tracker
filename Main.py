@@ -227,19 +227,30 @@ def show_add_transaction():
     ctk.CTkButton(content_frame, text="Add", command=submit_data).pack(pady=10)
 
 def all_transactions_treeview():
-    tree = tk.ttk.Treeview(content_frame, column=("c1", "c2", "c3", "c4", "c5", "c6"), show="headings")
-    tree.column("#1", anchor=ctk.CENTER)
-    tree.heading("#1", text="ID")
-    tree.column("#2", anchor=ctk.CENTER)
-    tree.heading("#2", text="Date")
-    tree.column("#3", anchor=ctk.CENTER)
-    tree.heading("#3", text="Category")
-    tree.column("#4", anchor=ctk.CENTER)
-    tree.heading("#4", text="Description")
-    tree.column("#5", anchor=ctk.CENTER)
-    tree.heading("#5", text="Amount")
-    tree.column("#6", anchor=ctk.CENTER)
-    tree.heading("#6", text="Type")
+    columns = ("c1", "c2", "c3", "c4", "c5", "c6")
+    tree = tk.ttk.Treeview(content_frame, column=columns, show="headings")
+    headers = ["ID", "Date", "Category", "Description", "Amount", "Type"]
+
+    def treeview_sort_column(tv, col, col_index, reverse):
+        data = [(tv.set(k, col), k) for k in tv.get_children("")]
+        if col == "c2":
+            try:
+                data.sort(key=lambda t: datetime.datetime.strptime(t[0], "%d-%m-%Y"), reverse=reverse)
+            except Exception:
+                data.sort(reverse=reverse)
+        else:
+            try:
+                data.sort(key=lambda t: float(t[0].replace(",", "").replace("€", "")), reverse=reverse)
+            except ValueError:
+                data.sort(reverse=reverse)
+        for index, (val, k) in enumerate(data):
+            tv.move(k, "", index)
+        tv.heading(col, command=lambda: treeview_sort_column(tv, col, col_index, not reverse))
+
+    for idx, (col, header) in enumerate(zip(columns, headers)):
+        tree.heading(col, text=header, command=lambda _col=col, _idx=idx: treeview_sort_column(tree, _col, _idx, False))
+        tree.column(col, anchor=ctk.CENTER)
+
     tree.pack(expand=True, fill="both")
     return tree
 
