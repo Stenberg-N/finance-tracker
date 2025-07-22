@@ -6,7 +6,7 @@ from sklearn.preprocessing import PolynomialFeatures, StandardScaler, RobustScal
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
+from sklearn.model_selection import train_test_split, GridSearchCV, TimeSeriesSplit
 import pandas as pd
 import xgboost as xgb
 
@@ -37,43 +37,22 @@ def get_months_x_y():
 
     return months, x, y
 
-def run_gridsearch(
-    x, y,
-    pipeline,
-    param_grid,
-    cv_values=[2, 3, 4],
-    test_sizes=[0.1, 0.2, 0.3, 0.4]
-):
-    results = []
-    best_score = -np.inf
-    best_estimator = None
-    best_test_size = None
-    best_cv = None
+def run_gridsearch(x, y, pipeline, param_grid):
 
-    for test_size in test_sizes:
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=42)
-        for cv in cv_values:
-            gridsearch = GridSearchCV(
-                pipeline,
-                param_grid=param_grid,
-                cv=cv,
-                verbose=1,
-                scoring='neg_mean_squared_error',
-                n_jobs=-1
-            )
-            gridsearch.fit(x_train, y_train)
-            df = pd.DataFrame(gridsearch.cv_results_)
-            df['test_size'] = test_size
-            df['cv'] = cv
-            results.append(df)
-            if gridsearch.best_score_ > best_score:
-                best_score = gridsearch.best_score_
-                best_estimator = gridsearch.best_estimator_
-                best_test_size = test_size
-                best_cv = cv
+    cv = TimeSeriesSplit(n_splits=3)
 
-    all_results = pd.concat(results, ignore_index=True)
-    return all_results, best_estimator, best_test_size, best_cv
+    gridsearch = GridSearchCV(
+        pipeline,
+        param_grid=param_grid,
+        cv=cv,
+        verbose=1,
+        scoring='neg_mean_squared_error',
+        n_jobs=-1
+    )
+
+    gridsearch.fit(x, y)
+
+    return gridsearch.best_params_
 
 def linear_model():
     months, x, y = get_months_x_y()
@@ -95,7 +74,7 @@ def linear_model():
         'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
         },
         {
-        'regressor': [HuberRegressor()],
+        'regressor': [HuberRegressor(max_iter=1000)],
         'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
         'regressor__epsilon': [1, 1.1, 1.35, 1.5],
         'regressor__fit_intercept': [True, False],
@@ -103,24 +82,15 @@ def linear_model():
         }
     ]
 
-    df, _, _, _ = run_gridsearch(x, y, pipeline_linear, param_grid)
-    best_row = df.sort_values('mean_test_score', ascending=False).iloc[0]
-    best_params = best_row['params']
-    best_test_size = best_row['test_size']
-    with pd.option_context('display.max_colwidth', None, 'display.max_rows', None):
-        print("Best overall params:", best_row['params'])
-        print("Best mean_test_score:", best_row['mean_test_score'])
-        print("Best std_test_score:", best_row['std_test_score'])
-        print("Test size:", best_row['test_size'], "CV:", best_row['cv'])
+    best_params = run_gridsearch(x, y, pipeline_linear, param_grid)
 
     best_pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('regressor', LinearRegression())
     ])
-    best_pipeline.set_params(**best_params)
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=best_test_size, random_state=42)
-    best_pipeline.fit(x_train, y_train)
+    best_pipeline.set_params(**best_params)
+    best_pipeline.fit(x, y)
 
     next_month_index = len(months)
     next_rolling_mean = np.mean(y[-3:])
@@ -132,41 +102,43 @@ def linear_model():
 def polynomial_model():
     months, x, y = get_months_x_y()
     pipeline_poly = Pipeline([
-        ('scaler', StandardScaler()),
         ('poly', PolynomialFeatures()),
+        ('scaler', StandardScaler()),
         ('regressor', LinearRegression()),
     ])
 
-    param_grid = {
+    param_grid = [
+        {
+        'regressor': [Ridge(), Lasso(max_iter=10000)],
+        'regressor__alpha': [0.1, 1, 10, 100, 1000],
         'regressor__fit_intercept': [True, False],
         'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()],
         'poly__degree': [2, 3, 4]
-    }
+        },
+        {
+        'regressor': [HuberRegressor(max_iter=1000)],
+        'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
+        'regressor__epsilon': [1, 1.1, 1.35, 1.5],
+        'regressor__fit_intercept': [True, False],
+        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()],
+        'poly__degree': [2, 3, 4]
+        }
+    ]
 
-    df, _, _, _ = run_gridsearch(x, y, pipeline_poly, param_grid)
-    best_row = df.sort_values('mean_test_score', ascending=False).iloc[0]
-    best_params = best_row['params']
-    best_test_size = best_row['test_size']
-    with pd.option_context('display.max_colwidth', None, 'display.max_rows', None):
-        print("Best overall params:", best_row['params'])
-        print("Best mean_test_score:", best_row['mean_test_score'])
-        print("Best std_test_score:", best_row['std_test_score'])
-        print("Test size:", best_row['test_size'], "CV:", best_row['cv'])
+    best_params = run_gridsearch(x, y, pipeline_poly, param_grid)
 
     best_pipeline = Pipeline([
-        ('scaler', StandardScaler()),
         ('poly', PolynomialFeatures()),
+        ('scaler', StandardScaler()),
         ('regressor', LinearRegression())
     ])
-    best_pipeline.set_params(**best_params)
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=best_test_size, random_state=42)
-    best_pipeline.fit(x_train, y_train)
+    best_pipeline.set_params(**best_params)
+    best_pipeline.fit(x, y)
 
     next_month_index = len(months)
     next_rolling_mean = np.mean(y[-3:])
     next_features = np.array([[next_month_index, next_rolling_mean]])
-
     predicted_expense = best_pipeline.predict (next_features)[0]
 
     return predicted_expense, months, y
