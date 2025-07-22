@@ -194,14 +194,32 @@ def arima_model():
 def randomforest_model():
     months, x, y = get_months_x_y()
 
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(x, y)
+    pipeline_randomforest = Pipeline([
+        ('regressor', RandomForestRegressor())
+    ])
+
+    param_grid = {
+        'regressor__n_estimators': [100, 200, 300],
+        'regressor__max_depth': [None, 2, 5, 10],
+        'regressor__min_samples_split': [2, 5],
+        'regressor__min_samples_leaf': [1, 2],
+        'regressor__max_features': [1.0, 'sqrt', 'log2'],
+        'regressor__bootstrap': [False, True]
+    }
+
+    best_params = run_gridsearch(x, y, pipeline_randomforest, param_grid)
+
+    best_pipeline = Pipeline([
+    ('regressor', RandomForestRegressor())
+    ])
+
+    best_pipeline.set_params(**best_params)
+    best_pipeline.fit(x, y)
 
     next_month_index = len(months)
     next_rolling_mean = np.mean(y[-3:])
-
     next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = model.predict (next_features)[0]
+    predicted_expense = best_pipeline.predict(next_features)[0]
 
     return predicted_expense, months, y
 
