@@ -10,6 +10,7 @@ from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 import xgboost as xgb
 from sklearn.base import BaseEstimator, RegressorMixin
 from itertools import product
+import pandas as pd
 
 def fetch_data():
     rows = view_all_transactions()
@@ -33,7 +34,11 @@ def get_months_x_y():
     months = sorted(monthly_expenses.keys())
     x = np.arange (len(months)).reshape(-1, 1)
     y = np.array([monthly_expenses[month] for month in months])
-    rolling_mean = np.convolve(y, np.ones(3)/3, mode="same").reshape(-1,1)
+    rolling_mean = pd.Series(y).rolling(window=3, center=True).mean()
+    rolling_mean = rolling_mean.bfill().ffill()
+    if rolling_mean.isna().any():
+        raise ValueError("Still NaNs after fill — check y input.")
+    rolling_mean = rolling_mean.values.reshape(-1, 1)
     x = np.hstack([x, rolling_mean])
 
     return months, x, y
