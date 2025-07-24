@@ -71,20 +71,20 @@ def linear_model():
         {
             'regressor': [LinearRegression()],
             'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
         },
         {
             'regressor': [Ridge(), Lasso(max_iter=10000)],
             'regressor__alpha': [0.1, 1, 10, 100, 1000],
             'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
         },
         {
             'regressor': [HuberRegressor(max_iter=1000)],
             'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
             'regressor__epsilon': [1, 1.1, 1.35, 1.5],
             'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
         }
     ]
 
@@ -119,15 +119,15 @@ def polynomial_model():
             'regressor': [Ridge(), Lasso(max_iter=10000)],
             'regressor__alpha': [0.1, 1, 10, 100, 1000],
             'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()],
             'poly__degree': [2, 3, 4]
         },
         {
-            'regressor': [HuberRegressor(max_iter=1000)],
+            'regressor': [HuberRegressor(max_iter=10000)],
             'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
             'regressor__epsilon': [1, 1.1, 1.35, 1.5],
             'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()],
             'poly__degree': [2, 3, 4]
         }
     ]
