@@ -754,48 +754,79 @@ def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_exp
         fig = Figure(figsize=(6, 4), dpi=100)
         ax = fig.add_subplot(111)
 
+        actuals = np.array(actuals, dtype=float)
+        predicted_expense = np.array([predicted_expense] if np.isscalar(predicted_expense) else predicted_expense, dtype=float).flatten()
+        next_month = datetime.datetime.strptime(months_labels[-1], "%b %Y")
+        future_labels = []
+        for i in range(len(predicted_expense)):
+            future_month = (next_month + datetime.timedelta(days=31 * (i+1))).replace(day=1)
+            future_labels.append(future_month.strftime("%b %Y"))
+
         ax.plot(months_labels, actuals, marker='o', label="Actual expenses", color="blue")
-        ax.plot(months_labels + [next_month_label], list(actuals) + [predicted_expense], marker='o', linestyle="--", color="orange", label="Predicted next month")
-        ax.scatter([next_month_label], [predicted_expense], color="red", zorder=5)
+        ax.plot([months_labels[-1]] + future_labels, [actuals[-1]] + list(predicted_expense), marker='o', linestyle="--", color="orange", label="Predicted expenses")
+        ax.scatter(future_labels, predicted_expense, color="red", zorder=5)
+        for i, (label, pred) in enumerate(zip(future_labels, predicted_expense)):
+            ax.annotate(f"Predicted: €{pred:.2f}", xy=(label, pred), xytext=(0, 10 + i*10), textcoords="offset points", ha="center", color="red")
         ax.set_xlabel("Month")
         ax.set_ylabel("Expenses (€)")
-        ax.set_title("Monthly expenses & next month prediction")
-        ax.set_yticks(np.arange(min(actuals), max(actuals) + 500, 500))
+        ax.set_title("Monthly expenses & prediction")
+        ax.set_yticks(np.arange(min(actuals), max(actuals) + max(predicted_expense) + 500, 500))
         ax.legend()
         ax.grid(True, alpha=0.3)
         ax.tick_params(axis="x", rotation=45)
-        ax.annotate(f"Predicted: €{predicted_expense:.2f}", xy=(next_month_label, predicted_expense), xytext=(0, 10), textcoords="offset points", ha="center", color="red")
 
         canvas = FigureCanvasTkAgg(fig, master=parent_frame)
         canvas.draw()
         widget = canvas.get_tk_widget()
         widget.pack(expand=True, fill="both")
+        widget.is_chart_widget=True
 
 def show_prediction(prediction_type):
     clear_content()
     description = PREDICTION_MODEL_DESCRIPTIONS.get(prediction_type, "No description available for this model.")
     ctk.CTkLabel(content_frame, text=description, wraplength=600, justify="left").pack(pady=(10, 20))
 
-    if prediction_type == 'linear':
-        predicted_expense, months, actuals = linear_model()
-    elif prediction_type == 'polynomial':
-        predicted_expense, months, actuals = polynomial_model()
-    elif prediction_type == 'sarimax':
-        predicted_expense, months, actuals = sarimax_model()
-    elif prediction_type == 'randomforest':
-        predicted_expense, months, actuals = randomforest_model()
-    elif prediction_type == 'ensemble':
-        predicted_expense, months, actuals = ensemble_model()
-    elif prediction_type == 'xgboost':
-        predicted_expense, months, actuals = xgboost_model()
-    else:
-        return
+    ctk.CTkLabel(content_frame, text="Enter the amount of months to predict:").pack()
+    month_entry = ctk.CTkEntry(content_frame)
+    month_entry.pack()
 
-    months_labels = [datetime.datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in months]
-    next_month = (datetime.datetime.strptime(months[-1], "%Y-%m") + datetime.timedelta(days=31)).replace(day=1)
-    next_month_label = next_month.strftime("%b %Y")
+    def on_predict():
+        try:
+            n_months = int(month_entry.get())
+            if n_months < 1:
+                raise ValueError
+        except ValueError:
+            error = ctk.CTkLabel(content_frame, text="Please enter a valid positive integer.", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+            return
 
-    draw_prediction_plot(months_labels, actuals, next_month_label, predicted_expense, content_frame)
+        for widget in content_frame.winfo_children():
+            if hasattr(widget, "is_chart_widget") and widget.is_chart_widget:
+                widget.destroy()
+
+        if prediction_type == 'linear':
+            predicted_expense, months, actuals = linear_model(n_future_months=n_months)
+        elif prediction_type == 'polynomial':
+            predicted_expense, months, actuals = polynomial_model(n_future_months=n_months)
+        elif prediction_type == 'sarimax':
+            predicted_expense, months, actuals = sarimax_model(n_future_months=n_months)
+        elif prediction_type == 'randomforest':
+            predicted_expense, months, actuals = randomforest_model(n_future_months=n_months)
+        elif prediction_type == 'ensemble':
+            predicted_expense, months, actuals = ensemble_model(n_future_months=n_months)
+        elif prediction_type == 'xgboost':
+            predicted_expense, months, actuals = xgboost_model(n_future_months=n_months)
+        else:
+            return
+
+        months_labels = [datetime.datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in months]
+        next_month = (datetime.datetime.strptime(months[-1], "%Y-%m") + datetime.timedelta(days=31)).replace(day=1)
+        next_month_label = next_month.strftime("%b %Y")
+
+        draw_prediction_plot(months_labels, actuals, next_month_label, predicted_expense, content_frame)
+
+    ctk.CTkButton(content_frame, text="Predict", command=on_predict).pack(pady=10)
 
 ctk.CTkButton(button_frame, text="Add transaction", command=show_add_transaction).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
