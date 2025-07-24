@@ -29,18 +29,46 @@ def fetch_data():
 
 def get_months_x_y():
     monthly_expenses = fetch_data()
-
     months = sorted(monthly_expenses.keys())
-    x = np.arange (len(months)).reshape(-1, 1)
+
+    x_raw = np.arange(len(months)).reshape(-1, 1)
+    x_normalized = x_raw / max(1, len(months) - 1)
     y = np.array([monthly_expenses[month] for month in months])
-    rolling_mean = pd.Series(y).rolling(window=3, center=True).mean()
-    rolling_mean = rolling_mean.bfill().ffill()
-    if rolling_mean.isna().any():
-        raise ValueError("Still NaNs after fill — check y input.")
-    rolling_mean = rolling_mean.values.reshape(-1, 1)
-    x = np.hstack([x, rolling_mean])
+    rolling_mean_3m = pd.Series(y).rolling(window=3, center=True).mean()
+    rolling_mean_3m = rolling_mean_3m.bfill().ffill()
+    rolling_mean_6m = pd.Series(y).rolling(window=6, center=True).mean()
+    rolling_mean_6m = rolling_mean_6m.bfill().ffill()
+    if rolling_mean_3m.isna().any() or rolling_mean_6m.isna().any():
+        raise ValueError("Nans detected in rolling means - check y input")
+    rolling_mean_3m = rolling_mean_3m.values.reshape(-1, 1)
+    rolling_mean_6m = rolling_mean_6m.values.reshape(-1, 1)
+    month_of_year = np.array([int(month.split("-")[1]) for month in months]).reshape(-1, 1)
+    x = np.hstack([x_normalized, x_raw, rolling_mean_3m, rolling_mean_6m, month_of_year])
 
     return months, x, y
+
+def generate_future_features(months, y, n_future_months):
+    future_features = []
+    last_index = len(months)
+    if len(y) >= 6:
+        trend = (np.mean(y[-3:]) - np.mean(y[-6:-3])) / 3
+    else:
+        trend = 0
+
+    last_month = datetime.datetime.strptime(months[-1], "%Y-%m")
+
+    for i in range(n_future_months):
+        next_month_raw = last_index + i
+        next_month_normalized = next_month_raw / max(1, last_index)
+        rolling_mean_3m = np.mean(y[-3:]) if len(y) >= 3 else np.mean(y) + trend * (i+1)
+        rolling_mean_6m = np.mean(y[-6:]) if len(y) >= 6 else np.mean(y) + trend * (i+1)
+        future_date = last_month + pd.offsets.MonthEnd(i+1)
+        month_of_year = future_date.month
+        future_features.append([next_month_normalized, next_month_raw, rolling_mean_3m, rolling_mean_6m, month_of_year])
+
+    future_features = np.array(future_features, dtype=float)
+
+    return future_features
 
 def run_gridsearch(x, y, pipeline, param_grid):
 
@@ -59,7 +87,7 @@ def run_gridsearch(x, y, pipeline, param_grid):
 
     return gridsearch.best_params_
 
-def linear_model():
+def linear_model(n_future_months=1):
     months, x, y = get_months_x_y()
 
     pipeline_linear = Pipeline([
@@ -98,14 +126,18 @@ def linear_model():
     best_pipeline.set_params(**best_params)
     best_pipeline.fit(x, y)
 
-    next_month_index = len(months)
-    next_rolling_mean = np.mean(y[-3:])
-    next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = best_pipeline.predict(next_features)[0]
+    future_features = generate_future_features(months, y, n_future_months)
+    predictions = []
 
-    return predicted_expense, months, y
+    for i in range(n_future_months):
+        pred = best_pipeline.predict(future_features[i:i+1])[0]
+        pred = np.clip(pred, 0, np.max(y) * 2)
+        predictions.append(float(pred))
 
-def polynomial_model():
+    predictions = np.array(predictions, dtype=float)
+    return predictions[0] if n_future_months == 1 else predictions, months, y
+
+def polynomial_model(n_future_months=1):
     months, x, y = get_months_x_y()
 
     pipeline_poly = Pipeline([
@@ -143,14 +175,18 @@ def polynomial_model():
     best_pipeline.set_params(**best_params)
     best_pipeline.fit(x, y)
 
-    next_month_index = len(months)
-    next_rolling_mean = np.mean(y[-3:])
-    next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = best_pipeline.predict(next_features)[0]
+    future_features = generate_future_features(months, y, n_future_months)
+    predictions = []
 
-    return predicted_expense, months, y
+    for i in range(n_future_months):
+        pred = best_pipeline.predict(future_features[i:i+1])[0]
+        pred = np.clip(pred, 0, np.max(y) * 2)
+        predictions.append(float(pred))
 
-def sarimax_model():
+    predictions = np.array(predictions, dtype=float)
+    return predictions[0] if n_future_months == 1 else predictions, months, y
+
+def sarimax_model(n_future_months=1):
     months, x, y = get_months_x_y()
 
     p_values = range(0, 3)
@@ -182,14 +218,13 @@ def sarimax_model():
             except Exception:
                 continue
 
-    next_month_index = len(months)
-    next_rolling_mean = np.mean(y[-3:])
-    next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = best_model.forecast(steps=1, exog=next_features)[0]
+    future_features = generate_future_features(months, y, n_future_months)
+    predictions = best_model.forecast(steps=n_future_months, exog=future_features)
+    predictions = np.clip(predictions, 0, max(y) * 2)
 
-    return predicted_expense, months, y
+    return predictions[0] if n_future_months == 1 else predictions, months, y
 
-def randomforest_model():
+def randomforest_model(n_future_months=1):
     months, x, y = get_months_x_y()
 
     pipeline_randomforest = Pipeline([
@@ -198,7 +233,7 @@ def randomforest_model():
 
     param_grid = {
         'regressor__n_estimators': [100, 200],
-        'regressor__max_depth': [None, 5, 10],
+        'regressor__max_depth': [None, 2, 5],
         'regressor__min_samples_split': [2, 5],
         'regressor__min_samples_leaf': [1, 2],
         'regressor__max_features': [1.0, 'sqrt', 'log2'],
@@ -214,23 +249,27 @@ def randomforest_model():
     best_pipeline.set_params(**best_params)
     best_pipeline.fit(x, y)
 
-    next_month_index = len(months)
-    next_rolling_mean = np.mean(y[-3:])
-    next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = best_pipeline.predict(next_features)[0]
+    future_features = generate_future_features(months, y, n_future_months)
+    predictions = []
 
-    return predicted_expense, months, y
+    for i in range(n_future_months):
+        pred = best_pipeline.predict(future_features[i:i+1])[0]
+        pred = np.clip(pred, 0, np.max(y) * 2)
+        predictions.append(float(pred))
 
-def ensemble_model():
-    pred1, months, y = linear_model()
-    pred2, _, _ = randomforest_model()
-    pred3, _, _ = sarimax_model()
-    pred4, _, _ = xgboost_model()
-    ensemble_pred = np.mean([pred1, pred2, pred3, pred4])
+    predictions = np.array(predictions, dtype=float)
+    return predictions[0] if n_future_months == 1 else predictions, months, y
+
+def ensemble_model(n_future_months=1):
+    pred1, months, y = linear_model(n_future_months)
+    pred2, _, _ = randomforest_model(n_future_months)
+    pred3, _, _ = sarimax_model(n_future_months)
+    pred4, _, _ = xgboost_model(n_future_months)
+    ensemble_pred = np.mean([pred1, pred2, pred3, pred4], axis=0) if n_future_months > 1 else np.mean([pred1, pred2, pred3, pred4])
 
     return ensemble_pred, months, y
 
-def xgboost_model():
+def xgboost_model(n_future_months=1):
     months, x, y = get_months_x_y()
 
     pipeline_xgb = Pipeline([
@@ -271,7 +310,7 @@ def xgboost_model():
         grid_search.fit(
             x_train, y_train,
             regressor__eval_set=[(x_val, y_val)],
-            regressor__verbose=1
+            regressor__verbose=False
         )
         return grid_search.best_params_
 
@@ -289,12 +328,16 @@ def xgboost_model():
     best_pipeline.fit(
         x_train, y_train,
         regressor__eval_set=[(x_val, y_val)],
-        regressor__verbose=1
+        regressor__verbose=False
     )
 
-    next_month_index = len(months)
-    next_rolling_mean = np.mean(y[-3:])
-    next_features = np.array([[next_month_index, next_rolling_mean]])
-    predicted_expense = best_pipeline.predict(next_features)[0]
+    future_features = generate_future_features(months, y, n_future_months)
+    predictions = []
 
-    return predicted_expense, months, y
+    for i in range(n_future_months):
+        pred = best_pipeline.predict(future_features[i:i+1])[0]
+        pred = np.clip(pred, 0, np.max(y) * 2)
+        predictions.append(float(pred))
+
+    predictions = np.array(predictions, dtype=float)
+    return predictions[0] if n_future_months == 1 else predictions, months, y
