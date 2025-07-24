@@ -260,15 +260,6 @@ def randomforest_model(n_future_months=1):
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
 
-def ensemble_model(n_future_months=1):
-    pred1, months, y = linear_model(n_future_months)
-    pred2, _, _ = randomforest_model(n_future_months)
-    pred3, _, _ = sarimax_model(n_future_months)
-    pred4, _, _ = xgboost_model(n_future_months)
-    ensemble_pred = np.mean([pred1, pred2, pred3, pred4], axis=0) if n_future_months > 1 else np.mean([pred1, pred2, pred3, pred4])
-
-    return ensemble_pred, months, y
-
 def xgboost_model(n_future_months=1):
     months, x, y = get_months_x_y()
 
@@ -341,3 +332,12 @@ def xgboost_model(n_future_months=1):
 
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
+
+def ensemble_model(n_future_months=1):
+    pred1, months, y = linear_model(n_future_months)
+    pred2, _, _ = randomforest_model(n_future_months)
+    pred3, _, _ = sarimax_model(n_future_months)
+    pred4, _, _ = xgboost_model(n_future_months)
+    ensemble_pred = np.mean([pred1, pred2, pred3, pred4], axis=0) if n_future_months > 1 else np.mean([pred1, pred2, pred3, pred4])
+
+    return ensemble_pred, months, y
