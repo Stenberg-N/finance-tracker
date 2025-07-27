@@ -97,3 +97,10 @@ def clear_all_transactions():
     connect_to_database.commit()
     connect_to_database.execute('VACUUM')
     connect_to_database.close()
+
+def backup_db():
+    connect_to_database = sqlite3.connect(config.db_path)
+    db_backup_conn = sqlite3.connect(config.db_backup_path)
+    connect_to_database.backup(db_backup_conn)
+    connect_to_database.close()
+    db_backup_conn.close()

@@ -1,6 +1,6 @@
 # Finance tracker
 
-from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions, type_column_exists, migrate_add_type_column
+from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions, type_column_exists, migrate_add_type_column, backup_db
 from exports import export_transactions_to_csv, export_transactions_to_excel, export_transactions_to_pdf
 import os
 import config
@@ -15,6 +15,7 @@ from ml import linear_model, polynomial_model, sarimax_model, randomforest_model
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
+config.db_backup_path = os.path.join(script_directory, 'database', 'backup_finance.db')
 config.exports_path = os.path.join(script_directory, 'exports')
 
 init_db()
@@ -384,6 +385,12 @@ def show_delete_data():
             error.after(5000, error.destroy)
 
     ctk.CTkButton(content_frame, text="Delete", command=delete_data, fg_color="red").pack(pady=40)
+
+def show_db_backup_text():
+    backup_db()
+    success = ctk.CTkLabel(content_frame, text="DB has been successfully backed up! You find it in the same file as the original DB.", text_color="green")
+    success.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+    success.after(3000, success.destroy)
 
 def show_chart(chart_type):
     clear_content()
@@ -838,5 +845,6 @@ charts_btn.pack(padx=15, pady=12)
 predictions_btn = ctk.CTkButton(button_frame, text="Monthly expense predictions", command=toggle_prediction_model_buttons)
 predictions_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Delete all transaction data", command=show_delete_data).pack(padx=15, pady=12)
+ctk.CTkButton(button_frame, text="Backup DB", command=show_db_backup_text).pack(padx=15, pady=12)
 
 app.mainloop()
