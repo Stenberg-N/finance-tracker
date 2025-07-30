@@ -173,6 +173,55 @@ def toggle_filter_by_buttons():
         by_month_btn.pack(after=filter_by_btn, pady=2, anchor=ctk.E)
         by_week_btn.pack(after=filter_by_btn, pady=2, anchor=ctk.E)
 
+def show_home_screen():
+    clear_content()
+    ctk.CTkLabel(content_frame, text="Home screen", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=(10, 20))
+    feed_frame = ctk.CTkFrame(content_frame)
+    feed_frame.pack(fill="both", expand=True, padx=20, pady=20)
+    feed_messages = generate_feed_messages()
+    for message in feed_messages:
+        ctk.CTkLabel(feed_frame, text=message, wraplength=800, justify="left").pack(anchor=ctk.W, pady=5)
+
+def generate_feed_messages():
+    now = datetime.datetime.now()
+    this_month = now.month
+    this_year = now.year
+    last_month = this_month - 1 if this_month > 1 else 12
+    last_month_year = this_year if this_month > 1 else this_year - 1
+
+    this_month_rows = view_transactions_by_month(this_month, this_year)
+    last_month_rows = view_transactions_by_month(last_month, last_month_year)
+
+    def combine(rows):
+        category_totals = {}
+
+        for row in rows:
+            category = row[3]
+            amount = row[4]
+            transaction_type = row[5]
+            if transaction_type == "expense":
+                category_totals[category] = category_totals.get(category, 0) + abs(amount)
+        return category_totals
+
+    this_month_totals = combine(this_month_rows)
+    last_month_totals = combine(last_month_rows)
+
+    feed = []
+    for category in set(this_month_totals) | set(last_month_totals):
+        this_total = this_month_totals.get(category, 0)
+        last_total = last_month_totals.get(category, 0)
+        if last_total == 0 and this_total > 0:
+            feed.append(f"You started spending on {category} this month: {this_total:.2f}€")
+        elif last_total > 0:
+            change = this_total - last_total
+            percent = (change / last_total) * 100 if last_total else 0
+            if abs(percent) >= 10:
+                more_or_less = "more" if percent > 0 else "less"
+                feed.append(f"You spent {abs(percent):.1f}% {more_or_less} on {category} this month {this_total:.2f}€ compared to last month {last_total:.2f}€")
+    if not feed:
+        feed.append("No significant changes in your spending this month.")
+    return feed
+
 def show_add_transaction():
     clear_content()
     ctk.CTkLabel(content_frame, text="Type:").pack()
@@ -880,6 +929,7 @@ def show_prediction(prediction_type):
 
     ctk.CTkButton(content_frame, text="Predict", command=on_predict).pack(pady=10)
 
+ctk.CTkButton(button_frame, text="Home", command=show_home_screen).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Add transaction", command=show_add_transaction).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
 filter_by_btn = ctk.CTkButton(button_frame, text="Show by...", command=toggle_filter_by_buttons)
@@ -892,4 +942,5 @@ predictions_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Delete all transaction data", command=show_delete_data).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Backup DB", command=show_db_backup_text).pack(padx=15, pady=12)
 
+show_home_screen()
 app.mainloop()
