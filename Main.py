@@ -73,8 +73,6 @@ bar_plot_btn = ctk.CTkButton(button_frame, text="Bar plot", command=lambda: show
 tooltip(bar_plot_btn, "Displays all transactions in a bar plot.")
 donut_chart_btn = ctk.CTkButton(button_frame, text="Donut chart", command=lambda: show_chart('donut'))
 tooltip(donut_chart_btn, "Displays all transactions in a donut chart.")
-stacked_bar_btn = ctk.CTkButton(button_frame, text="Stacked Bar chart", command=lambda: show_chart('stacked bar'))
-tooltip(stacked_bar_btn, "Displays income and expenses by category.")
 horizontal_bar_btn = ctk.CTkButton(button_frame, text="Top 5 Expenses chart", command=lambda: show_chart('horizontal bar'))
 tooltip(horizontal_bar_btn, "Displays the top 5 expenses by category and its description.")
 surplus_deficit_btn = ctk.CTkButton(button_frame, text="Surplus/Deficit chart", command=lambda: show_chart('surplus deficit'))
@@ -83,12 +81,11 @@ savings_progress_btn = ctk.CTkButton(button_frame, text="Savings chart", command
 tooltip(savings_progress_btn, "Displays your cumulative savings over time, updating after each transaction.")
 bar_date_amount_btn = ctk.CTkButton(button_frame, text="Monthly bar chart", command=lambda: show_chart('bar by date_amount'))
 tooltip(bar_date_amount_btn, "Displays total income and expenses for each month, side by side.")
-monthly_cat_split_btn = ctk.CTkButton(button_frame, text="Monthly category split", command=lambda: show_chart('monthly category split'))
+monthly_cat_split_btn = ctk.CTkButton(button_frame, text="Stacked Bar chart", command=lambda: show_chart('monthly category split'))
 tooltip(monthly_cat_split_btn, "Displays monthly expenses split by category and description.")
 pie_chart_btn.pack_forget()
 bar_plot_btn.pack_forget()
 donut_chart_btn.pack_forget()
-stacked_bar_btn.pack_forget()
 horizontal_bar_btn.pack_forget()
 surplus_deficit_btn.pack_forget()
 savings_progress_btn.pack_forget()
@@ -147,7 +144,6 @@ def toggle_chart_buttons():
         pie_chart_btn.pack_forget()
         bar_plot_btn.pack_forget()
         donut_chart_btn.pack_forget()
-        stacked_bar_btn.pack_forget()
         horizontal_bar_btn.pack_forget()
         surplus_deficit_btn.pack_forget()
         savings_progress_btn.pack_forget()
@@ -157,7 +153,6 @@ def toggle_chart_buttons():
         pie_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         bar_plot_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         donut_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
-        stacked_bar_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         horizontal_bar_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         surplus_deficit_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         savings_progress_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
@@ -572,43 +567,6 @@ def show_chart(chart_type):
                 kw["arrowprops"].update({"connectionstyle": connectionstyle})
                 ax.annotate(labels[i], xy=(x, y), xytext=(1.35*np.sign(x), 1.2*y),
                             horizontalalignment=horizontalalignment, **kw)
-                
-        elif chart_type == 'stacked bar':
-            category_data = {}
-            for row in db_table:
-                category = row[2]
-                amount = row[4]
-                transaction_type = row[5]
-
-                if category not in category_data:
-                    category_data[category] = {'income': 0, 'expense': 0}
-
-                category_data[category][transaction_type] += amount
-
-            categories = list(category_data.keys())
-            income_values = [category_data[cat]['income'] for cat in categories]
-            expense_values = [abs(category_data[cat]['expense']) for cat in categories]
-        
-            x = np.arange(len(categories))
-            width = 0.4
-
-            bars_income = ax.bar(x, income_values, width, label="Income", color="green", alpha=0.7)
-            bars_expense = ax.bar(x, [-exp for exp in expense_values], width, label="Expense", color="red", alpha=0.7)
-
-            ax.set_xlabel("Category")
-            ax.set_ylabel("Amount (€)")
-            ax.set_title("Income vs. Expense by category")
-            ax.set_xticks(x)
-            ax.set_xticklabels(categories, rotation=45, ha='right')
-            ax.legend(loc="upper right")
-            ax.grid(True, alpha=0.3)
-
-            # Value labels for bars
-            for i, (income, expense) in enumerate(zip(income_values, expense_values)):
-                if income > 0:
-                    ax.text(i, income + max(income_values) * 0.01, f'€{income:,.0f}', ha='center', va='bottom', fontsize=8)
-                if expense > 0:
-                    ax.text(i, -expense - max(expense_values) * 0.01, f'€{expense:,.0f}', ha='center', va='bottom', fontsize=8)
 
         elif chart_type == "horizontal bar":
             top_expenses = {}
