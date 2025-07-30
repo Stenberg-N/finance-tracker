@@ -83,6 +83,8 @@ savings_progress_btn = ctk.CTkButton(button_frame, text="Savings chart", command
 tooltip(savings_progress_btn, "Displays your cumulative savings over time, updating after each transaction.")
 bar_date_amount_btn = ctk.CTkButton(button_frame, text="Monthly bar chart", command=lambda: show_chart('bar by date_amount'))
 tooltip(bar_date_amount_btn, "Displays total income and expenses for each month, side by side.")
+monthly_cat_split_btn = ctk.CTkButton(button_frame, text="Monthly category split", command=lambda: show_chart('monthly category split'))
+tooltip(monthly_cat_split_btn, "Displays monthly expenses split by category and description.")
 pie_chart_btn.pack_forget()
 bar_plot_btn.pack_forget()
 donut_chart_btn.pack_forget()
@@ -91,6 +93,7 @@ horizontal_bar_btn.pack_forget()
 surplus_deficit_btn.pack_forget()
 savings_progress_btn.pack_forget()
 bar_date_amount_btn.pack_forget()
+monthly_cat_split_btn.pack_forget()
 
 linear_regression_btn = ctk.CTkButton(button_frame, text="Linear", command=lambda: show_prediction('linear'))
 tooltip(linear_regression_btn, "Automatically select the best linear model: standard, Ridge (L2), Lasso (L1) or robust regression for your data.")
@@ -149,6 +152,7 @@ def toggle_chart_buttons():
         surplus_deficit_btn.pack_forget()
         savings_progress_btn.pack_forget()
         bar_date_amount_btn.pack_forget()
+        monthly_cat_split_btn.pack_forget()
     else:
         pie_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         bar_plot_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
@@ -158,6 +162,7 @@ def toggle_chart_buttons():
         surplus_deficit_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         savings_progress_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         bar_date_amount_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
+        monthly_cat_split_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
 
 
 def toggle_filter_by_buttons():
@@ -739,6 +744,46 @@ def show_chart(chart_type):
                     ax.text(i, income + max(income_values) * 0.01, f'€{income:,.0f}', ha='center', va='bottom', fontsize=8)
                 if expense > 0:
                     ax.text(i, -expense - max(expense_values) * 0.01, f'€{expense:,.0f}', ha='center', va='bottom', fontsize=8)
+
+        elif chart_type == 'monthly category split':
+            expense_rows = [row for row in db_table if row[5] == 'expense']
+            month_catdesc_expense = {}
+            for row in expense_rows:
+                date_str = row[1]
+                category = row[2]
+                description = row[3]
+                amount = abs(row[4])
+
+                try:
+                    date_obj = datetime.datetime.strptime(date_str, "%d-%m-%Y")
+                    month_key = date_obj.strftime("%b %Y")
+                except ValueError:
+                    continue
+                key = (category, description)
+                if month_key not in month_catdesc_expense:
+                    month_catdesc_expense[month_key] = {}
+                if key not in month_catdesc_expense[month_key]:
+                    month_catdesc_expense[month_key][key] = 0
+                month_catdesc_expense[month_key][key] += amount
+
+            all_months = sorted(month_catdesc_expense.keys(), key=lambda x: datetime.datetime.strptime(x, "%b %Y"))
+            all_catdesc = set()
+            for v in month_catdesc_expense.values():
+                all_catdesc.update(v.keys())
+            all_catdesc = sorted(list(all_catdesc))
+            data = {catdesc: [month_catdesc_expense.get(month, {}).get(catdesc, 0) for month in all_months] for catdesc in all_catdesc}
+            bottom = np.zeros(len(all_months))
+            colors = plt.cm.tab20(np.linspace(0, 1, len(all_catdesc)))
+
+            for i, catdesc in enumerate(all_catdesc):
+                values = data[catdesc]
+                ax.bar(all_months, values, bottom=bottom, label=f"{catdesc[0]}: {catdesc[1]}", color=colors[i % len(colors)])
+                bottom += np.array(values)
+            ax.set_xlabel("Month")
+            ax.set_ylabel("Expense Amount (€)")
+            ax.set_title("Monthly Expenses by Category & Description")
+            ax.tick_params(axis="x", rotation=45)
+            ax.legend(loc="best", fontsize=7, bbox_to_anchor=(1.05, 1), borderaxespad=0.)
 
         canvas = FigureCanvasTkAgg(fig, master=chart_left_frame)
         canvas.draw()
