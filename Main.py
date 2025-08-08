@@ -1,6 +1,6 @@
 # Finance tracker
 
-from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions, type_column_exists, migrate_add_type_column, backup_db
+from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions, backup_db, verify_login, get_user_id, insert_user, delete_user, clear_encryption_key
 from exports import export_transactions_to_csv, export_transactions_to_excel, export_transactions_to_pdf
 import os
 import config
@@ -13,14 +13,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from ml import linear_model, polynomial_model, sarimax_model, randomforest_model, ensemble_model, xgboost_model
 
+current_user = None
+
 script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
 config.db_backup_path = os.path.join(script_directory, 'database', 'backup_finance.db')
 config.exports_path = os.path.join(script_directory, 'exports')
 
 init_db()
-if not type_column_exists():
-    migrate_add_type_column()
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
@@ -123,6 +123,19 @@ def clear_content():
     for widget in content_frame.winfo_children():
         widget.destroy()
 
+def clear_login_frame():
+    for widget in login_frame.winfo_children():
+        widget.destroy()
+
+def clear_session():
+    global current_user
+    current_user = None
+    clear_encryption_key()
+    login_frame.pack(fill=ctk.BOTH, expand=True)
+    content_frame.pack_forget()
+    button_frame.pack_forget()
+    show_login_screen()
+
 def toggle_prediction_model_buttons():
     if linear_regression_btn.winfo_ismapped():
         linear_regression_btn.pack_forget()
@@ -159,7 +172,6 @@ def toggle_chart_buttons():
         bar_date_amount_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         monthly_cat_split_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
 
-
 def toggle_filter_by_buttons():
     if by_month_btn.winfo_ismapped():
         by_month_btn.pack_forget()
@@ -168,24 +180,145 @@ def toggle_filter_by_buttons():
         by_month_btn.pack(after=filter_by_btn, pady=2, anchor=ctk.E)
         by_week_btn.pack(after=filter_by_btn, pady=2, anchor=ctk.E)
 
+login_frame = ctk.CTkFrame(app)
+login_frame.pack(fill=ctk.BOTH, expand=True)
+
+def show_register_screen():
+    clear_content()
+    clear_login_frame()
+    login_frame.pack(fill=ctk.BOTH, expand=True)
+    ctk.CTkLabel(login_frame, text="Register", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
+
+    ctk.CTkLabel(login_frame, text="Username").pack(pady=5)
+    username_entry = ctk.CTkEntry(login_frame)
+    username_entry.pack()
+
+    ctk.CTkLabel(login_frame, text="Password").pack(pady=5)
+    password_entry = ctk.CTkEntry(login_frame, show="*")
+    password_entry.pack()
+
+    ctk.CTkLabel(login_frame, text="Confirm Password").pack(pady=5)
+    confirm_password_entry = ctk.CTkEntry(login_frame, show="*")
+    confirm_password_entry.pack()
+
+    def register():
+        username = username_entry.get()
+        password = password_entry.get()
+        confirm_password = confirm_password_entry.get()
+
+        if not username or not password:
+            error = ctk.CTkLabel(login_frame, text="Username and password cannot be empty!", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+            return
+
+        if password != confirm_password:
+            error = ctk.CTkLabel(login_frame, text="Passwords do not match!", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+            return
+
+        success, message = insert_user(username, password)
+        if success:
+            success = ctk.CTkLabel(login_frame, text="Registration successful! Please log in.", text_color="green")
+            success.pack()
+            success.after(2000, lambda: show_login_screen())
+        else:
+            error = ctk.CTkLabel(login_frame, text=message, text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+
+    ctk.CTkButton(login_frame, text="Register", command=register).pack(pady=12)
+    ctk.CTkButton(login_frame, text="Back to Login", command=show_login_screen).pack(pady=5)
+
+def show_login_screen():
+    clear_content()
+    clear_login_frame()
+    login_frame.pack(fill=ctk.BOTH, expand=True)
+    content_frame.pack_forget()
+    button_frame.pack_forget()
+
+    ctk.CTkLabel(login_frame, text="Login", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
+
+    ctk.CTkLabel(login_frame, text="Username").pack(pady=5)
+    username_entry = ctk.CTkEntry(login_frame)
+    username_entry.pack()
+
+    ctk.CTkLabel(login_frame, text="Password").pack(pady=5)
+    password_entry = ctk.CTkEntry(login_frame, show="*")
+    password_entry.pack()
+
+    def login():
+        username = username_entry.get()
+        password = password_entry.get()
+
+        if verify_login(username, password):
+            global current_user
+            current_user = username
+            login_frame.pack_forget()
+            button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
+            content_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
+            show_home_screen()
+            success = ctk.CTkLabel(login_frame, text="Login Successful! Welcome, {username}!", text_color="green")
+            success.pack()
+            success.after(2000, success.destroy)
+        else:
+            error = ctk.CTkLabel(login_frame, text="Login Failed: Invalid username or password", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+
+    ctk.CTkButton(login_frame, text="Login", command=login).pack(pady=12)
+    ctk.CTkButton(login_frame, text="Register", command=show_register_screen).pack(pady=5)
+
+def show_delete_user():
+    clear_content()
+    ctk.CTkLabel(content_frame, text="Delete Account", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
+
+    ctk.CTkLabel(content_frame, text="Enter your password to confirm account deletion").pack(pady=5)
+    password_entry = ctk.CTkEntry(content_frame, show="*")
+    password_entry.pack()
+
+    def confirm_user_deletion():
+        password = password_entry.get()
+        if not password:
+            error = ctk.CTkLabel(content_frame, text="Please enter your password!", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+            return
+
+        success, message = delete_user(current_user, password)
+        if success:
+            clear_session()
+            success = ctk.CTkLabel(login_frame, text=message, text_color="green")
+            success.pack()
+            success.after(2000, success.destroy)
+        else:
+            error = ctk.CTkLabel(login_frame, text=message, text_color="green")
+            error.pack()
+            error.after(2000, success.destroy)
+
+    ctk.CTkButton(content_frame, text="Confirm Delete", command=confirm_user_deletion).pack(pady=10)
+    ctk.CTkButton(content_frame, text="Cancel", command=show_home_screen).pack(pady=5)
+
 def show_home_screen():
     clear_content()
-    ctk.CTkLabel(content_frame, text="Home screen", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=(10, 20))
+    user_id = get_user_id(current_user)
+    ctk.CTkLabel(content_frame, text="Home screen", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
     feed_frame = ctk.CTkFrame(content_frame)
     feed_frame.pack(fill="both", expand=True, padx=20, pady=20)
-    feed_messages = generate_feed_messages()
+    feed_messages = generate_feed_messages(user_id)
     for message in feed_messages:
         ctk.CTkLabel(feed_frame, text=message, wraplength=800, justify="left").pack(anchor=ctk.W, pady=5)
 
-def generate_feed_messages():
+def generate_feed_messages(user_id):
     now = datetime.datetime.now()
     this_month = now.month
     this_year = now.year
     last_month = this_month - 1 if this_month > 1 else 12
     last_month_year = this_year if this_month > 1 else this_year - 1
 
-    this_month_rows = view_transactions_by_month(this_month, this_year)
-    last_month_rows = view_transactions_by_month(last_month, last_month_year)
+    this_month_rows = view_transactions_by_month(this_month, this_year, user_id)
+    last_month_rows = view_transactions_by_month(last_month, last_month_year, user_id)
 
     def combine(rows):
         category_totals = {}
@@ -245,6 +378,7 @@ def show_add_transaction():
         category = category_entry.get()
         description = description_entry.get()
         amount = amount_entry.get()
+        user_id = get_user_id(current_user)
 
         try:
             amount = float(amount)
@@ -269,7 +403,7 @@ def show_add_transaction():
             error.after(2000, error.destroy)
             return
         
-        insert_transaction(date, category, description, amount, type_value)
+        insert_transaction(date, category, description, amount, type_value, user_id)
         success = ctk.CTkLabel(content_frame, text="Transaction was successfully added!", text_color="green")
         success.pack()
         success.after(1000, show_add_transaction)
@@ -307,13 +441,14 @@ def all_transactions_treeview():
 def show_all_transactions_table():
     clear_content()
     tree = all_transactions_treeview()
-
-    rows = view_all_transactions()
+    user_id = get_user_id(current_user)
+    rows = view_all_transactions(user_id)
     for row in rows:
         tree.insert("", ctk.END, values=row)
 
 def show_transactions_by(filter_by):
     clear_content()
+    user_id = get_user_id(current_user)
     if filter_by == 'month':
 
         clear_content()
@@ -342,7 +477,7 @@ def show_transactions_by(filter_by):
 
             tree = all_transactions_treeview()
 
-            rows = view_transactions_by_month(month, year)
+            rows = view_transactions_by_month(month, year, user_id)
             for row in rows:
                 tree.insert("", ctk.END, values=row)
     
@@ -376,7 +511,7 @@ def show_transactions_by(filter_by):
 
             tree = all_transactions_treeview()
 
-            rows = view_transactions_by_week(week, year)
+            rows = view_transactions_by_week(week, year, user_id)
             for row in rows:
                 tree.insert("", ctk.END, values=row)
 
@@ -389,8 +524,9 @@ def show_export_options():
     filename_entry.pack()
 
     def export_to_csv():
+        user_id = get_user_id(current_user)
         filename = filename_entry.get()
-        export_transactions_to_csv(filename)
+        export_transactions_to_csv(user_id, filename)
         success = ctk.CTkLabel(content_frame, text="Transactions were successfully exported to CSV!", text_color="green")
         success.pack()
         success.after(3000, success.destroy)
@@ -398,8 +534,9 @@ def show_export_options():
     ctk.CTkButton(content_frame, text="CSV", command=export_to_csv).pack(pady=5)
 
     def export_to_excel():
+        user_id = get_user_id(current_user)
         filename = filename_entry.get()
-        export_transactions_to_excel(filename)
+        export_transactions_to_excel(user_id, filename)
         success = ctk.CTkLabel(content_frame, text="Transactions were successfully exported to Excel!", text_color="green")
         success.pack()
         success.after(3000, success.destroy)
@@ -407,8 +544,9 @@ def show_export_options():
     ctk.CTkButton(content_frame, text="Excel", command=export_to_excel).pack(pady=5)
 
     def export_to_pdf():
+        user_id = get_user_id(current_user)
         filename = filename_entry.get()
-        export_transactions_to_pdf(filename)
+        export_transactions_to_pdf(user_id, filename)
         success = ctk.CTkLabel(content_frame, text="Transactions were successfully exported to PDF!", text_color="green")
         success.pack()
         success.after(3000, success.destroy)
@@ -423,8 +561,9 @@ def show_delete_data():
 
     def delete_data():
         data_deletion = delete_data_entry.get()
+        user_id = get_user_id(current_user)
         if data_deletion == str("DELETE ALL DATA"):
-            clear_all_transactions()
+            clear_all_transactions(user_id)
             success = ctk.CTkLabel(content_frame, text="All data was deleted successfully!", text_color="red", font=ctk.CTkFont(family='arial', size=18))
             success.pack()
             success.after(5000, success.destroy)
@@ -450,7 +589,8 @@ def show_chart(chart_type):
             if getattr(widget, "is_chart_widget", False):
                 widget.destroy()
 
-        db_table = view_all_transactions()
+        user_id = get_user_id(current_user)
+        db_table = view_all_transactions(user_id)
         selected_type = type_filter_var.get()
         if selected_type != "all":
             db_table = [row for row in db_table if row[5] == selected_type]
@@ -864,18 +1004,25 @@ def show_prediction(prediction_type):
             if hasattr(widget, "is_chart_widget") and widget.is_chart_widget:
                 widget.destroy()
 
+        user_id = get_user_id(current_user)
+        if user_id is None:
+            error = ctk.CTkLabel(content_frame, text="User not found. Please log in again.", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+            return
+
         if prediction_type == 'linear':
-            predicted_expense, months, actuals = linear_model(n_future_months=n_months)
+            predicted_expense, months, actuals = linear_model(n_future_months=n_months, user_id=user_id)
         elif prediction_type == 'polynomial':
-            predicted_expense, months, actuals = polynomial_model(n_future_months=n_months)
+            predicted_expense, months, actuals = polynomial_model(n_future_months=n_months, user_id=user_id)
         elif prediction_type == 'sarimax':
-            predicted_expense, months, actuals = sarimax_model(n_future_months=n_months)
+            predicted_expense, months, actuals = sarimax_model(n_future_months=n_months, user_id=user_id)
         elif prediction_type == 'randomforest':
-            predicted_expense, months, actuals = randomforest_model(n_future_months=n_months)
+            predicted_expense, months, actuals = randomforest_model(n_future_months=n_months, user_id=user_id)
         elif prediction_type == 'ensemble':
-            predicted_expense, months, actuals = ensemble_model(n_future_months=n_months)
+            predicted_expense, months, actuals = ensemble_model(n_future_months=n_months, user_id=user_id)
         elif prediction_type == 'xgboost':
-            predicted_expense, months, actuals = xgboost_model(n_future_months=n_months)
+            predicted_expense, months, actuals = xgboost_model(n_future_months=n_months, user_id=user_id)
         else:
             return
 
@@ -899,6 +1046,27 @@ predictions_btn = ctk.CTkButton(button_frame, text="Monthly expense predictions"
 predictions_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Delete all transaction data", command=show_delete_data).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Backup DB", command=show_db_backup_text).pack(padx=15, pady=12)
+ctk.CTkButton(button_frame, text="Delete Account", command=show_delete_user).pack(padx=15, pady=12)
+ctk.CTkButton(button_frame, text="Logout", command=lambda: [clear_session(), login_frame.pack(fill=ctk.BOTH, expand=True), content_frame.pack_forget(), button_frame.pack_forget(), show_login_screen()]).pack(padx=15, pady=12)
 
-show_home_screen()
+def require_login(func):
+    def wrapper(*args, **kwargs):
+        if current_user is None:
+            error = ctk.CTkLabel(content_frame, text="Please log in to access this feature!", text_color="red")
+            error.pack()
+            error.after(2000, lambda: [error.destroy(), show_login_screen()])
+            return
+        return func(*args, **kwargs)
+    return wrapper
+
+show_add_transaction = require_login(show_add_transaction)
+show_all_transactions_table = require_login(show_all_transactions_table)
+show_transactions_by = require_login(show_transactions_by)
+show_export_options = require_login(show_export_options)
+show_delete_data = require_login(show_delete_data)
+show_db_backup_text = require_login(show_db_backup_text)
+show_chart = require_login(show_chart)
+show_prediction = require_login(show_prediction)
+
+show_login_screen()
 app.mainloop()

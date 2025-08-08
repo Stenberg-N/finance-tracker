@@ -6,29 +6,53 @@ import csv
 import openpyxl
 from fpdf import FPDF
 import config
+from cryptography.fernet import Fernet
 
-def export_transactions_to_csv(filename):
+def export_transactions_to_csv(user_id, filename):
+    from database.db import encryption_key
+    fernet = Fernet(encryption_key)
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
-    db_cursor.execute('SELECT * FROM transactions')
+    db_cursor.execute('SELECT id, date, category, description, amount, type FROM transactions WHERE user_id = ?', (user_id,))
     rows = db_cursor.fetchall()
     connect_to_database.close()
+
+    decrypted_rows = []
+    for row in rows:
+        decrypted_date = fernet.decrypt(row[1].encode()).decode()
+        decrypted_category = fernet.decrypt(row[2].encode()).decode()
+        decrypted_description = fernet.decrypt(row[3].encode()).decode()
+        decrypted_amount = float(fernet.decrypt(row[4].encode()).decode())
+        decrypted_rows.append((row[0], decrypted_date, decrypted_category, decrypted_description, decrypted_amount, row[5]))
 
     if not filename.endswith('.csv'):
         filename += '.csv'
     filepath = os.path.join(config.exports_path, filename)
 
     with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile, delimiter=';') # ';' is used as the delimiter to make differentiating categories easier.
+        writer = csv.writer(csvfile, delimiter=';')
         writer.writerow(['ID', 'Date', 'Category', 'Description', 'Amount', 'Type'])
-        writer.writerows(rows)
+        for row in decrypted_rows:
+            writer.writerow(row)
 
-def export_transactions_to_excel(filename):
+    return decrypted_rows
+
+def export_transactions_to_excel(user_id, filename):
+    from database.db import encryption_key
+    fernet = Fernet(encryption_key)
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
-    db_cursor.execute('SELECT * FROM transactions')
+    db_cursor.execute('SELECT id, date, category, description, amount, type FROM transactions WHERE user_id = ?', (user_id,))
     rows = db_cursor.fetchall()
     connect_to_database.close()
+
+    decrypted_rows = []
+    for row in rows:
+        decrypted_date = fernet.decrypt(row[1].encode()).decode()
+        decrypted_category = fernet.decrypt(row[2].encode()).decode()
+        decrypted_description = fernet.decrypt(row[3].encode()).decode()
+        decrypted_amount = float(fernet.decrypt(row[4].encode()).decode())
+        decrypted_rows.append((row[0], decrypted_date, decrypted_category, decrypted_description, decrypted_amount, row[5]))
 
     if not filename.endswith('xlsx'):
         filename += '.xlsx'
@@ -37,16 +61,28 @@ def export_transactions_to_excel(filename):
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
     worksheet.append(['ID', 'Date', 'Category', 'Description', 'Amount', 'Type'])
-    for row in rows:
+    for row in decrypted_rows:
         worksheet.append(row)
     workbook.save(filepath)
 
-def export_transactions_to_pdf(filename):
+    return decrypted_rows
+
+def export_transactions_to_pdf(user_id, filename):
+    from database.db import encryption_key
+    fernet = Fernet(encryption_key)
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()
-    db_cursor.execute('SELECT * FROM transactions')
+    db_cursor.execute('SELECT id, date, category, description, amount, type FROM transactions WHERE user_id = ?', (user_id,))
     rows = db_cursor.fetchall()
     connect_to_database.close()
+
+    decrypted_rows = []
+    for row in rows:
+        decrypted_date = fernet.decrypt(row[1].encode()).decode()
+        decrypted_category = fernet.decrypt(row[2].encode()).decode()
+        decrypted_description = fernet.decrypt(row[3].encode()).decode()
+        decrypted_amount = float(fernet.decrypt(row[4].encode()).decode())
+        decrypted_rows.append((row[0], decrypted_date, decrypted_category, decrypted_description, decrypted_amount, row[5]))
 
     if not filename.endswith('.pdf'):
         filename += '.pdf'
@@ -75,3 +111,5 @@ def export_transactions_to_pdf(filename):
         pdf.cell(30, 10, row[5], 1)
         pdf.ln()
     pdf.output(filepath)
+
+    return decrypted_rows
