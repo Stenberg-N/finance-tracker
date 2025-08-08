@@ -11,8 +11,8 @@ import xgboost as xgb
 from itertools import product
 import pandas as pd
 
-def fetch_data():
-    rows = view_all_transactions()
+def fetch_data(user_id):
+    rows = view_all_transactions(user_id)
     monthly_expenses = {}
 
     for row in rows:
@@ -27,8 +27,8 @@ def fetch_data():
 
     return monthly_expenses
 
-def get_months_x_y():
-    monthly_expenses = fetch_data()
+def get_months_x_y(user_id):
+    monthly_expenses = fetch_data(user_id)
     months = sorted(monthly_expenses.keys())
 
     x_raw = np.arange(len(months)).reshape(-1, 1)
@@ -87,8 +87,11 @@ def run_gridsearch(x, y, pipeline, param_grid):
 
     return gridsearch.best_params_
 
-def linear_model(n_future_months=1):
-    months, x, y = get_months_x_y()
+def linear_model(n_future_months=1, user_id=None):
+    if user_id is None:
+        raise ValueError("user_id must be provided")
+
+    months, x, y = get_months_x_y(user_id)
 
     pipeline_linear = Pipeline([
         ('scaler', StandardScaler()),
@@ -137,8 +140,11 @@ def linear_model(n_future_months=1):
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
 
-def polynomial_model(n_future_months=1):
-    months, x, y = get_months_x_y()
+def polynomial_model(n_future_months=1, user_id=None):
+    if user_id is None:
+        raise ValueError("user_id must be provided")
+
+    months, x, y = get_months_x_y(user_id)
 
     pipeline_poly = Pipeline([
         ('poly', PolynomialFeatures()),
@@ -186,8 +192,11 @@ def polynomial_model(n_future_months=1):
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
 
-def sarimax_model(n_future_months=1):
-    months, x, y = get_months_x_y()
+def sarimax_model(n_future_months=1, user_id=None):
+    if user_id is None:
+        raise ValueError("user_id must be provided")
+
+    months, x, y = get_months_x_y(user_id)
 
     p_values = range(0, 3)
     d_values = range(0, 2)
@@ -224,8 +233,11 @@ def sarimax_model(n_future_months=1):
 
     return predictions[0] if n_future_months == 1 else predictions, months, y
 
-def randomforest_model(n_future_months=1):
-    months, x, y = get_months_x_y()
+def randomforest_model(n_future_months=1, user_id=None):
+    if user_id is None:
+        raise ValueError("user_id must be provided")
+
+    months, x, y = get_months_x_y(user_id)
 
     pipeline_randomforest = Pipeline([
         ('regressor', RandomForestRegressor())
@@ -260,8 +272,11 @@ def randomforest_model(n_future_months=1):
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
 
-def xgboost_model(n_future_months=1):
-    months, x, y = get_months_x_y()
+def xgboost_model(n_future_months=1, user_id=None):
+    if user_id is None:
+        raise ValueError("user_id must be provided")
+
+    months, x, y = get_months_x_y(user_id)
 
     pipeline_xgb = Pipeline([
         ('scaler', StandardScaler()),
@@ -333,11 +348,14 @@ def xgboost_model(n_future_months=1):
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
 
-def ensemble_model(n_future_months=1):
-    pred1, months, y = linear_model(n_future_months)
-    pred2, _, _ = randomforest_model(n_future_months)
-    pred3, _, _ = sarimax_model(n_future_months)
-    pred4, _, _ = xgboost_model(n_future_months)
+def ensemble_model(n_future_months=1, user_id=None):
+    if user_id is None:
+        raise ValueError("user_id must be provided")
+
+    pred1, months, y = linear_model(n_future_months, user_id)
+    pred2, _, _ = randomforest_model(n_future_months, user_id)
+    pred3, _, _ = sarimax_model(n_future_months, user_id)
+    pred4, _, _ = xgboost_model(n_future_months, user_id)
     ensemble_pred = np.mean([pred1, pred2, pred3, pred4], axis=0) if n_future_months > 1 else np.mean([pred1, pred2, pred3, pred4])
 
     return ensemble_pred, months, y
