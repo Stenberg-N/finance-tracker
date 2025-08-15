@@ -440,11 +440,38 @@ def all_transactions_treeview():
 
 def show_all_transactions_table():
     clear_content()
+    ctk.CTkLabel(content_frame, text="All Transactions", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
+    searchbar_frame = ctk.CTkFrame(content_frame)
+    searchbar_frame.pack(padx=20, pady=5, anchor=ctk.E)
+
+    searchbar_label = ctk.CTkLabel(searchbar_frame, text="Search Bar:", font=ctk.CTkFont(size=12))
+    searchbar_label.grid(row=0, column=0, padx=2, pady=5, sticky="w")
+
+    searchbar_entry = ctk.CTkEntry(searchbar_frame, width=150)
+    searchbar_entry.grid(row=0, column=1, padx=2, pady=5, sticky="ew")
+
+    searchbar_frame.grid_columnconfigure(1, weight=1)
+
     tree = all_transactions_treeview()
     user_id = get_user_id(current_user)
-    rows = view_all_transactions(user_id)
-    for row in rows:
-        tree.insert("", ctk.END, values=row)
+    all_rows = view_all_transactions(user_id)
+
+    def fill_table(data):
+        tree.delete(*tree.get_children())
+        for row in data:
+            tree.insert("", ctk.END, values=row)
+
+    fill_table(all_rows)
+
+    def filter_tableBySearch(event=None):
+        query = searchbar_entry.get().strip().lower()
+        if not query:
+            fill_table(all_rows)
+            return
+        filtered_data = [row for row in all_rows if any(query in str(cell).lower() for cell in row)]
+        fill_table(filtered_data)
+
+    searchbar_entry.bind("<KeyRelease>", filter_tableBySearch)
 
 def show_transactions_by(filter_by):
     clear_content()
