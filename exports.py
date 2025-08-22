@@ -102,7 +102,7 @@ def export_transactions_to_pdf(user_id, filename):
     pdf.cell(30, 10, headers[4], 1)
     pdf.cell(30, 10, headers[5], 1)
     pdf.ln()
-    for row in rows:
+    for row in decrypted_rows:
         pdf.cell(10, 10, str(row[0]), 1)
         pdf.cell(30, 10, row[1], 1)
         pdf.cell(30, 10, row[2], 1)
