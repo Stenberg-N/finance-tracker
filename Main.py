@@ -40,6 +40,28 @@ PREDICTION_MODEL_DESCRIPTIONS = {
     'xgboost': "XGBoost: A powerful and efficient gradient boosting algorithm. Excels at capturing complex patterns and interactions in data, often delivering top performance in prediction tasks. Well-suited for both small and large datasets."
 }
 
+CHART_DESCRIPTIONS = {
+    'pie': "A basic pie chart.",
+    'bar': "Displays all transactions in a bar plot.",
+    'donut': "A basic donut chart.",
+    'horizontal bar': "Lists the top 5 expenses by category and their description.",
+    'surplus deficit': "Subtracts expenses from income on a monthly basis and shows whether profit or loss was made.",
+    'savings': "Displays the trend of your transactions. Also shows if you are in the negative.",
+    'bar by date_amount': "Displays both income and expenses per month.",
+    'monthly category split': "Displays monthly expenses split by category and description."
+}
+
+CHART_LABELS = {
+    'pie': "Pie Chart",
+    'bar': "Bar plot of all transactions",
+    'donut': "Donut Chart",
+    'horizontal bar': "Top 5 expenses",
+    'surplus deficit': "Surplus/Deficit chart",
+    'savings': "Cumulative savings chart",
+    'bar by date_amount': "Monthly transactions chart",
+    'monthly category split': "Stacked bar chart"
+}
+
 class tooltip:
     def __init__(self, widget, text):
         self.widget = widget
@@ -227,7 +249,8 @@ def show_login_screen():
     content_frame.pack_forget()
     button_frame.pack_forget()
 
-    ctk.CTkLabel(login_frame, text="Login", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
+    ctk.CTkLabel(login_frame, text="Login", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
+    ctk.CTkLabel(login_frame, text="Register and create an account or if you already have an account, please login.", font=ctk.CTkFont(size=12)).pack(pady=(0, 20))
 
     ctk.CTkLabel(login_frame, text="Username").pack(pady=5)
     username_entry = ctk.CTkEntry(login_frame)
@@ -293,11 +316,164 @@ def show_home_screen():
     clear_content()
     user_id = get_user_id(current_user)
     ctk.CTkLabel(content_frame, text="Home screen", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
-    feed_frame = ctk.CTkFrame(content_frame)
-    feed_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    home_frame = ctk.CTkFrame(content_frame)
+    home_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    info_frame = ctk.CTkFrame(home_frame)
+    info_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
+    feed_frame = ctk.CTkScrollableFrame(info_frame)
+    feed_frame.grid(row=0, column=0, padx=20, pady=(20, 5), sticky="nsew")
+
+    backup_info_frame = ctk.CTkFrame(info_frame, height=40)
+    backup_info_frame.grid(row=1, column=0, padx=20, sticky="ew")
+    backup_info_frame.grid_propagate(False)
+
+    export_add_transaction_frame = ctk.CTkFrame(home_frame)
+    export_add_transaction_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
+
+    add_transaction_frame = ctk.CTkScrollableFrame(export_add_transaction_frame)
+    add_transaction_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
+    export_frame = ctk.CTkScrollableFrame(export_add_transaction_frame)
+    export_frame.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
+
+    ctk.CTkLabel(feed_frame, text="This month's feed", font=ctk.CTkFont(size=20, weight="bold")).pack(anchor=ctk.W, padx=20, pady=(10, 20))
     feed_messages = generate_feed_messages(user_id)
     for message in feed_messages:
-        ctk.CTkLabel(feed_frame, text=message, wraplength=800, justify="left").pack(anchor=ctk.W, pady=5)
+        ctk.CTkLabel(feed_frame, text=message, wraplength=800, justify="left").pack(anchor=ctk.W, padx=10, pady=5)
+
+    ctk.CTkLabel(export_frame, text="Export Transactions", font=ctk.CTkFont(size=24, weight="bold")).pack(padx=10, pady=(10, 0))
+    ctk.CTkLabel(export_frame, text="Used to export data as CSV, Excel or PDF.", font=ctk.CTkFont(size=12)).pack(padx=10, pady=(0, 20))
+
+    ctk.CTkLabel(export_frame, text="Filename:").pack()
+    filename_entry = ctk.CTkEntry(export_frame)
+    filename_entry.pack(pady=(0, 20))
+
+    def export_to_csv():
+        user_id = get_user_id(current_user)
+        filename = filename_entry.get()
+        export_transactions_to_csv(user_id, filename)
+        success = ctk.CTkLabel(export_frame, text="Transactions were successfully exported to CSV!", font=ctk.CTkFont(size=12), text_color="green")
+        success.pack()
+        success.after(3000, success.destroy)
+
+    ctk.CTkButton(export_frame, text="CSV", command=export_to_csv).pack(pady=10)
+
+    def export_to_excel():
+        user_id = get_user_id(current_user)
+        filename = filename_entry.get()
+        export_transactions_to_excel(user_id, filename)
+        success = ctk.CTkLabel(export_frame, text="Transactions were successfully exported to Excel!", font=ctk.CTkFont(size=12), text_color="green")
+        success.pack()
+        success.after(3000, success.destroy)
+
+    ctk.CTkButton(export_frame, text="Excel", command=export_to_excel).pack(pady=10)
+
+    def export_to_pdf():
+        user_id = get_user_id(current_user)
+        filename = filename_entry.get()
+        export_transactions_to_pdf(user_id, filename)
+        success = ctk.CTkLabel(export_frame, text="Transactions were successfully exported to PDF!", font=ctk.CTkFont(size=12), text_color="green")
+        success.pack()
+        success.after(3000, success.destroy)
+
+    ctk.CTkButton(export_frame, text="PDF", command=export_to_pdf).pack(pady=10)
+
+    ctk.CTkLabel(add_transaction_frame, text="Add Transaction", font=ctk.CTkFont(size=24, weight="bold")).pack(padx=10, pady=(10, 0))
+    ctk.CTkLabel(add_transaction_frame, text="Add income and expense transactions here to begin analysing and visualizing your data using the other features.", font=ctk.CTkFont(size=12), wraplength=300).pack(padx=10, pady=(0, 20))
+
+    ctk.CTkLabel(add_transaction_frame, text="Type:").pack()
+    type_var = ctk.StringVar(value="Select")
+    type_option = ctk.CTkOptionMenu(add_transaction_frame, variable=type_var, values=["income", "expense"])
+    type_option.pack(pady=(0, 20))
+
+    ctk.CTkLabel(add_transaction_frame, text="Date (DD-MM-YYYY):").pack()
+    date_entry = ctk.CTkEntry(add_transaction_frame)
+    date_entry.pack()
+
+    ctk.CTkLabel(add_transaction_frame, text="Category:").pack()
+    category_entry = ctk.CTkEntry(add_transaction_frame)
+    category_entry.pack()
+
+    ctk.CTkLabel(add_transaction_frame, text="Description:").pack()
+    description_entry = ctk.CTkEntry(add_transaction_frame)
+    description_entry.pack()
+
+    ctk.CTkLabel(add_transaction_frame, text="Amount:").pack()
+    amount_entry = ctk.CTkEntry(add_transaction_frame)
+    amount_entry.pack()
+
+    def reset_add_transaction_form():
+        date_entry.delete(0, ctk.END)
+        category_entry.delete(0, ctk.END)
+        description_entry.delete(0, ctk.END)
+        amount_entry.delete(0, ctk.END)
+        type_var.set("select")
+
+    def submit_data():
+        date = date_entry.get()
+        category = category_entry.get()
+        description = description_entry.get()
+        amount = amount_entry.get()
+        user_id = get_user_id(current_user)
+
+        try:
+            amount = float(amount)
+        except ValueError:
+            error = ctk.CTkLabel(add_transaction_frame, text="Invalid amount!", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+            return
+        
+        try:
+            datetime.datetime.strptime(date, "%d-%m-%Y")
+        except ValueError:
+            error = ctk.CTkLabel(add_transaction_frame, text="Invalid date format!", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+            return
+
+        type_value = type_var.get()
+        if type_value == "Select":
+            error = ctk.CTkLabel(add_transaction_frame, text="Please select a type!", text_color="red")
+            error.pack()
+            error.after(2000, error.destroy)
+            return
+        
+        insert_transaction(date, category, description, amount, type_value, user_id)
+        success = ctk.CTkLabel(add_transaction_frame, text="Transaction was successfully added!", text_color="green")
+        success.pack()
+        success.after(2000, lambda: [success.destroy(), reset_add_transaction_form()])
+        
+    ctk.CTkButton(add_transaction_frame, text="Add", command=submit_data).pack(pady=(20, 10))
+
+    def make_db_backup():
+        confirmation = CTkMessagebox(title="Confirm Backup", message=f"Make a backup of the database?", icon="info", option_1="Cancel", option_2="Make a backup").get()
+        if confirmation != "Make a backup":
+            return
+
+        backup_db()
+        success = ctk.CTkLabel(backup_info_frame, text="Database has been successfully backed up! You can find it in the same file as the original database.", font=ctk.CTkFont(size=12), text_color="green")
+        success.grid(row=0, column=1, pady=5, sticky="w")
+        success.after(5000, success.destroy)
+
+    ctk.CTkButton(info_frame, text="Backup DB", command=make_db_backup).grid(row=2, column=0, padx=20, pady=(5, 20), sticky="sw")
+    ctk.CTkLabel(backup_info_frame, text="Backup results: ", font=ctk.CTkFont(size=12)).grid(row=0, column=0, padx=10, pady=5, sticky="w")
+
+    home_frame.grid_columnconfigure(0, weight=3)
+    home_frame.grid_columnconfigure(1, weight=2)
+    home_frame.grid_rowconfigure(0, weight=1)
+
+    info_frame.grid_rowconfigure(0, weight=50)
+    info_frame.grid_rowconfigure(1, weight=1)
+    info_frame.grid_rowconfigure(2, weight=0)
+    info_frame.grid_columnconfigure(0, weight=1)
+
+    export_add_transaction_frame.grid_rowconfigure(0, weight=3)
+    export_add_transaction_frame.grid_rowconfigure(1, weight=2)
+    export_add_transaction_frame.grid_columnconfigure(0, weight=1)
 
 def generate_feed_messages(user_id):
     now = datetime.datetime.now()
@@ -334,70 +510,10 @@ def generate_feed_messages(user_id):
             percent = (change / last_total) * 100 if last_total else 0
             if abs(percent) >= 10:
                 more_or_less = "more" if percent > 0 else "less"
-                feed.append(f"You spent {abs(percent):.1f}% {more_or_less} on {category} this month {this_total:.2f}€ compared to last month {last_total:.2f}€")
+                feed.append(f"You have spent {abs(percent):.1f}% {more_or_less} on {category} this month {this_total:.2f}€ compared to last month's {last_total:.2f}€")
     if not feed:
         feed.append("No significant changes in your spending this month.")
     return feed
-
-def show_add_transaction():
-    clear_content()
-    ctk.CTkLabel(content_frame, text="Type:").pack()
-    type_var = ctk.StringVar(value="Select")
-    type_option = ctk.CTkOptionMenu(content_frame, variable=type_var, values=["income", "expense"])
-    type_option.pack()
-
-    ctk.CTkLabel(content_frame, text="Date (DD-MM-YYYY):").pack()
-    date_entry = ctk.CTkEntry(content_frame)
-    date_entry.pack()
-
-    ctk.CTkLabel(content_frame, text="Category:").pack()
-    category_entry = ctk.CTkEntry(content_frame)
-    category_entry.pack()
-
-    ctk.CTkLabel(content_frame, text="Description:").pack()
-    description_entry = ctk.CTkEntry(content_frame)
-    description_entry.pack()
-
-    ctk.CTkLabel(content_frame, text="Amount:").pack()
-    amount_entry = ctk.CTkEntry(content_frame)
-    amount_entry.pack()
-
-    def submit_data():
-        date = date_entry.get()
-        category = category_entry.get()
-        description = description_entry.get()
-        amount = amount_entry.get()
-        user_id = get_user_id(current_user)
-
-        try:
-            amount = float(amount)
-        except ValueError:
-            error = ctk.CTkLabel(content_frame, text="Invalid amount!", text_color="red")
-            error.pack()
-            error.after(2000, error.destroy)
-            return
-        
-        try:
-            datetime.datetime.strptime(date, "%d-%m-%Y")
-        except ValueError:
-            error = ctk.CTkLabel(content_frame, text="Invalid date format!", text_color="red")
-            error.pack()
-            error.after(2000, error.destroy)
-            return
-
-        type_value = type_var.get()
-        if type_value == "Select":
-            error = ctk.CTkLabel(content_frame, text="Please select a type!", text_color="red")
-            error.pack()
-            error.after(2000, error.destroy)
-            return
-        
-        insert_transaction(date, category, description, amount, type_value, user_id)
-        success = ctk.CTkLabel(content_frame, text="Transaction was successfully added!", text_color="green")
-        success.pack()
-        success.after(1000, show_add_transaction)
-        
-    ctk.CTkButton(content_frame, text="Add", command=submit_data).pack(pady=10)
 
 def all_transactions_treeview():
     columns = ("c1", "c2", "c3", "c4", "c5", "c6")
@@ -429,7 +545,9 @@ def all_transactions_treeview():
 
 def show_all_transactions_table():
     clear_content()
-    ctk.CTkLabel(content_frame, text="All Transactions", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
+    ctk.CTkLabel(content_frame, text="All Transactions", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
+    ctk.CTkLabel(content_frame, text="A table consisting of all your income and expense data.", font=ctk.CTkFont(size=12)).pack(pady=(0, 20))
+
     searchbar_frame = ctk.CTkFrame(content_frame)
     searchbar_frame.pack(padx=20, pady=5, anchor=ctk.E)
 
@@ -483,45 +601,10 @@ def show_all_transactions_table():
 
     searchbar_entry.bind("<KeyRelease>", filter_tableBySearch)
 
-def show_export_options():
-    clear_content()
-    ctk.CTkLabel(content_frame, text="Filename:").pack()
-    filename_entry = ctk.CTkEntry(content_frame)
-    filename_entry.pack()
-
-    def export_to_csv():
-        user_id = get_user_id(current_user)
-        filename = filename_entry.get()
-        export_transactions_to_csv(user_id, filename)
-        success = ctk.CTkLabel(content_frame, text="Transactions were successfully exported to CSV!", text_color="green")
-        success.pack()
-        success.after(3000, success.destroy)
-
-    ctk.CTkButton(content_frame, text="CSV", command=export_to_csv).pack(pady=5)
-
-    def export_to_excel():
-        user_id = get_user_id(current_user)
-        filename = filename_entry.get()
-        export_transactions_to_excel(user_id, filename)
-        success = ctk.CTkLabel(content_frame, text="Transactions were successfully exported to Excel!", text_color="green")
-        success.pack()
-        success.after(3000, success.destroy)
-    
-    ctk.CTkButton(content_frame, text="Excel", command=export_to_excel).pack(pady=5)
-
-    def export_to_pdf():
-        user_id = get_user_id(current_user)
-        filename = filename_entry.get()
-        export_transactions_to_pdf(user_id, filename)
-        success = ctk.CTkLabel(content_frame, text="Transactions were successfully exported to PDF!", text_color="green")
-        success.pack()
-        success.after(3000, success.destroy)
-    
-    ctk.CTkButton(content_frame, text="PDF", command=export_to_pdf).pack(pady=5)
-
 def show_delete_data():
     clear_content()
-    ctk.CTkLabel(content_frame, text="Are you sure you want to delete all data? If you are, type 'DELETE ALL DATA' in the text box and hit the delete button:").pack()
+    ctk.CTkLabel(content_frame, text="Delete all data", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
+    ctk.CTkLabel(content_frame, text="Are you sure you want to delete all data? If you are, type 'DELETE ALL DATA' in the text box and hit the delete button:", font=ctk.CTkFont(size=12)).pack()
     delete_data_entry = ctk.CTkEntry(content_frame)
     delete_data_entry.pack()
 
@@ -530,21 +613,15 @@ def show_delete_data():
         user_id = get_user_id(current_user)
         if data_deletion == str("DELETE ALL DATA"):
             clear_all_transactions(user_id)
-            success = ctk.CTkLabel(content_frame, text="All data was deleted successfully!", text_color="red", font=ctk.CTkFont(family='arial', size=18))
+            success = ctk.CTkLabel(content_frame, text="All data was deleted successfully!", text_color="red", font=ctk.CTkFont(family='arial', size=12))
             success.pack()
             success.after(5000, success.destroy)
         else:
-            error = ctk.CTkLabel(content_frame, text="Invalid confirmation! Data not deleted!", text_color="red", font=ctk.CTkFont(family='arial', size=18))
+            error = ctk.CTkLabel(content_frame, text="Invalid confirmation! Data not deleted!", text_color="red", font=ctk.CTkFont(family='arial', size=12))
             error.pack()
             error.after(5000, error.destroy)
 
     ctk.CTkButton(content_frame, text="Delete", command=delete_data, fg_color="red").pack(pady=40)
-
-def show_db_backup_text():
-    backup_db()
-    success = ctk.CTkLabel(content_frame, text="DB has been successfully backed up! You find it in the same file as the original DB.", text_color="green")
-    success.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-    success.after(3000, success.destroy)
 
 def show_chart(chart_type):
     clear_content()
@@ -599,15 +676,15 @@ def show_chart(chart_type):
         chart_frame.pack(expand=True, fill="both", padx=10, pady=10)
 
         chart_left_frame = ctk.CTkFrame(chart_frame)
-        chart_left_frame.pack(side=ctk.LEFT, fill="both", expand=True, padx=(0, 10))
+        chart_left_frame.grid(row=0, column=0, sticky="nsew")
 
         legend_frame = ctk.CTkFrame(chart_frame)
-        legend_frame.pack(side=ctk.RIGHT, fill="both", padx=(10, 0))
+        legend_frame.grid(row=0, column=1, sticky="nsew")
 
         legend_title = ctk.CTkLabel(legend_frame, text="Category Breakdown", font=ctk.CTkFont(size=16, weight="bold"))
         legend_title.pack(pady=(10, 5))
 
-        legend_scroll = ctk.CTkScrollableFrame(legend_frame, width=300)
+        legend_scroll = ctk.CTkScrollableFrame(legend_frame, width=250)
         legend_scroll.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
         total_amount = sum(values)
@@ -896,22 +973,29 @@ def show_chart(chart_type):
             ax.set_ylabel("Expense Amount (€)")
             ax.set_title("Monthly Expenses by Category & Description")
             ax.tick_params(axis="x", rotation=45)
-            ax.legend(loc="best", fontsize=7, bbox_to_anchor=(1.05, 1), borderaxespad=0.)
+            ax.legend(loc="best", fontsize=9, bbox_to_anchor=(0.98, 1), borderaxespad=0.)
 
         canvas = FigureCanvasTkAgg(fig, master=chart_left_frame)
         canvas.draw()
         widget = canvas.get_tk_widget()
         widget.pack(expand=True, fill="both")
 
-    filter_frame = ctk.CTkFrame(content_frame)
-    filter_frame.pack()
-    ctk.CTkLabel(filter_frame, text="Show:").pack(side=ctk.LEFT)
+        chart_frame.grid_columnconfigure(0, weight=200)
+        chart_frame.grid_columnconfigure(1, weight=1)
+        chart_frame.grid_rowconfigure(0, weight=1)
+
+    labels = CHART_LABELS.get(chart_type, "Chart not available.")
+    description = CHART_DESCRIPTIONS.get(chart_type, "No description available for this chart.")
+    ctk.CTkLabel(content_frame, text=labels, font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
+    ctk.CTkLabel(content_frame, text=description, wraplength=600, justify="left").pack(pady=(0, 20))
+
+    ctk.CTkLabel(content_frame, text="Show: ").pack(anchor=ctk.CENTER, side=ctk.TOP)
     ctk.CTkOptionMenu(
-        filter_frame,
+        content_frame,
         variable=type_filter_var,
         values=["all", "income", "expense"],
         command=lambda _: draw_chart()
-    ).pack(side=ctk.LEFT)
+    ).pack(anchor=ctk.CENTER, side=ctk.TOP)
 
     draw_chart()
 
@@ -1001,15 +1085,12 @@ def show_prediction(prediction_type):
     ctk.CTkButton(content_frame, text="Predict", command=on_predict).pack(pady=10)
 
 ctk.CTkButton(button_frame, text="Home", command=show_home_screen).pack(padx=15, pady=12)
-ctk.CTkButton(button_frame, text="Add transaction", command=show_add_transaction).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
-ctk.CTkButton(button_frame, text="Exports", command=show_export_options).pack(padx=15, pady=12)
 charts_btn = ctk.CTkButton(button_frame, text="Charts", command=toggle_chart_buttons)
 charts_btn.pack(padx=15, pady=12)
 predictions_btn = ctk.CTkButton(button_frame, text="Monthly expense predictions", command=toggle_prediction_model_buttons)
 predictions_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Delete all transaction data", command=show_delete_data).pack(padx=15, pady=12)
-ctk.CTkButton(button_frame, text="Backup DB", command=show_db_backup_text).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Delete Account", command=show_delete_user).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Logout", command=lambda: [clear_session(), login_frame.pack(fill=ctk.BOTH, expand=True), content_frame.pack_forget(), button_frame.pack_forget(), show_login_screen()]).pack(padx=15, pady=12)
 
@@ -1023,11 +1104,8 @@ def require_login(func):
         return func(*args, **kwargs)
     return wrapper
 
-show_add_transaction = require_login(show_add_transaction)
 show_all_transactions_table = require_login(show_all_transactions_table)
-show_export_options = require_login(show_export_options)
 show_delete_data = require_login(show_delete_data)
-show_db_backup_text = require_login(show_db_backup_text)
 show_chart = require_login(show_chart)
 show_prediction = require_login(show_prediction)
 
