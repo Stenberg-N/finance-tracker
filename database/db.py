@@ -231,6 +231,18 @@ def clear_all_transactions(user_id):
     connect_to_database.execute('VACUUM')
     connect_to_database.close()
 
+def delete_transactions_by_id(user_id, ids):
+    if not ids:
+        return
+
+    connect_to_database = sqlite3.connect(config.db_path)
+    db_cursor = connect_to_database.cursor()
+    query = f"DELETE FROM transactions WHERE user_id = ? AND id IN ({','.join('?' for _ in ids)})"
+    params = [user_id] + list(ids)
+    db_cursor.execute(query, params)
+    connect_to_database.commit()
+    connect_to_database.close()
+
 def backup_db():
     connect_to_database = sqlite3.connect(config.db_path)
     db_backup_conn = sqlite3.connect(config.db_backup_path)

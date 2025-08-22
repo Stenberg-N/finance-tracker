@@ -1,10 +1,12 @@
 # Finance tracker
 
-from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions, backup_db, verify_login, get_user_id, insert_user, delete_user, clear_encryption_key
+from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions, backup_db, verify_login, get_user_id, insert_user, delete_user, clear_encryption_key, \
+    delete_transactions_by_id
 from exports import export_transactions_to_csv, export_transactions_to_excel, export_transactions_to_pdf
 import os
 import config
 import customtkinter as ctk
+from CTkMessagebox import CTkMessagebox
 import datetime
 import tkinter as tk
 from matplotlib.figure import Figure
@@ -444,14 +446,6 @@ def show_all_transactions_table():
     searchbar_frame = ctk.CTkFrame(content_frame)
     searchbar_frame.pack(padx=20, pady=5, anchor=ctk.E)
 
-    searchbar_label = ctk.CTkLabel(searchbar_frame, text="Search Bar:", font=ctk.CTkFont(size=12))
-    searchbar_label.grid(row=0, column=0, padx=2, pady=5, sticky="w")
-
-    searchbar_entry = ctk.CTkEntry(searchbar_frame, width=150)
-    searchbar_entry.grid(row=0, column=1, padx=2, pady=5, sticky="ew")
-
-    searchbar_frame.grid_columnconfigure(1, weight=1)
-
     tree = all_transactions_treeview()
     user_id = get_user_id(current_user)
     all_rows = view_all_transactions(user_id)
@@ -470,6 +464,35 @@ def show_all_transactions_table():
             return
         filtered_data = [row for row in all_rows if any(query in str(cell).lower() for cell in row)]
         fill_table(filtered_data)
+
+    def delete_selected_transactions():
+        selected_items = tree.selection()
+        if not selected_items:
+            CTkMessagebox(title="Nothing selected", message="Please select at least one transaction to delete.", icon="info")
+            return
+
+        ids_to_delete = [int(tree.item(item, "values")[0]) for item in selected_items]
+
+        confirmation = CTkMessagebox(title="Confirm delete", message=f"Delete {len(ids_to_delete)} selected transaction(s)?", icon="warning", option_1="Cancel", option_2="Delete").get()
+        if confirmation != "Delete":
+            return
+
+        user_id = get_user_id(current_user)
+        delete_transactions_by_id(user_id, ids_to_delete)
+
+        fresh_rows = view_all_transactions(user_id)
+        fill_table(fresh_rows)
+
+    delete_button = ctk.CTkButton(searchbar_frame, text="Delete", font=ctk.CTkFont(size=12), fg_color="red", width=35, command=delete_selected_transactions)
+    delete_button.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+
+    searchbar_label = ctk.CTkLabel(searchbar_frame, text="Search Bar:", font=ctk.CTkFont(size=12))
+    searchbar_label.grid(row=0, column=1, padx=2, pady=5, sticky="w")
+
+    searchbar_entry = ctk.CTkEntry(searchbar_frame, width=150)
+    searchbar_entry.grid(row=0, column=2, padx=2, pady=5, sticky="ew")
+
+    searchbar_frame.grid_columnconfigure(1, weight=1)
 
     searchbar_entry.bind("<KeyRelease>", filter_tableBySearch)
 
