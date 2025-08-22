@@ -192,37 +192,6 @@ def view_transactions_by_month(month, year, user_id):
             continue
     return decrypted_rows
 
-def view_transactions_by_week(week, year, user_id):
-    global encryption_key
-    if encryption_key is None:
-        raise ValueError("Encryption key is not set. Please log in.")
-    fernet = Fernet(encryption_key)
-    connect_to_database = sqlite3.connect(config.db_path)
-    db_cursor = connect_to_database.cursor()
-    try:
-        start_date = datetime.datetime.strptime(f'{year}-W{week - 1}-1', "%Y-W%W-%w").date()
-        end_date = start_date + datetime.timedelta(days=6)
-    except Exception:
-        connect_to_database.close()
-        return []
-    
-    db_cursor.execute('SELECT id, date, category, description, amount, type FROM transactions WHERE user_id = ?', (user_id,))
-    rows = db_cursor.fetchall()
-    connect_to_database.close()
-    decrypted_rows = []
-    for row in rows:
-        try:
-            decrypted_date = fernet.decrypt(row[1].encode()).decode()
-            row_date = datetime.datetime.strptime(decrypted_date, "%d-%m-%Y").date()
-            if start_date <= row_date <= end_date:
-                decrypted_category = fernet.decrypt(row[2].encode()).decode()
-                decrypted_description = fernet.decrypt(row[3].encode()).decode()
-                decrypted_amount = float(fernet.decrypt(row[4].encode()).decode())
-                decrypted_rows.append((row[0], decrypted_date, decrypted_category, decrypted_description, decrypted_amount, row[5]))
-        except Exception:
-            continue
-    return decrypted_rows
-
 def clear_all_transactions(user_id):
     connect_to_database = sqlite3.connect(config.db_path)
     db_cursor = connect_to_database.cursor()

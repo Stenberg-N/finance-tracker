@@ -1,6 +1,6 @@
 # Finance tracker
 
-from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, view_transactions_by_week, clear_all_transactions, backup_db, verify_login, get_user_id, insert_user, delete_user, clear_encryption_key, \
+from database.db import init_db, insert_transaction, view_all_transactions, view_transactions_by_month, clear_all_transactions, backup_db, verify_login, get_user_id, insert_user, delete_user, clear_encryption_key, \
     delete_transactions_by_id
 from exports import export_transactions_to_csv, export_transactions_to_excel, export_transactions_to_pdf
 import os
@@ -113,11 +113,6 @@ randomforest_btn.pack_forget()
 ensemble_btn.pack_forget()
 xgboost_btn.pack_forget()
 
-by_month_btn = ctk.CTkButton(button_frame, text="Month", command=lambda: show_transactions_by('month'))
-by_week_btn = ctk.CTkButton(button_frame, text="Week", command=lambda: show_transactions_by('week'))
-by_month_btn.pack_forget()
-by_week_btn.pack_forget()
-
 content_frame = ctk.CTkFrame(app)
 content_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
 
@@ -173,14 +168,6 @@ def toggle_chart_buttons():
         savings_progress_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         bar_date_amount_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
         monthly_cat_split_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
-
-def toggle_filter_by_buttons():
-    if by_month_btn.winfo_ismapped():
-        by_month_btn.pack_forget()
-        by_week_btn.pack_forget()
-    else:
-        by_month_btn.pack(after=filter_by_btn, pady=2, anchor=ctk.E)
-        by_week_btn.pack(after=filter_by_btn, pady=2, anchor=ctk.E)
 
 login_frame = ctk.CTkFrame(app)
 login_frame.pack(fill=ctk.BOTH, expand=True)
@@ -495,77 +482,6 @@ def show_all_transactions_table():
     searchbar_frame.grid_columnconfigure(1, weight=1)
 
     searchbar_entry.bind("<KeyRelease>", filter_tableBySearch)
-
-def show_transactions_by(filter_by):
-    clear_content()
-    user_id = get_user_id(current_user)
-    if filter_by == 'month':
-
-        clear_content()
-        ctk.CTkLabel(content_frame, text="Month (MM):").pack()
-        month_entry = ctk.CTkEntry(content_frame)
-        month_entry.pack()
-        ctk.CTkLabel(content_frame, text="Year (YYYY):").pack()
-        year_entry = ctk.CTkEntry(content_frame)
-        year_entry.pack()
-
-        def fetch_and_show_month():
-            try:
-                month = int(month_entry.get())
-                year = int(year_entry.get())
-                if not (1 <= month <= 12):
-                    raise ValueError
-            except ValueError:
-                error = ctk.CTkLabel(content_frame, text="Invalid month or year!", text_color="red")
-                error.pack()
-                error.after(2000, error.destroy)
-                return
-            
-            for widget in content_frame.winfo_children():
-                if isinstance(widget, tk.ttk.Treeview):
-                    widget.destroy()
-
-            tree = all_transactions_treeview()
-
-            rows = view_transactions_by_month(month, year, user_id)
-            for row in rows:
-                tree.insert("", ctk.END, values=row)
-    
-        ctk.CTkButton(content_frame, text="Show transactions", command=fetch_and_show_month).pack(pady=10)
-
-    elif filter_by == 'week':
-
-        clear_content()
-        ctk.CTkLabel(content_frame, text="Week (WW):").pack()
-        week_entry = ctk.CTkEntry(content_frame)
-        week_entry.pack()
-        ctk.CTkLabel(content_frame, text="Year (YYYY):").pack()
-        year_entry = ctk.CTkEntry(content_frame)
-        year_entry.pack()
-
-        def fetch_and_show_week():
-            try:
-                week = int(week_entry.get())
-                year = int(year_entry.get())
-                if not (1 <= week <= 52):
-                    raise ValueError
-            except ValueError:
-                error = ctk.CTkLabel(content_frame, text="Invalid week or year!", text_color="red")
-                error.pack()
-                error.after(2000, error.destroy)
-                return
-            
-            for widget in content_frame.winfo_children():
-                if isinstance(widget, tk.ttk.Treeview):
-                    widget.destroy()
-
-            tree = all_transactions_treeview()
-
-            rows = view_transactions_by_week(week, year, user_id)
-            for row in rows:
-                tree.insert("", ctk.END, values=row)
-
-        ctk.CTkButton(content_frame, text="Show transactions", command=fetch_and_show_week).pack(pady=10)
 
 def show_export_options():
     clear_content()
@@ -1087,8 +1003,6 @@ def show_prediction(prediction_type):
 ctk.CTkButton(button_frame, text="Home", command=show_home_screen).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Add transaction", command=show_add_transaction).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
-filter_by_btn = ctk.CTkButton(button_frame, text="Show by...", command=toggle_filter_by_buttons)
-filter_by_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Exports", command=show_export_options).pack(padx=15, pady=12)
 charts_btn = ctk.CTkButton(button_frame, text="Charts", command=toggle_chart_buttons)
 charts_btn.pack(padx=15, pady=12)
@@ -1111,7 +1025,6 @@ def require_login(func):
 
 show_add_transaction = require_login(show_add_transaction)
 show_all_transactions_table = require_login(show_all_transactions_table)
-show_transactions_by = require_login(show_transactions_by)
 show_export_options = require_login(show_export_options)
 show_delete_data = require_login(show_delete_data)
 show_db_backup_text = require_login(show_db_backup_text)
