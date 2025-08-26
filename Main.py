@@ -875,8 +875,21 @@ def show_chart(chart_type):
             
             dates = list(savings_data.keys())
             savings_values = list(savings_data.values())
-            
             date_objects = [datetime.datetime.strptime(date, "%d-%m-%Y") for date in dates]
+
+            MAX_POINTS = 200 # Change this value to affect the date intervals in the savings chart. Greater value = bigger intervals (bigger date gaps) -> Works better with larger transaction histories.
+            if len(date_objects) > MAX_POINTS:
+                month_last = {}
+                for date, value in zip(date_objects, savings_values):
+                    key = date.strftime("%Y-%m")
+                    if key not in month_last or date > month_last[key][0]:
+                        month_last[key] = (date, value)
+
+                date_objects = [value[0] for value in month_last.values()]
+                savings_values = [value[1] for value in month_last.values()]
+                dates = [date.strftime("%d-%m-%Y") for date in date_objects]
+                sorted_pairs = sorted(zip(date_objects, savings_values))
+                date_objects, savings_values = zip(*sorted_pairs)
             
             ax.plot(date_objects, savings_values, marker='o', linewidth=2, markersize=4, color='green')
             ax.set_xlabel("Date")
@@ -890,8 +903,9 @@ def show_chart(chart_type):
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
             
             # Value labels for key points
+            ANNOTATION_LIMIT = 15
             for i, (date, value) in enumerate(zip(date_objects, savings_values)):
-                if i == 0 or i == len(savings_values) - 1 or value == max(savings_values) or value == min(savings_values):
+                if i == 0 or i == len(savings_values) - 1 or value == max(savings_values) or value == min(savings_values) or i % (len(savings_values) // ANNOTATION_LIMIT) == 0:
                     ax.annotate(f'€{value:,.0f}', xy=(date, value), xytext=(10, 10), textcoords='offset points', fontsize=8, bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8), arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
 
         elif chart_type == 'bar by date_amount':
