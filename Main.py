@@ -726,6 +726,7 @@ def show_chart(chart_type):
 
         elif chart_type == 'bar':
             ax.bar(labels, values, color="skyblue")
+            ax.grid(True, alpha=0.3)
             ax.set_xlabel("Category")
             ax.set_ylabel("Total Amount (€)")
             ax.set_title("Total Amount by Category")
@@ -774,6 +775,7 @@ def show_chart(chart_type):
             width=0.4
 
             bars = ax.barh(y, expense_values, width, align='center')
+            ax.grid(True, alpha=0.3)
             ax.set_yticks(y)
             ax.set_yticklabels(descriptions, fontsize=8)
             ax.invert_yaxis()
@@ -821,6 +823,7 @@ def show_chart(chart_type):
                 return
 
             bars = ax.bar(months, surpluses, color=colors, alpha=0.7)
+            ax.grid(True, alpha=0.3)
             ax.set_xlabel("Month")
             ax.set_ylabel("Surplus/Deficit (€)")
             ax.set_title("Monthly Surplus/Deficit Trends")
@@ -969,6 +972,7 @@ def show_chart(chart_type):
                 values = data[catdesc]
                 ax.bar(all_months, values, bottom=bottom, label=f"{catdesc[0]}: {catdesc[1]}", color=colors[i % len(colors)])
                 bottom += np.array(values)
+            ax.grid(True, alpha=0.3)
             ax.set_xlabel("Month")
             ax.set_ylabel("Expense Amount (€)")
             ax.set_title("Monthly Expenses by Category & Description")
