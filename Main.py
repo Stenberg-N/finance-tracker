@@ -410,7 +410,7 @@ def show_home_screen():
         category_entry.delete(0, ctk.END)
         description_entry.delete(0, ctk.END)
         amount_entry.delete(0, ctk.END)
-        type_var.set("select")
+        type_var.set("Select")
 
     def submit_data():
         date = date_entry.get()
