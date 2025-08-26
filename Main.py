@@ -787,7 +787,9 @@ def show_chart(chart_type):
 
         elif chart_type == "surplus deficit":
             monthly_data = {}
-            for row in db_table:
+            sorted_rows = sorted(db_table, key=lambda x: datetime.datetime.strptime(x[1], "%d-%m-%Y"))
+
+            for row in sorted_rows:
                 date_str = row[1]
                 amount = row[4]
                 transaction_type = row[5]
