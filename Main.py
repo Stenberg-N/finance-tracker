@@ -45,7 +45,7 @@ CHART_DESCRIPTIONS = {
     'donut': "A basic donut chart.",
     'horizontal bar': "Lists the top 5 expenses by category and their description.",
     'surplus deficit': "Subtracts expenses from income on a monthly basis and shows whether profit or loss was made.",
-    'savings': "Displays the trend of your transactions. Also shows if you are in the negative.",
+    'savings': "Displays the trend of your transactions. Also shows if you are in the negative. May act in a bizarre way if stating a year to generate a chart from. This chart is mainly for a long period, so it is suggested to leave the year empty.",
     'bar by date_amount': "Displays both income and expenses per month.",
     'monthly category split': "Displays monthly expenses split by category and description."
 }
@@ -89,31 +89,6 @@ class tooltip:
 
 button_frame = ctk.CTkFrame(app)
 button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
-
-pie_chart_btn = ctk.CTkButton(button_frame, text="Pie chart", command=lambda: show_chart('pie'))
-tooltip(pie_chart_btn, "Displays all transactions in a pie chart.")
-bar_plot_btn = ctk.CTkButton(button_frame, text="Bar plot", command=lambda: show_chart('bar'))
-tooltip(bar_plot_btn, "Displays all transactions in a bar plot.")
-donut_chart_btn = ctk.CTkButton(button_frame, text="Donut chart", command=lambda: show_chart('donut'))
-tooltip(donut_chart_btn, "Displays all transactions in a donut chart.")
-horizontal_bar_btn = ctk.CTkButton(button_frame, text="Top 5 Expenses chart", command=lambda: show_chart('horizontal bar'))
-tooltip(horizontal_bar_btn, "Displays the top 5 expenses by category and its description.")
-surplus_deficit_btn = ctk.CTkButton(button_frame, text="Surplus/Deficit chart", command=lambda: show_chart('surplus deficit'))
-tooltip(surplus_deficit_btn, "Displays your monthly surplus or deficit (income minus expenses).")
-savings_progress_btn = ctk.CTkButton(button_frame, text="Savings chart", command=lambda: show_chart('savings'))
-tooltip(savings_progress_btn, "Displays your cumulative savings over time, updating after each transaction.")
-bar_date_amount_btn = ctk.CTkButton(button_frame, text="Monthly bar chart", command=lambda: show_chart('bar by date_amount'))
-tooltip(bar_date_amount_btn, "Displays total income and expenses for each month, side by side.")
-monthly_cat_split_btn = ctk.CTkButton(button_frame, text="Stacked Bar chart", command=lambda: show_chart('monthly category split'))
-tooltip(monthly_cat_split_btn, "Displays monthly expenses split by category and description.")
-pie_chart_btn.pack_forget()
-bar_plot_btn.pack_forget()
-donut_chart_btn.pack_forget()
-horizontal_bar_btn.pack_forget()
-surplus_deficit_btn.pack_forget()
-savings_progress_btn.pack_forget()
-bar_date_amount_btn.pack_forget()
-monthly_cat_split_btn.pack_forget()
 
 linear_regression_btn = ctk.CTkButton(button_frame, text="Linear", command=lambda: show_prediction('linear'))
 tooltip(linear_regression_btn, "Automatically select the best linear model: standard, Ridge (L2), Lasso (L1) or robust regression for your data.")
@@ -169,26 +144,6 @@ def toggle_prediction_model_buttons():
         randomforest_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         ensemble_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         xgboost_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
-
-def toggle_chart_buttons():
-    if pie_chart_btn.winfo_ismapped():
-        pie_chart_btn.pack_forget()
-        bar_plot_btn.pack_forget()
-        donut_chart_btn.pack_forget()
-        horizontal_bar_btn.pack_forget()
-        surplus_deficit_btn.pack_forget()
-        savings_progress_btn.pack_forget()
-        bar_date_amount_btn.pack_forget()
-        monthly_cat_split_btn.pack_forget()
-    else:
-        pie_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
-        bar_plot_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
-        donut_chart_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
-        horizontal_bar_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
-        surplus_deficit_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
-        savings_progress_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
-        bar_date_amount_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
-        monthly_cat_split_btn.pack(after=charts_btn, pady=2, anchor=ctk.E)
 
 login_frame = ctk.CTkFrame(app)
 login_frame.pack(fill=ctk.BOTH, expand=True)
@@ -622,7 +577,65 @@ def show_delete_data():
 
     ctk.CTkButton(content_frame, text="Delete", command=delete_data, fg_color="red").pack(pady=40)
 
-def show_chart(chart_type):
+def chart_selection_screen():
+    clear_content()
+
+    ctk.CTkLabel(content_frame, text="Charts", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
+    ctk.CTkLabel(content_frame, text="Please input a year and choose a chart to generate.", font=ctk.CTkFont(size=12)).pack(pady=(0, 20))
+
+    chart_selection_frame = ctk.CTkFrame(content_frame, corner_radius=0)
+    chart_selection_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    description_labels_frame = ctk.CTkFrame(chart_selection_frame)
+    description_labels_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=(20, 10))
+
+    option_frame = ctk.CTkFrame(chart_selection_frame)
+    option_frame.grid(row=1, column=0, sticky="nsew", padx=350, pady=(10, 20))
+
+    year_var = ctk.StringVar()
+    chart_var = ctk.StringVar(value="pie")
+
+    ctk.CTkLabel(option_frame, text="You can leave the year entry empty if you want to view everything at once.", font=ctk.CTkFont(size=12)).pack(pady=(5, 0))
+
+    ctk.CTkLabel(option_frame, text="Enter year:", font=ctk.CTkFont(size=12)).pack(pady=(10, 0))
+    year_entry = ctk.CTkEntry(option_frame, textvariable=year_var)
+    year_entry.pack(pady=5)
+
+    ctk.CTkLabel(option_frame, text="Select Chart Type:", font=ctk.CTkFont(size=12)).pack(pady=(10, 0))
+
+    chart_label = ctk.CTkLabel(description_labels_frame, text="", wraplength=600, font=ctk.CTkFont(size=16, weight="bold"))
+    chart_label.pack(pady=(10, 0))
+    description_label = ctk.CTkLabel(description_labels_frame, text="", wraplength=600, font=ctk.CTkFont(size=12))
+    description_label.pack(pady=(0, 20))
+
+    def update_description_and_chart_labels(selection):
+        label = CHART_LABELS.get(selection, "Unknown chart")
+        description = CHART_DESCRIPTIONS.get(selection, "No description available.")
+        chart_label.configure(text=f"{label}")
+        description_label.configure(text=f"{description}")
+
+    chart_menu = ctk.CTkOptionMenu(
+        option_frame,
+        variable=chart_var,
+        values=list(CHART_LABELS.keys()),
+        command=update_description_and_chart_labels
+    )
+    chart_menu.pack()
+
+    update_description_and_chart_labels(chart_var.get())
+
+    chart_selection_frame.grid_rowconfigure(0, weight=0)
+    chart_selection_frame.grid_rowconfigure(1, weight=10)
+    chart_selection_frame.grid_columnconfigure(0, weight=1)
+
+    def proceed():
+        year = year_var.get()
+        chart_type = chart_var.get()
+        show_chart(chart_type, year)
+
+    ctk.CTkButton(option_frame, text="Generate Chart", command=proceed).pack(pady=20)
+
+def show_chart(chart_type, year=None):
     clear_content()
     type_filter_var = ctk.StringVar(value="all")
 
@@ -633,9 +646,12 @@ def show_chart(chart_type):
 
         user_id = get_user_id(current_user)
         db_table = view_all_transactions(user_id)
-        selected_type = type_filter_var.get()
-        if selected_type != "all":
-            db_table = [row for row in db_table if row[5] == selected_type]
+
+        if year:
+            try:
+                db_table = [row for row in db_table if datetime.datetime.strptime(row[1], "%d-%m-%Y").year == int(year)]
+            except ValueError:
+                pass
 
         totals_for_category = {}
         category_types = {}
@@ -795,7 +811,7 @@ def show_chart(chart_type):
                 
                 try:
                     date_obj = datetime.datetime.strptime(date_str, "%d-%m-%Y")
-                    month_key = f"{date_obj.strftime('%B %Y')}"
+                    month_key = f"{date_obj.strftime('%b %Y')}"
                 except ValueError:
                     continue
                 
@@ -1108,8 +1124,7 @@ def show_prediction(prediction_type):
 
 ctk.CTkButton(button_frame, text="Home", command=show_home_screen).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
-charts_btn = ctk.CTkButton(button_frame, text="Charts", command=toggle_chart_buttons)
-charts_btn.pack(padx=15, pady=12)
+charts_btn = ctk.CTkButton(button_frame, text="Charts", command=chart_selection_screen).pack(padx=15, pady=12)
 predictions_btn = ctk.CTkButton(button_frame, text="Monthly expense predictions", command=toggle_prediction_model_buttons)
 predictions_btn.pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Delete all transaction data", command=show_delete_data).pack(padx=15, pady=12)
