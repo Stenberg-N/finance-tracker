@@ -292,7 +292,7 @@ def xgboost_model(n_future_months=1, user_id=None):
         'regressor__booster': ['gbtree', 'gblinear', 'dart'],
         'regressor__lambda': [0, 1, 5, 10, 100],
         'regressor__alpha': [0, 1, 5, 10],
-        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer(), PowerTransformer()]
+        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
     }
 
     tscv = TimeSeriesSplit(n_splits=3)
