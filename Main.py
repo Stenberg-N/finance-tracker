@@ -316,11 +316,11 @@ def show_home_screen():
     user_id = get_user_id(current_user)
     ctk.CTkLabel(content_frame, text="Home screen", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
 
-    home_frame = ctk.CTkFrame(content_frame)
+    home_frame = ctk.CTkFrame(content_frame, corner_radius=0)
     home_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-    info_frame = ctk.CTkFrame(home_frame)
-    info_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+    info_frame = ctk.CTkFrame(home_frame, corner_radius=0)
+    info_frame.grid(row=0, column=0, padx=(20, 10), pady=20, sticky="nsew")
 
     feed_frame = ctk.CTkScrollableFrame(info_frame)
     feed_frame.grid(row=0, column=0, padx=20, pady=(20, 5), sticky="nsew")
@@ -329,14 +329,14 @@ def show_home_screen():
     backup_info_frame.grid(row=1, column=0, padx=20, sticky="ew")
     backup_info_frame.grid_propagate(False)
 
-    export_add_transaction_frame = ctk.CTkFrame(home_frame)
-    export_add_transaction_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
+    export_add_transaction_frame = ctk.CTkFrame(home_frame, corner_radius=0)
+    export_add_transaction_frame.grid(row=0, column=1, padx=(10, 20), pady=20, sticky="nsew")
 
     add_transaction_frame = ctk.CTkScrollableFrame(export_add_transaction_frame)
-    add_transaction_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+    add_transaction_frame.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
 
     export_frame = ctk.CTkScrollableFrame(export_add_transaction_frame)
-    export_frame.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
+    export_frame.grid(row=1, column=0, padx=20, pady=(10, 20), sticky="nsew")
 
     ctk.CTkLabel(feed_frame, text="This month's feed", font=ctk.CTkFont(size=20, weight="bold")).pack(anchor=ctk.W, padx=20, pady=(10, 20))
     feed_messages = generate_feed_messages(user_id)
@@ -470,7 +470,7 @@ def show_home_screen():
     info_frame.grid_rowconfigure(2, weight=0)
     info_frame.grid_columnconfigure(0, weight=1)
 
-    export_add_transaction_frame.grid_rowconfigure(0, weight=3)
+    export_add_transaction_frame.grid_rowconfigure(0, weight=4)
     export_add_transaction_frame.grid_rowconfigure(1, weight=2)
     export_add_transaction_frame.grid_columnconfigure(0, weight=1)
 
@@ -677,14 +677,14 @@ def show_chart(chart_type):
         chart_left_frame = ctk.CTkFrame(chart_frame)
         chart_left_frame.grid(row=0, column=0, sticky="nsew")
 
-        legend_frame = ctk.CTkFrame(chart_frame)
+        legend_frame = ctk.CTkFrame(chart_frame, corner_radius=0)
         legend_frame.grid(row=0, column=1, sticky="nsew")
 
         legend_title = ctk.CTkLabel(legend_frame, text="Category Breakdown", font=ctk.CTkFont(size=16, weight="bold"))
-        legend_title.pack(pady=(10, 5))
+        legend_title.pack(pady=(0, 5))
 
-        legend_scroll = ctk.CTkScrollableFrame(legend_frame, width=250)
-        legend_scroll.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        legend_scroll = ctk.CTkScrollableFrame(legend_frame)
+        legend_scroll.pack(fill="both", expand=True, padx=(10, 0), pady=(5, 0))
 
         total_amount = sum(values)
 
@@ -902,7 +902,7 @@ def show_chart(chart_type):
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
             
             # Value labels for key points
-            ANNOTATION_LIMIT = 15
+            ANNOTATION_LIMIT = 6 # Edit this to affect the amount of markers on the chart.
             for i, (date, value) in enumerate(zip(date_objects, savings_values)):
                 if i == 0 or i == len(savings_values) - 1 or value == max(savings_values) or value == min(savings_values) or i % (len(savings_values) // ANNOTATION_LIMIT) == 0:
                     ax.annotate(f'€{value:,.0f}', xy=(date, value), xytext=(10, 10), textcoords='offset points', fontsize=8, bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8), arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
@@ -999,8 +999,8 @@ def show_chart(chart_type):
         widget = canvas.get_tk_widget()
         widget.pack(expand=True, fill="both")
 
-        chart_frame.grid_columnconfigure(0, weight=200)
-        chart_frame.grid_columnconfigure(1, weight=1)
+        chart_frame.grid_columnconfigure(0, weight=180)
+        chart_frame.grid_columnconfigure(1, weight=0)
         chart_frame.grid_rowconfigure(0, weight=1)
 
     labels = CHART_LABELS.get(chart_type, "Chart not available.")
@@ -1046,7 +1046,7 @@ def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_exp
         canvas = FigureCanvasTkAgg(fig, master=parent_frame)
         canvas.draw()
         widget = canvas.get_tk_widget()
-        widget.pack(expand=True, fill="both")
+        widget.pack(expand=True, fill="both", padx=10, pady=10)
         widget.is_chart_widget=True
 
 def show_prediction(prediction_type):
