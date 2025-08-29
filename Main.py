@@ -14,6 +14,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
 from ml import linear_model, polynomial_model, sarimax_model, randomforest_model, ensemble_model, xgboost_model
+import threading
 
 current_user = None
 
@@ -21,8 +22,6 @@ script_directory = os.path.dirname(os.path.abspath(__file__))
 config.db_path = os.path.join(script_directory, 'database', 'finance.db')
 config.db_backup_path = os.path.join(script_directory, 'database', 'backup_finance.db')
 config.exports_path = os.path.join(script_directory, 'exports')
-
-init_db()
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
@@ -1081,26 +1080,29 @@ def show_prediction(prediction_type):
             error.after(2000, error.destroy)
             return
 
-        if prediction_type == 'linear':
-            predicted_expense, months, actuals = linear_model(n_future_months=n_months, user_id=user_id)
-        elif prediction_type == 'polynomial':
-            predicted_expense, months, actuals = polynomial_model(n_future_months=n_months, user_id=user_id)
-        elif prediction_type == 'sarimax':
-            predicted_expense, months, actuals = sarimax_model(n_future_months=n_months, user_id=user_id)
-        elif prediction_type == 'randomforest':
-            predicted_expense, months, actuals = randomforest_model(n_future_months=n_months, user_id=user_id)
-        elif prediction_type == 'ensemble':
-            predicted_expense, months, actuals = ensemble_model(n_future_months=n_months, user_id=user_id)
-        elif prediction_type == 'xgboost':
-            predicted_expense, months, actuals = xgboost_model(n_future_months=n_months, user_id=user_id)
-        else:
-            return
+        def run_ml():
+            if prediction_type == 'linear':
+                predicted_expense, months, actuals = linear_model(n_future_months=n_months, user_id=user_id)
+            elif prediction_type == 'polynomial':
+                predicted_expense, months, actuals = polynomial_model(n_future_months=n_months, user_id=user_id)
+            elif prediction_type == 'sarimax':
+                predicted_expense, months, actuals = sarimax_model(n_future_months=n_months, user_id=user_id)
+            elif prediction_type == 'randomforest':
+                predicted_expense, months, actuals = randomforest_model(n_future_months=n_months, user_id=user_id)
+            elif prediction_type == 'ensemble':
+                predicted_expense, months, actuals = ensemble_model(n_future_months=n_months, user_id=user_id)
+            elif prediction_type == 'xgboost':
+                predicted_expense, months, actuals = xgboost_model(n_future_months=n_months, user_id=user_id)
+            else:
+                return
 
-        months_labels = [datetime.datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in months]
-        next_month = (datetime.datetime.strptime(months[-1], "%Y-%m") + datetime.timedelta(days=31)).replace(day=1)
-        next_month_label = next_month.strftime("%b %Y")
+            months_labels = [datetime.datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in months]
+            next_month = (datetime.datetime.strptime(months[-1], "%Y-%m") + datetime.timedelta(days=31)).replace(day=1)
+            next_month_label = next_month.strftime("%b %Y")
 
-        draw_prediction_plot(months_labels, actuals, next_month_label, predicted_expense, content_frame)
+            app.after(0, lambda: draw_prediction_plot(months_labels, actuals, next_month_label, predicted_expense, content_frame))
+
+        threading.Thread(target=run_ml).start()
 
     ctk.CTkButton(content_frame, text="Predict", command=on_predict).pack(pady=10)
 
@@ -1129,5 +1131,7 @@ show_delete_data = require_login(show_delete_data)
 show_chart = require_login(show_chart)
 show_prediction = require_login(show_prediction)
 
-show_login_screen()
-app.mainloop()
+if __name__ == "__main__":
+    init_db()
+    show_login_screen()
+    app.mainloop()
