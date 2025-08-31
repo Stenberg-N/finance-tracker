@@ -8,7 +8,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 import xgboost as xgb
-from itertools import product
 import pandas as pd
 import math
 
@@ -61,7 +60,10 @@ def get_months_x_y(user_id):
     category_features = category_pivot.reindex(months).fillna(0)[all_categories].values
     x = np.hstack([x_normalized, x_raw, rolling_mean_3m, rolling_mean_6m, month_of_year, lag1, lag12, diff1, rolling_std_3m, sin_month, cos_month, quarter, category_features])
 
-    return months, x, y, all_categories
+    exog_indices = list(range(12, 12 + len(all_categories)))
+    exog = x[:, exog_indices]
+
+    return months, x, y, all_categories, exog
 
 def generate_future_features(months, y, n_future_months, category_pivot, all_categories):
     future_features = []
@@ -75,7 +77,8 @@ def generate_future_features(months, y, n_future_months, category_pivot, all_cat
     diff1 = 0
     rolling_std_3m_base = pd.Series(y[-3:]).std() if len(y) >= 3 else 0
 
-    avg_category = category_pivot[all_categories].mean().values.reshape(-1, 1)
+    category_history = category_pivot[all_categories].tail(12).values
+    n_history = len(category_history)
 
     for i in range(n_future_months):
         next_month_raw = last_index + i
@@ -86,13 +89,17 @@ def generate_future_features(months, y, n_future_months, category_pivot, all_cat
         cos_m = math.cos(2 * math.pi * month_num / 12)
         quarter_val = ((month_num - 1) // 3) + 1
 
+        category_values = category_history[i % n_history] if n_history > 0 else category_pivot[all_categories].mean().values()
+
         feature_row = [next_month_normalized, next_month_raw, rolling_mean_3m_base, rolling_mean_6m_base, month_num, lag1, lag12, diff1, \
-                      rolling_std_3m_base, sin_m, cos_m, quarter_val] + avg_category.flatten().tolist()
+                      rolling_std_3m_base, sin_m, cos_m, quarter_val] + category_values.tolist()
         future_features.append(feature_row)
 
     future_features = np.array(future_features, dtype=float)
+    exog_indices = list(range(12, 12 + len(all_categories)))
+    future_exog = future_features[:, exog_indices]
 
-    return future_features
+    return future_features, future_exog
 
 def run_gridsearch(x, y, pipeline, param_grid):
 
@@ -109,55 +116,13 @@ def run_gridsearch(x, y, pipeline, param_grid):
 
     gridsearch.fit(x, y)
 
+    best_mse = -gridsearch.best_score_
+    print(f"Best model MSE: {best_mse:.2f}")
+    print(f"Best parameters: {gridsearch.best_params_}")
+
     return gridsearch.best_params_
 
-def linear_model(n_future_months=1, user_id=None):
-    if user_id is None:
-        raise ValueError("user_id must be provided")
-
-    months, x, y, all_categories = get_months_x_y(user_id)
-    _, category_pivot, _ = fetch_data(user_id)
-
-    pipeline_linear = Pipeline([
-        ('scaler', StandardScaler()),
-        ('regressor', LinearRegression())
-    ])
-
-    param_grid = [
-        {
-            'regressor': [LinearRegression()],
-            'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
-        },
-        {
-            'regressor': [Ridge(), Lasso(max_iter=10000)],
-            'regressor__alpha': [0.01, 0.1, 1, 10, 100, 1000],
-            'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
-        },
-        {
-            'regressor': [HuberRegressor(max_iter=1000)],
-            'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
-            'regressor__epsilon': [1, 1.1, 1.35, 1.5],
-            'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
-        }
-    ]
-
-    best_params = run_gridsearch(x, y, pipeline_linear, param_grid)
-
-    best_pipeline = Pipeline([
-        ('scaler', StandardScaler()),
-        ('regressor', LinearRegression())
-    ])
-
-    best_pipeline.set_params(**best_params)
-    best_pipeline.fit(x, y)
-
-    future_features = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
-    predictions = []
-    recent_y = list(y)
-
+def feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months):
     for i in range(n_future_months):
         pred = best_pipeline.predict(future_features[i:i+1])[0]
         pred = np.clip(pred, 0, np.max(y) * 2)
@@ -173,6 +138,55 @@ def linear_model(n_future_months=1, user_id=None):
             if len(months) > 12:
                 future_features[i+1][6] = recent_y[-12] if len(recent_y) >= 12 else np.mean(recent_y)
 
+def linear_model(n_future_months=1, user_id=None):
+    if user_id is None:
+        raise ValueError("user_id must be provided")
+
+    months, x, y, all_categories, _ = get_months_x_y(user_id)
+    _, category_pivot, _ = fetch_data(user_id)
+
+    pipeline_linear = Pipeline([
+        ('scaler', StandardScaler()),
+        ('regressor', LinearRegression())
+    ])
+
+    param_grid = [
+        {
+            'regressor': [LinearRegression()],
+            'regressor__fit_intercept': [True, False],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
+        },
+        {
+            'regressor': [Ridge(), Lasso(max_iter=10000)],
+            'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
+            'regressor__fit_intercept': [True, False],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
+        },
+        {
+            'regressor': [HuberRegressor(max_iter=10000)],
+            'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
+            'regressor__epsilon': [1, 1.1, 1.35, 1.5, 1.8, 2.0],
+            'regressor__fit_intercept': [True, False],
+            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
+        }
+    ]
+
+    best_params = run_gridsearch(x, y, pipeline_linear, param_grid)
+
+    best_pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('regressor', LinearRegression())
+    ])
+
+    best_pipeline.set_params(**best_params)
+    best_pipeline.fit(x, y)
+
+    future_features, _ = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
+    predictions = []
+    recent_y = list(y)
+
+    feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
+
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
 
@@ -180,7 +194,8 @@ def polynomial_model(n_future_months=1, user_id=None):
     if user_id is None:
         raise ValueError("user_id must be provided")
 
-    months, x, y = get_months_x_y(user_id)
+    months, x, y, all_categories, _ = get_months_x_y(user_id)
+    _, category_pivot, _ = fetch_data(user_id)
 
     pipeline_poly = Pipeline([
         ('poly', PolynomialFeatures()),
@@ -191,15 +206,15 @@ def polynomial_model(n_future_months=1, user_id=None):
     param_grid = [
         {
             'regressor': [Ridge(), Lasso(max_iter=10000)],
-            'regressor__alpha': [0.01, 0.1, 1, 10, 100, 1000],
+            'regressor__alpha': [0.001, 0.01, 0.1, 0.5, 1, 10],
             'regressor__fit_intercept': [True, False],
             'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()],
             'poly__degree': [2, 3, 4]
         },
         {
             'regressor': [HuberRegressor(max_iter=10000)],
-            'regressor__alpha': [0.0001, 0.001, 0.01, 0.1, 1],
-            'regressor__epsilon': [1, 1.1, 1.35, 1.5],
+            'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
+            'regressor__epsilon': [1, 1.1, 1.35, 1.5, 1.8],
             'regressor__fit_intercept': [True, False],
             'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()],
             'poly__degree': [2, 3, 4]
@@ -217,13 +232,11 @@ def polynomial_model(n_future_months=1, user_id=None):
     best_pipeline.set_params(**best_params)
     best_pipeline.fit(x, y)
 
-    future_features = generate_future_features(months, y, n_future_months)
+    future_features, _ = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
     predictions = []
+    recent_y = list(y)
 
-    for i in range(n_future_months):
-        pred = best_pipeline.predict(future_features[i:i+1])[0]
-        pred = np.clip(pred, 0, np.max(y) * 2)
-        predictions.append(float(pred))
+    feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
@@ -232,40 +245,43 @@ def sarimax_model(n_future_months=1, user_id=None):
     if user_id is None:
         raise ValueError("user_id must be provided")
 
-    months, x, y = get_months_x_y(user_id)
+    months, x, y, all_categories, exog = get_months_x_y(user_id)
+    _, category_pivot, _ = fetch_data(user_id)
 
-    p_values = range(0, 3)
-    d_values = range(0, 2)
-    q_values = range(0, 3)
-    order_combinations = list(product(p_values, d_values, q_values))
+    y_capped = np.clip(y, 0, np.percentile(y, 95))
 
-    P_values = range(0, 3)
-    D_values = range(0, 2)
-    Q_values = range(0, 3)
-    s_values = [6, 12]
-    seasonal_order_combinations = list(product(P_values, D_values, Q_values, s_values))
+    def fit_sarimax(params):
+        try:
+            order = params['order']
+            seasonal_order = params['seasonal_order']
+            model = SARIMAX(y_capped, exog=exog, order=order, seasonal_order=seasonal_order, enforce_stationarity=False, enforce_invertibility=False)
+            return -model.fit(disp=False).aic
+        except:
+            return np.inf
 
-    best_aic = np.inf
-    best_order = None
-    best_seasonal_order = None
-    best_model = None
+    param_grid = {
+        'order': [(p, d, q) for p in range(3) for d in range(2) for q in range(3)],
+        'seasonal_order': [(p, d, q, 12) for p in range(2) for d in range(2) for q in range(2)]
+    }
 
-    for order in order_combinations:
-        for seasonal_order in seasonal_order_combinations:
-            try:
-                model = SARIMAX(endog=y, exog=x, order=order, seasonal_order=seasonal_order, enforce_stationarity=False, enforce_invertibility=False)
-                results = model.fit(disp=False)
-                if results.aic < best_aic:
-                    best_aic = results.aic
-                    best_order = order
-                    best_seasonal_order = seasonal_order
-                    best_model = results
-            except Exception:
-                continue
+    best_score = np.inf
+    best_params = None
+    for params in param_grid['order']:
+        for s_params in param_grid['seasonal_order']:
+            score = fit_sarimax({'order': params, 'seasonal_order': s_params})
+            if score < best_score:
+                best_score = score
+                best_params = {'order': params, 'seasonal_order': s_params}
 
-    future_features = generate_future_features(months, y, n_future_months)
-    predictions = best_model.forecast(steps=n_future_months, exog=future_features)
-    predictions = np.clip(predictions, 0, max(y) * 2)
+    print(f"Best score: {best_score:}")
+    print(f"Best parameters: {best_params}")
+
+    model = SARIMAX(y_capped, exog=exog, order=best_params['order'], seasonal_order=best_params['seasonal_order'], enforce_stationarity=False, enforce_invertibility=False)
+    best_model = model.fit(disp=False)
+
+    future_features, future_exog = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
+    predictions = best_model.forecast(steps=n_future_months, exog=future_exog)
+    predictions = np.clip(predictions, 0, np.max(y) * 2)
 
     return predictions[0] if n_future_months == 1 else predictions, months, y
 
@@ -273,16 +289,17 @@ def randomforest_model(n_future_months=1, user_id=None):
     if user_id is None:
         raise ValueError("user_id must be provided")
 
-    months, x, y = get_months_x_y(user_id)
+    months, x, y, all_categories, _ = get_months_x_y(user_id)
+    _, category_pivot, _ = fetch_data(user_id)
 
     pipeline_randomforest = Pipeline([
         ('regressor', RandomForestRegressor())
     ])
 
     param_grid = {
-        'regressor__n_estimators': [100, 200],
-        'regressor__max_depth': [None, 2, 5],
-        'regressor__min_samples_split': [2, 5],
+        'regressor__n_estimators': [50, 100, 150],
+        'regressor__max_depth': [None, 2, 5, 8, 10],
+        'regressor__min_samples_split': [2, 3],
         'regressor__min_samples_leaf': [1, 2],
         'regressor__max_features': [1.0, 'sqrt', 'log2'],
         'regressor__bootstrap': [False, True]
@@ -297,13 +314,11 @@ def randomforest_model(n_future_months=1, user_id=None):
     best_pipeline.set_params(**best_params)
     best_pipeline.fit(x, y)
 
-    future_features = generate_future_features(months, y, n_future_months)
+    future_features, _ = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
     predictions = []
+    recent_y = list(y)
 
-    for i in range(n_future_months):
-        pred = best_pipeline.predict(future_features[i:i+1])[0]
-        pred = np.clip(pred, 0, np.max(y) * 2)
-        predictions.append(float(pred))
+    feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
@@ -312,7 +327,8 @@ def xgboost_model(n_future_months=1, user_id=None):
     if user_id is None:
         raise ValueError("user_id must be provided")
 
-    months, x, y = get_months_x_y(user_id)
+    months, x, y, all_categories, _ = get_months_x_y(user_id)
+    _, category_pivot, _ = fetch_data(user_id)
 
     pipeline_xgb = Pipeline([
         ('scaler', StandardScaler()),
@@ -323,11 +339,11 @@ def xgboost_model(n_future_months=1, user_id=None):
     ])
 
     param_grid = {
-        'regressor__n_estimators': [50, 100, 150, 200],
-        'regressor__learning_rate': [0.01, 0.1, 0.3],
+        'regressor__n_estimators': [25, 50, 100, 150],
+        'regressor__learning_rate': [0.1, 0.3, 0.5],
         'regressor__booster': ['gbtree', 'gblinear', 'dart'],
-        'regressor__lambda': [0.01, 0.1, 0, 1, 5, 10, 100],
-        'regressor__alpha': [0.01, 0.1, 0, 1, 5, 10],
+        'regressor__lambda': [0.001, 0.01, 0.1, 0, 1, 10],
+        'regressor__alpha': [0.001, 0.01, 0.1, 0, 1, 10, 100],
         'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
     }
 
@@ -354,6 +370,11 @@ def xgboost_model(n_future_months=1, user_id=None):
             regressor__eval_set=[(x_val, y_val)],
             regressor__verbose=False
         )
+
+        best_mse = -grid_search.best_score_
+        print(f"Best model MSE: {best_mse:.2f}")
+        print(f"Best parameters: {grid_search.best_params_}")
+
         return grid_search.best_params_
 
     best_params = run_gridsearch_with_early_stopping(x_train, y_train, x_val, y_val, pipeline_xgb, param_grid)
@@ -373,13 +394,11 @@ def xgboost_model(n_future_months=1, user_id=None):
         regressor__verbose=False
     )
 
-    future_features = generate_future_features(months, y, n_future_months)
+    future_features, _ = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
     predictions = []
+    recent_y = list(y)
 
-    for i in range(n_future_months):
-        pred = best_pipeline.predict(future_features[i:i+1])[0]
-        pred = np.clip(pred, 0, np.max(y) * 2)
-        predictions.append(float(pred))
+    feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y
@@ -389,7 +408,7 @@ def ensemble_model(n_future_months=1, user_id=None):
         raise ValueError("user_id must be provided")
 
     pred1, months, y = linear_model(n_future_months, user_id)
-    pred2, _, _ = randomforest_model(n_future_months, user_id)
+    pred2, _, _ = polynomial_model(n_future_months, user_id)
     pred3, _, _ = sarimax_model(n_future_months, user_id)
     pred4, _, _ = xgboost_model(n_future_months, user_id)
     ensemble_pred = np.mean([pred1, pred2, pred3, pred4], axis=0) if n_future_months > 1 else np.mean([pred1, pred2, pred3, pred4])
