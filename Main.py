@@ -87,7 +87,7 @@ class tooltip:
         if tw:
             tw.destroy()
 
-button_frame = ctk.CTkFrame(app)
+button_frame = ctk.CTkFrame(app, corner_radius=0)
 button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
 
 linear_regression_btn = ctk.CTkButton(button_frame, text="Linear", command=lambda: show_prediction('linear'))
@@ -109,7 +109,7 @@ randomforest_btn.pack_forget()
 ensemble_btn.pack_forget()
 xgboost_btn.pack_forget()
 
-content_frame = ctk.CTkFrame(app)
+content_frame = ctk.CTkFrame(app, corner_radius=0)
 content_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
 
 def clear_content():
@@ -145,7 +145,7 @@ def toggle_prediction_model_buttons():
         ensemble_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         xgboost_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
 
-login_frame = ctk.CTkFrame(app)
+login_frame = ctk.CTkFrame(app, corner_radius=0)
 login_frame.pack(fill=ctk.BOTH, expand=True)
 
 def show_register_screen():
@@ -1034,11 +1034,17 @@ def show_chart(chart_type, year=None):
 
     draw_chart()
 
+max_past_n_months = 12 # Limit the amount of actual expense points shown in the graph so that the graph doesn't overfill.
+
 def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_expense, parent_frame):
         fig = Figure(figsize=(6, 4), dpi=100)
         ax = fig.add_subplot(111)
 
         actuals = np.array(actuals, dtype=float)
+        if len(months_labels) > max_past_n_months:
+            months_labels = months_labels[-max_past_n_months:]
+            actuals = actuals[-max_past_n_months:]
+
         predicted_expense = np.array([predicted_expense] if np.isscalar(predicted_expense) else predicted_expense, dtype=float).flatten()
         next_month = datetime.datetime.strptime(months_labels[-1], "%b %Y")
         future_labels = []
@@ -1049,8 +1055,18 @@ def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_exp
         ax.plot(months_labels, actuals, marker='o', label="Actual expenses", color="blue")
         ax.plot([months_labels[-1]] + future_labels, [actuals[-1]] + list(predicted_expense), marker='o', linestyle="--", color="orange", label="Predicted expenses")
         ax.scatter(future_labels, predicted_expense, color="red", zorder=5)
-        for i, (label, pred) in enumerate(zip(future_labels, predicted_expense)):
-            ax.annotate(f"Predicted: €{pred:.2f}", xy=(label, pred), xytext=(0, 10 + i*10), textcoords="offset points", ha="center", color="red")
+
+        last_y = None
+        texts = []
+        for label, pred in zip(future_labels, predicted_expense):
+            y_offset = 10
+            if last_y is not None and abs(pred - last_y) < 100:
+                y_offset += 50
+            texts.append(
+                ax.annotate(f"Predicted: €{pred:.2f}", xy=(label, pred), xytext=(0, y_offset), textcoords="offset points", ha="center", color="red", arrowprops=dict(arrowstyle="->", color="gray"))
+            )
+            last_y = pred
+
         ax.set_xlabel("Month")
         ax.set_ylabel("Expenses (€)")
         ax.set_title("Monthly expenses & prediction")
@@ -1067,23 +1083,57 @@ def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_exp
 
 def show_prediction(prediction_type):
     clear_content()
-    description = PREDICTION_MODEL_DESCRIPTIONS.get(prediction_type, "No description available for this model.")
-    ctk.CTkLabel(content_frame, text=description, wraplength=600, justify="left").pack(pady=(10, 20))
+    ctk.CTkLabel(content_frame, text="Prediction models", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
 
-    ctk.CTkLabel(content_frame, text="Enter the amount of months to predict:").pack()
-    month_entry = ctk.CTkEntry(content_frame)
+    prediction_frame = ctk.CTkFrame(content_frame, corner_radius=0)
+    prediction_frame.pack(fill="both", expand=True, padx=10, pady=5)
+
+    ctk.CTkLabel(prediction_frame, text="Note that depending on the chosen model and the amount of data, the time to make the predictions can take some time! Please wait until the graph appears.",
+                 font=ctk.CTkFont(size=12), wraplength=600, justify="left").pack(pady=(10, 10))
+
+    description = PREDICTION_MODEL_DESCRIPTIONS.get(prediction_type, "No description available for this model.")
+    ctk.CTkLabel(prediction_frame, text=description, font=ctk.CTkFont(size=18), wraplength=600, justify="left").pack(pady=(10, 20))
+
+    ctk.CTkLabel(prediction_frame, text="The number of past months to show:", font=ctk.CTkFont(size=12)).pack(pady=(70, 0))
+    past_month_entry = ctk.CTkEntry(prediction_frame)
+    past_month_entry.pack()
+    ctk.CTkLabel(prediction_frame, text="Leaving this empty will default to the past 12 months. Does not affect the predictions. Use to prevent the graph from overfilling if there are years of transaction data that it would then try to fit in.",
+                 wraplength=600, font=ctk.CTkFont(size=12)).pack(pady=5)
+
+    ctk.CTkLabel(prediction_frame, text="Enter the amount of months to predict:", font=ctk.CTkFont(size=12)).pack(pady=(30, 0))
+    month_entry = ctk.CTkEntry(prediction_frame)
     month_entry.pack()
 
+    def clear_prediction_frame():
+        for widget in prediction_frame.winfo_children():
+            widget.destroy()
+
     def on_predict():
+        global max_past_n_months
+
         try:
             n_months = int(month_entry.get())
             if n_months < 1:
                 raise ValueError
         except ValueError:
-            error = ctk.CTkLabel(content_frame, text="Please enter a valid positive integer.", text_color="red")
+            error = ctk.CTkLabel(prediction_frame, text="Please enter a valid positive integer.", text_color="red")
             error.pack()
             error.after(2000, error.destroy)
             return
+
+        past_n_months = past_month_entry.get()
+
+        if past_n_months == "":
+            past_n_months = max_past_n_months
+        else:
+            try:
+                past_n_months = int(past_n_months)
+                max_past_n_months = past_n_months
+            except ValueError:
+                error = ctk.CTkLabel(prediction_frame, text="Please enter a valid positive integer.", text_color="red")
+                error.pack()
+                error.after(2000, error.destroy)
+                return
 
         for widget in content_frame.winfo_children():
             if hasattr(widget, "is_chart_widget") and widget.is_chart_widget:
@@ -1116,11 +1166,12 @@ def show_prediction(prediction_type):
             next_month = (datetime.datetime.strptime(months[-1], "%Y-%m") + datetime.timedelta(days=31)).replace(day=1)
             next_month_label = next_month.strftime("%b %Y")
 
-            app.after(0, lambda: draw_prediction_plot(months_labels, actuals, next_month_label, predicted_expense, content_frame))
+            clear_prediction_frame()
+            app.after(0, lambda: draw_prediction_plot(months_labels, actuals, next_month_label, predicted_expense, prediction_frame))
 
         threading.Thread(target=run_ml).start()
 
-    ctk.CTkButton(content_frame, text="Predict", command=on_predict).pack(pady=10)
+    ctk.CTkButton(prediction_frame, text="Predict", command=on_predict).pack(pady=10)
 
 ctk.CTkButton(button_frame, text="Home", command=show_home_screen).pack(padx=15, pady=12)
 ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
