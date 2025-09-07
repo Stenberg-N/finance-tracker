@@ -30,6 +30,13 @@ app = ctk.CTk()
 app.title("Finance Tracker")
 app.geometry("1600x900")
 
+mainframe = ctk.CTkFrame(app, corner_radius=0)
+mainframe.pack(fill="both", expand=True)
+
+button_frame = ctk.CTkFrame(mainframe, corner_radius=0, fg_color="#202020", bg_color="#383838")
+content_frame = ctk.CTkFrame(mainframe, corner_radius=0, fg_color="#171717")
+login_frame = ctk.CTkFrame(mainframe, corner_radius=0, fg_color="#171717")
+
 PREDICTION_MODEL_DESCRIPTIONS = {
     'linear': "Linear Regression including Ridge, Lasso and Robust techniques: Best for data with a linear trend. Automatically selects the best regularized or robust linear model.",
     'polynomial': "Polynomial Regression including Ridge, Lasso and Robust techniques for overfitting and/or outliers: Captures non-linear trends. Useful if your expenses have curves or seasonal effects.",
@@ -87,20 +94,17 @@ class tooltip:
         if tw:
             tw.destroy()
 
-button_frame = ctk.CTkFrame(app, corner_radius=0)
-button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
-
-linear_regression_btn = ctk.CTkButton(button_frame, text="Linear", command=lambda: show_prediction('linear'))
+linear_regression_btn = ctk.CTkButton(button_frame, text="Linear", command=lambda: show_prediction('linear'), corner_radius=0, height=40, fg_color="#484848", hover_color="#353535", bg_color="#383838")
 tooltip(linear_regression_btn, "Automatically select the best linear model: standard, Ridge (L2), Lasso (L1) or robust regression for your data.")
-poly_regression_btn = ctk.CTkButton(button_frame, text="Polynomial", command=lambda: show_prediction('polynomial'))
+poly_regression_btn = ctk.CTkButton(button_frame, text="Polynomial", command=lambda: show_prediction('polynomial'), corner_radius=0, height=40, fg_color="#484848", hover_color="#353535", bg_color="#383838")
 tooltip(poly_regression_btn, "Captures non-linear treds. Useful if your expenses have curves or seasonal effects.")
-sarimax_btn = ctk.CTkButton(button_frame, text="SARIMAX", command=lambda: show_prediction('sarimax'))
+sarimax_btn = ctk.CTkButton(button_frame, text="SARIMAX", command=lambda: show_prediction('sarimax'), corner_radius=0, height=40, fg_color="#484848", hover_color="#353535", bg_color="#383838")
 tooltip(sarimax_btn, "Time series model. Good for data with trends and seasonality.")
-randomforest_btn = ctk.CTkButton(button_frame, text="RandomForest", command=lambda: show_prediction('randomforest'))
+randomforest_btn = ctk.CTkButton(button_frame, text="RandomForest", command=lambda: show_prediction('randomforest'), corner_radius=0, height=40, fg_color="#484848", hover_color="#353535", bg_color="#383838")
 tooltip(randomforest_btn, "Combines many decision trees to make better predictions even with complex or unusual data.")
-ensemble_btn = ctk.CTkButton(button_frame, text="Ensemble", command=lambda: show_prediction('ensemble'))
+ensemble_btn = ctk.CTkButton(button_frame, text="Ensemble", command=lambda: show_prediction('ensemble'), corner_radius=0, height=40, fg_color="#484848", hover_color="#353535", bg_color="#383838")
 tooltip(ensemble_btn, "Combines the Linear, SARIMAX, Random Forest and XGBoost models for improved accuracy and robustness.")
-xgboost_btn = ctk.CTkButton(button_frame, text="XGBoost", command=lambda: show_prediction('xgboost'))
+xgboost_btn = ctk.CTkButton(button_frame, text="XGBoost", command=lambda: show_prediction('xgboost'), corner_radius=0, height=40, fg_color="#484848", hover_color="#353535", bg_color="#383838")
 tooltip(xgboost_btn, "Captures complex patterns and interactions in data. Suitable for small and large datasets.")
 linear_regression_btn.pack_forget()
 poly_regression_btn.pack_forget()
@@ -108,9 +112,6 @@ sarimax_btn.pack_forget()
 randomforest_btn.pack_forget()
 ensemble_btn.pack_forget()
 xgboost_btn.pack_forget()
-
-content_frame = ctk.CTkFrame(app, corner_radius=0)
-content_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
 
 def clear_content():
     for widget in content_frame.winfo_children():
@@ -124,9 +125,9 @@ def clear_session():
     global current_user
     current_user = None
     clear_encryption_key()
-    login_frame.pack(fill=ctk.BOTH, expand=True)
-    content_frame.pack_forget()
-    button_frame.pack_forget()
+    content_frame.grid_forget()
+    button_frame.grid_forget()
+    login_frame.pack(fill="both", expand=True)
     show_login_screen()
 
 def toggle_prediction_model_buttons():
@@ -145,13 +146,10 @@ def toggle_prediction_model_buttons():
         ensemble_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
         xgboost_btn.pack(after=predictions_btn, pady=2, anchor=ctk.E)
 
-login_frame = ctk.CTkFrame(app, corner_radius=0)
-login_frame.pack(fill=ctk.BOTH, expand=True)
-
 def show_register_screen():
     clear_content()
     clear_login_frame()
-    login_frame.pack(fill=ctk.BOTH, expand=True)
+    login_frame.pack(fill="both", expand=True)
     ctk.CTkLabel(login_frame, text="Register", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
 
     ctk.CTkLabel(login_frame, text="Username").pack(pady=5)
@@ -193,24 +191,24 @@ def show_register_screen():
             error.pack()
             error.after(2000, error.destroy)
 
-    ctk.CTkButton(login_frame, text="Register", command=register).pack(pady=12)
-    ctk.CTkButton(login_frame, text="Back to Login", command=show_login_screen).pack(pady=5)
+    ctk.CTkButton(login_frame, text="Register", command=register, corner_radius=0).pack(pady=12)
+    ctk.CTkButton(login_frame, text="Back to Login", command=show_login_screen, corner_radius=0).pack(pady=5)
 
 def show_login_screen():
     clear_content()
     clear_login_frame()
-    login_frame.pack(fill=ctk.BOTH, expand=True)
-    content_frame.pack_forget()
-    button_frame.pack_forget()
+    login_frame.pack(fill="both", expand=True)
+    content_frame.grid_forget()
+    button_frame.grid_forget()
 
     ctk.CTkLabel(login_frame, text="Login", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
     ctk.CTkLabel(login_frame, text="Register and create an account or if you already have an account, please login.", font=ctk.CTkFont(size=12)).pack(pady=(0, 20))
 
-    ctk.CTkLabel(login_frame, text="Username").pack(pady=5)
+    ctk.CTkLabel(login_frame, text="Username:").pack(pady=5)
     username_entry = ctk.CTkEntry(login_frame)
     username_entry.pack()
 
-    ctk.CTkLabel(login_frame, text="Password").pack(pady=5)
+    ctk.CTkLabel(login_frame, text="Password:").pack(pady=5)
     password_entry = ctk.CTkEntry(login_frame, show="*")
     password_entry.pack()
 
@@ -222,8 +220,8 @@ def show_login_screen():
             global current_user
             current_user = username
             login_frame.pack_forget()
-            button_frame.pack(side=ctk.LEFT, fill=ctk.Y, anchor=ctk.N)
-            content_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
+            button_frame.grid(row=0, column=0, sticky="nsew")
+            content_frame.grid(row=0, column=1, sticky="nsew")
             show_home_screen()
             success = ctk.CTkLabel(login_frame, text="Login Successful! Welcome, {username}!", text_color="green")
             success.pack()
@@ -233,23 +231,26 @@ def show_login_screen():
             error.pack()
             error.after(2000, error.destroy)
 
-    ctk.CTkButton(login_frame, text="Login", command=login).pack(pady=12)
-    ctk.CTkButton(login_frame, text="Register", command=show_register_screen).pack(pady=5)
+    ctk.CTkButton(login_frame, text="Login", command=login, corner_radius=0).pack(pady=(30, 5))
+    ctk.CTkButton(login_frame, text="Register", command=show_register_screen, corner_radius=0).pack(pady=10)
 
 def show_delete_user():
     clear_content()
     ctk.CTkLabel(content_frame, text="Delete Account", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
 
-    ctk.CTkLabel(content_frame, text="Enter your password to confirm account deletion").pack(pady=5)
-    password_entry = ctk.CTkEntry(content_frame, show="*")
+    account_delete_frame = ctk.CTkFrame(content_frame, corner_radius=0, fg_color="#171717")
+    account_delete_frame.pack(fill="both", expand=True)
+
+    ctk.CTkLabel(account_delete_frame, text="Enter your password to confirm account deletion.").pack(pady=(20, 0))
+    password_entry = ctk.CTkEntry(account_delete_frame, show="*")
     password_entry.pack()
 
     def confirm_user_deletion():
         password = password_entry.get()
         if not password:
-            error = ctk.CTkLabel(content_frame, text="Please enter your password!", text_color="red")
+            error = ctk.CTkLabel(account_delete_frame, text="Please enter your password!", text_color="red")
             error.pack()
-            error.after(2000, error.destroy)
+            error.after(5000, error.destroy)
             return
 
         success, message = delete_user(current_user, password)
@@ -257,40 +258,40 @@ def show_delete_user():
             clear_session()
             success = ctk.CTkLabel(login_frame, text=message, text_color="green")
             success.pack()
-            success.after(2000, success.destroy)
+            success.after(5000, success.destroy)
         else:
             error = ctk.CTkLabel(login_frame, text=message, text_color="green")
             error.pack()
-            error.after(2000, success.destroy)
+            error.after(5000, success.destroy)
 
-    ctk.CTkButton(content_frame, text="Confirm Delete", command=confirm_user_deletion).pack(pady=10)
-    ctk.CTkButton(content_frame, text="Cancel", command=show_home_screen).pack(pady=5)
+    ctk.CTkButton(account_delete_frame, text="Confirm Delete", command=confirm_user_deletion, corner_radius=0).pack(pady=(40, 10))
+    ctk.CTkButton(account_delete_frame, text="Cancel", command=show_home_screen, corner_radius=0).pack(pady=10)
 
 def show_home_screen():
     clear_content()
     user_id = get_user_id(current_user)
     ctk.CTkLabel(content_frame, text="Home screen", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
 
-    home_frame = ctk.CTkFrame(content_frame, corner_radius=0)
+    home_frame = ctk.CTkFrame(content_frame, fg_color="#171717")
     home_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-    info_frame = ctk.CTkFrame(home_frame, corner_radius=0)
+    info_frame = ctk.CTkFrame(home_frame, fg_color="#303030")
     info_frame.grid(row=0, column=0, padx=(20, 10), pady=20, sticky="nsew")
 
-    feed_frame = ctk.CTkScrollableFrame(info_frame)
+    feed_frame = ctk.CTkScrollableFrame(info_frame, fg_color="#252525")
     feed_frame.grid(row=0, column=0, padx=20, pady=(20, 5), sticky="nsew")
 
-    backup_info_frame = ctk.CTkFrame(info_frame, height=40)
+    backup_info_frame = ctk.CTkFrame(info_frame, height=40, fg_color="#252525")
     backup_info_frame.grid(row=1, column=0, padx=20, sticky="ew")
     backup_info_frame.grid_propagate(False)
 
-    export_add_transaction_frame = ctk.CTkFrame(home_frame, corner_radius=0)
+    export_add_transaction_frame = ctk.CTkFrame(home_frame, fg_color="#303030")
     export_add_transaction_frame.grid(row=0, column=1, padx=(10, 20), pady=20, sticky="nsew")
 
-    add_transaction_frame = ctk.CTkScrollableFrame(export_add_transaction_frame)
+    add_transaction_frame = ctk.CTkScrollableFrame(export_add_transaction_frame, fg_color="#252525")
     add_transaction_frame.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
 
-    export_frame = ctk.CTkScrollableFrame(export_add_transaction_frame)
+    export_frame = ctk.CTkScrollableFrame(export_add_transaction_frame, fg_color="#252525")
     export_frame.grid(row=1, column=0, padx=20, pady=(10, 20), sticky="nsew")
 
     ctk.CTkLabel(feed_frame, text="This month's feed", font=ctk.CTkFont(size=20, weight="bold")).pack(anchor=ctk.W, padx=20, pady=(10, 20))
@@ -313,7 +314,7 @@ def show_home_screen():
         success.pack()
         success.after(3000, success.destroy)
 
-    ctk.CTkButton(export_frame, text="CSV", command=export_to_csv).pack(pady=10)
+    ctk.CTkButton(export_frame, text="CSV", command=export_to_csv, corner_radius=0).pack(pady=10)
 
     def export_to_excel():
         user_id = get_user_id(current_user)
@@ -323,7 +324,7 @@ def show_home_screen():
         success.pack()
         success.after(3000, success.destroy)
 
-    ctk.CTkButton(export_frame, text="Excel", command=export_to_excel).pack(pady=10)
+    ctk.CTkButton(export_frame, text="Excel", command=export_to_excel, corner_radius=0).pack(pady=10)
 
     def export_to_pdf():
         user_id = get_user_id(current_user)
@@ -333,14 +334,14 @@ def show_home_screen():
         success.pack()
         success.after(3000, success.destroy)
 
-    ctk.CTkButton(export_frame, text="PDF", command=export_to_pdf).pack(pady=10)
+    ctk.CTkButton(export_frame, text="PDF", command=export_to_pdf, corner_radius=0).pack(pady=10)
 
     ctk.CTkLabel(add_transaction_frame, text="Add Transaction", font=ctk.CTkFont(size=24, weight="bold")).pack(padx=10, pady=(10, 0))
     ctk.CTkLabel(add_transaction_frame, text="Add income and expense transactions here to begin analysing and visualizing your data using the other features.", font=ctk.CTkFont(size=12), wraplength=300).pack(padx=10, pady=(0, 20))
 
     ctk.CTkLabel(add_transaction_frame, text="Type:").pack()
     type_var = ctk.StringVar(value="Select")
-    type_option = ctk.CTkOptionMenu(add_transaction_frame, variable=type_var, values=["income", "expense"])
+    type_option = ctk.CTkOptionMenu(add_transaction_frame, variable=type_var, values=["income", "expense"], corner_radius=0)
     type_option.pack(pady=(0, 20))
 
     ctk.CTkLabel(add_transaction_frame, text="Date (DD-MM-YYYY):").pack()
@@ -401,7 +402,7 @@ def show_home_screen():
         success.pack()
         success.after(2000, lambda: [success.destroy(), reset_add_transaction_form()])
         
-    ctk.CTkButton(add_transaction_frame, text="Add", command=submit_data).pack(pady=(20, 10))
+    ctk.CTkButton(add_transaction_frame, text="Add", command=submit_data, corner_radius=0).pack(pady=(20, 10))
 
     def make_db_backup():
         confirmation = CTkMessagebox(title="Confirm Backup", message=f"Make a backup of the database?", icon="info", option_1="Cancel", option_2="Make a backup").get()
@@ -413,7 +414,7 @@ def show_home_screen():
         success.grid(row=0, column=1, pady=5, sticky="w")
         success.after(5000, success.destroy)
 
-    ctk.CTkButton(info_frame, text="Backup DB", command=make_db_backup).grid(row=2, column=0, padx=20, pady=(5, 20), sticky="sw")
+    ctk.CTkButton(info_frame, text="Backup DB", command=make_db_backup, corner_radius=0).grid(row=2, column=0, padx=20, pady=(5, 20), sticky="sw")
     ctk.CTkLabel(backup_info_frame, text="Backup results: ", font=ctk.CTkFont(size=12)).grid(row=0, column=0, padx=10, pady=5, sticky="w")
 
     home_frame.grid_columnconfigure(0, weight=3)
@@ -470,8 +471,14 @@ def generate_feed_messages(user_id):
     return feed
 
 def all_transactions_treeview():
+    style = tk.ttk.Style()
+    style.theme_use("clam")
+    style.layout("Edge.Treeview", [("Edge.Treeview.treearea", {"sticky": "nsew"})])
+    style.configure("Edge.Treeview", highlightthickness=0, bd=0)
+    style.configure("Treeview", background="#252525", foreground="white", fieldbackground="#252525")
+    style.configure("Treeview.Heading", relief="none", background="#303030", foreground="white", fieldbackground="#303030")
     columns = ("c1", "c2", "c3", "c4", "c5", "c6")
-    tree = tk.ttk.Treeview(content_frame, column=columns, show="headings")
+    tree = tk.ttk.Treeview(content_frame, column=columns, show="headings", style="Edge.Treeview")
     headers = ["ID", "Date", "Category", "Description", "Amount", "Type"]
 
     def treeview_sort_column(tv, col, col_index, reverse):
@@ -502,7 +509,7 @@ def show_all_transactions_table():
     ctk.CTkLabel(content_frame, text="All Transactions", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
     ctk.CTkLabel(content_frame, text="A table consisting of all your income and expense data.", font=ctk.CTkFont(size=12)).pack(pady=(0, 20))
 
-    searchbar_frame = ctk.CTkFrame(content_frame)
+    searchbar_frame = ctk.CTkFrame(content_frame, fg_color="#252525", corner_radius=0)
     searchbar_frame.pack(padx=20, pady=5, anchor=ctk.E)
 
     tree = all_transactions_treeview()
@@ -548,8 +555,8 @@ def show_all_transactions_table():
     searchbar_label = ctk.CTkLabel(searchbar_frame, text="Search Bar:", font=ctk.CTkFont(size=12))
     searchbar_label.grid(row=0, column=1, padx=2, pady=5, sticky="w")
 
-    searchbar_entry = ctk.CTkEntry(searchbar_frame, width=150)
-    searchbar_entry.grid(row=0, column=2, padx=2, pady=5, sticky="ew")
+    searchbar_entry = ctk.CTkEntry(searchbar_frame, width=150, corner_radius=0)
+    searchbar_entry.grid(row=0, column=2, padx=(3, 10), pady=5, sticky="ew")
 
     searchbar_frame.grid_columnconfigure(1, weight=1)
 
@@ -558,8 +565,11 @@ def show_all_transactions_table():
 def show_delete_data():
     clear_content()
     ctk.CTkLabel(content_frame, text="Delete all data", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
-    ctk.CTkLabel(content_frame, text="Are you sure you want to delete all data? If you are, type 'DELETE ALL DATA' in the text box and hit the delete button:", font=ctk.CTkFont(size=12)).pack()
-    delete_data_entry = ctk.CTkEntry(content_frame)
+
+    data_delete_frame = ctk.CTkFrame(content_frame, corner_radius=0, fg_color="#171717")
+    data_delete_frame.pack(fill="both", expand=True)
+    ctk.CTkLabel(data_delete_frame, text="Are you sure you want to delete all data? If you are, type 'DELETE ALL DATA' in the text box and hit the delete button:", font=ctk.CTkFont(size=12)).pack(pady=(20, 0))
+    delete_data_entry = ctk.CTkEntry(data_delete_frame)
     delete_data_entry.pack()
 
     def delete_data():
@@ -567,15 +577,15 @@ def show_delete_data():
         user_id = get_user_id(current_user)
         if data_deletion == str("DELETE ALL DATA"):
             clear_all_transactions(user_id)
-            success = ctk.CTkLabel(content_frame, text="All data was deleted successfully!", text_color="red", font=ctk.CTkFont(family='arial', size=12))
+            success = ctk.CTkLabel(data_delete_frame, text="All data was deleted successfully!", text_color="red", font=ctk.CTkFont(family='arial', size=12))
             success.pack()
             success.after(5000, success.destroy)
         else:
-            error = ctk.CTkLabel(content_frame, text="Invalid confirmation! Data not deleted!", text_color="red", font=ctk.CTkFont(family='arial', size=12))
+            error = ctk.CTkLabel(data_delete_frame, text="Invalid confirmation! Data not deleted!", text_color="red", font=ctk.CTkFont(family='arial', size=12))
             error.pack()
             error.after(5000, error.destroy)
 
-    ctk.CTkButton(content_frame, text="Delete", command=delete_data, fg_color="red").pack(pady=40)
+    ctk.CTkButton(data_delete_frame, text="Delete", command=delete_data, fg_color="red", corner_radius=0).pack(pady=40)
 
 def chart_selection_screen():
     clear_content()
@@ -583,19 +593,19 @@ def chart_selection_screen():
     ctk.CTkLabel(content_frame, text="Charts", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
     ctk.CTkLabel(content_frame, text="Please input a year and choose a chart to generate.", font=ctk.CTkFont(size=12)).pack(pady=(0, 20))
 
-    chart_selection_frame = ctk.CTkFrame(content_frame, corner_radius=0)
-    chart_selection_frame.pack(fill="both", expand=True, padx=20, pady=20)
+    chart_selection_frame = ctk.CTkFrame(content_frame, corner_radius=0, fg_color="#303030")
+    chart_selection_frame.pack(fill="both", expand=True)
 
-    description_labels_frame = ctk.CTkFrame(chart_selection_frame)
+    description_labels_frame = ctk.CTkFrame(chart_selection_frame, fg_color="#252525")
     description_labels_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=(20, 10))
 
-    option_frame = ctk.CTkFrame(chart_selection_frame)
+    option_frame = ctk.CTkFrame(chart_selection_frame, fg_color="#252525")
     option_frame.grid(row=1, column=0, sticky="nsew", padx=350, pady=(10, 20))
 
     year_var = ctk.StringVar()
     chart_var = ctk.StringVar(value="pie")
 
-    ctk.CTkLabel(option_frame, text="You can leave the year entry empty if you want to view everything at once.", font=ctk.CTkFont(size=12)).pack(pady=(5, 0))
+    ctk.CTkLabel(option_frame, text="You can leave the year entry empty to view everything at once.", font=ctk.CTkFont(size=12)).pack(pady=(5, 0))
 
     ctk.CTkLabel(option_frame, text="Enter year:", font=ctk.CTkFont(size=12)).pack(pady=(10, 0))
     year_entry = ctk.CTkEntry(option_frame, textvariable=year_var)
@@ -618,7 +628,8 @@ def chart_selection_screen():
         option_frame,
         variable=chart_var,
         values=list(CHART_LABELS.keys()),
-        command=update_description_and_chart_labels
+        command=update_description_and_chart_labels,
+        corner_radius=0
     )
     chart_menu.pack()
 
@@ -633,7 +644,7 @@ def chart_selection_screen():
         chart_type = chart_var.get()
         show_chart(chart_type, year)
 
-    ctk.CTkButton(option_frame, text="Generate Chart", command=proceed).pack(pady=20)
+    ctk.CTkButton(option_frame, text="Generate Chart", command=proceed, corner_radius=0).pack(pady=40)
 
 def show_chart(chart_type, year=None):
     clear_content()
@@ -688,19 +699,19 @@ def show_chart(chart_type, year=None):
 
         chart_frame = ctk.CTkFrame(content_frame)
         chart_frame.is_chart_widget = True
-        chart_frame.pack(expand=True, fill="both", padx=10, pady=10)
+        chart_frame.pack(expand=True, fill="both")
 
         chart_left_frame = ctk.CTkFrame(chart_frame)
         chart_left_frame.grid(row=0, column=0, sticky="nsew")
 
-        legend_frame = ctk.CTkFrame(chart_frame, corner_radius=0)
+        legend_frame = ctk.CTkFrame(chart_frame, fg_color="#171717", corner_radius=0)
         legend_frame.grid(row=0, column=1, sticky="nsew")
 
         legend_title = ctk.CTkLabel(legend_frame, text="Category Breakdown", font=ctk.CTkFont(size=16, weight="bold"))
         legend_title.pack(pady=(0, 5))
 
-        legend_scroll = ctk.CTkScrollableFrame(legend_frame)
-        legend_scroll.pack(fill="both", expand=True, padx=(10, 0), pady=(5, 0))
+        legend_scroll = ctk.CTkScrollableFrame(legend_frame, fg_color="#303030")
+        legend_scroll.pack(fill="both", expand=True, padx=5)
 
         total_amount = sum(values)
 
@@ -716,7 +727,7 @@ def show_chart(chart_type, year=None):
             else:
                 amount_text = f"€{value:,.2f} ({percentage:.1f}%)"
             
-            category_frame = ctk.CTkFrame(legend_scroll)
+            category_frame = ctk.CTkFrame(legend_scroll, fg_color="#252525")
             category_frame.pack(fill="x", pady=2, padx=5)
             
             category_label = ctk.CTkLabel(category_frame, text=label, font=ctk.CTkFont(size=12, weight="bold"))
@@ -792,7 +803,7 @@ def show_chart(chart_type, year=None):
             bars = ax.barh(y, expense_values, width, align='center')
             ax.grid(True, alpha=0.3)
             ax.set_yticks(y)
-            ax.set_yticklabels(descriptions, fontsize=8)
+            ax.set_yticklabels(descriptions, fontsize=8, rotation=45)
             ax.invert_yaxis()
             ax.set_xlabel("Expense amount (€)")
             ax.set_title("Top 5 Expenses by Category & Description")
@@ -1029,8 +1040,9 @@ def show_chart(chart_type, year=None):
         content_frame,
         variable=type_filter_var,
         values=["all", "income", "expense"],
-        command=lambda _: draw_chart()
-    ).pack(anchor=ctk.CENTER, side=ctk.TOP)
+        command=lambda _: draw_chart(),
+        corner_radius=0
+    ).pack(anchor=ctk.CENTER, side=ctk.TOP, pady=(0, 5))
 
     draw_chart()
 
@@ -1078,15 +1090,18 @@ def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_exp
         canvas = FigureCanvasTkAgg(fig, master=parent_frame)
         canvas.draw()
         widget = canvas.get_tk_widget()
-        widget.pack(expand=True, fill="both", padx=10, pady=10)
+        widget.pack(expand=True, fill="both")
         widget.is_chart_widget=True
 
 def show_prediction(prediction_type):
     clear_content()
-    ctk.CTkLabel(content_frame, text="Prediction models", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 20))
+    ctk.CTkLabel(content_frame, text="Prediction models", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
+    ctk.CTkLabel(content_frame,
+                 text="Different machine learning models that make predictions based on your data in your database. For the models to make acceptable predictions, they require a certain amount of data.",
+                 justify="left").pack(pady=(0, 20))
 
-    prediction_frame = ctk.CTkFrame(content_frame, corner_radius=0)
-    prediction_frame.pack(fill="both", expand=True, padx=10, pady=5)
+    prediction_frame = ctk.CTkFrame(content_frame, fg_color="#303030", corner_radius=0)
+    prediction_frame.pack(fill="both", expand=True)
 
     ctk.CTkLabel(prediction_frame, text="Note that depending on the chosen model and the amount of data, the time to make the predictions can take some time! Please wait until the graph appears.",
                  font=ctk.CTkFont(size=12), wraplength=600, justify="left").pack(pady=(10, 10))
@@ -1171,16 +1186,20 @@ def show_prediction(prediction_type):
 
         threading.Thread(target=run_ml).start()
 
-    ctk.CTkButton(prediction_frame, text="Predict", command=on_predict).pack(pady=10)
+    ctk.CTkButton(prediction_frame, text="Predict", command=on_predict, corner_radius=0).pack(pady=40)
 
-ctk.CTkButton(button_frame, text="Home", command=show_home_screen).pack(padx=15, pady=12)
-ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table).pack(padx=15, pady=12)
-charts_btn = ctk.CTkButton(button_frame, text="Charts", command=chart_selection_screen).pack(padx=15, pady=12)
-predictions_btn = ctk.CTkButton(button_frame, text="Monthly expense predictions", command=toggle_prediction_model_buttons)
-predictions_btn.pack(padx=15, pady=12)
-ctk.CTkButton(button_frame, text="Delete all transaction data", command=show_delete_data).pack(padx=15, pady=12)
-ctk.CTkButton(button_frame, text="Delete Account", command=show_delete_user).pack(padx=15, pady=12)
-ctk.CTkButton(button_frame, text="Logout", command=lambda: [clear_session(), login_frame.pack(fill=ctk.BOTH, expand=True), content_frame.pack_forget(), button_frame.pack_forget(), show_login_screen()]).pack(padx=15, pady=12)
+ctk.CTkButton(button_frame, text="Home", command=show_home_screen, corner_radius=0, height=50, fg_color="#484848", hover_color="#353535", bg_color="#383838").pack(fill="x", pady=(4, 2))
+ctk.CTkButton(button_frame, text="Show transaction history", command=show_all_transactions_table, corner_radius=0, height=50, fg_color="#484848", hover_color="#353535", bg_color="#383838").pack(fill="x", pady=2)
+charts_btn = ctk.CTkButton(button_frame, text="Charts", command=chart_selection_screen, corner_radius=0, height=50, fg_color="#484848", hover_color="#353535", bg_color="#383838").pack(fill="x", pady=2)
+predictions_btn = ctk.CTkButton(button_frame, text="Monthly expense predictions", command=toggle_prediction_model_buttons, corner_radius=0, height=50, fg_color="#484848", hover_color="#353535", bg_color="#383838")
+predictions_btn.pack(fill="x", pady=2)
+ctk.CTkButton(button_frame, text="Delete all transaction data", command=show_delete_data, corner_radius=0, height=50, fg_color="#484848", hover_color="#353535", bg_color="#383838").pack(fill="x", pady=2)
+ctk.CTkButton(button_frame, text="Delete Account", command=show_delete_user, corner_radius=0, height=50, fg_color="#484848", hover_color="#353535", bg_color="#383838").pack(fill="x", pady=2)
+ctk.CTkButton(button_frame, text="Logout", command=lambda: [clear_session(), login_frame.pack(fill="both", expand=True), content_frame.grid_forget(), button_frame.grid_forget(), show_login_screen()], corner_radius=0, height=50, fg_color="#484848", hover_color="#353535", bg_color="#383838").pack(fill="x", pady=2)
+
+mainframe.grid_columnconfigure(0, weight=1)
+mainframe.grid_columnconfigure(1, weight=250)
+mainframe.grid_rowconfigure(0, weight=1)
 
 def require_login(func):
     def wrapper(*args, **kwargs):
