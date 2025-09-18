@@ -1,4 +1,4 @@
-from database.db import view_all_transactions
+from database.db import viewAllTransactions
 import numpy as np
 import datetime
 from sklearn.linear_model import LinearRegression, HuberRegressor, Ridge, Lasso
@@ -12,7 +12,7 @@ import pandas as pd
 import math
 
 def fetch_data(user_id):
-    rows = view_all_transactions(user_id)
+    rows = viewAllTransactions(user_id)
     data = []
 
     for row in rows:
@@ -120,7 +120,7 @@ def run_gridsearch(x, y, pipeline, param_grid):
     print(f"Best model MSE: {best_mse:.2f}")
     print(f"Best parameters: {gridsearch.best_params_}")
 
-    return gridsearch.best_params_
+    return gridsearch.best_params_, best_mse
 
 def feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months):
     for i in range(n_future_months):
@@ -171,7 +171,7 @@ def linear_model(n_future_months=1, user_id=None):
         }
     ]
 
-    best_params = run_gridsearch(x, y, pipeline_linear, param_grid)
+    best_params, best_mse = run_gridsearch(x, y, pipeline_linear, param_grid)
 
     best_pipeline = Pipeline([
         ('scaler', StandardScaler()),
@@ -188,7 +188,7 @@ def linear_model(n_future_months=1, user_id=None):
     feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
-    return predictions[0] if n_future_months == 1 else predictions, months, y
+    return predictions[0] if n_future_months == 1 else predictions, months, y, best_mse
 
 def polynomial_model(n_future_months=1, user_id=None):
     if user_id is None:
@@ -221,7 +221,7 @@ def polynomial_model(n_future_months=1, user_id=None):
         }
     ]
 
-    best_params = run_gridsearch(x, y, pipeline_poly, param_grid)
+    best_params, best_mse = run_gridsearch(x, y, pipeline_poly, param_grid)
 
     best_pipeline = Pipeline([
         ('poly', PolynomialFeatures()),
@@ -239,7 +239,7 @@ def polynomial_model(n_future_months=1, user_id=None):
     feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
-    return predictions[0] if n_future_months == 1 else predictions, months, y
+    return predictions[0] if n_future_months == 1 else predictions, months, y, best_mse
 
 def sarimax_model(n_future_months=1, user_id=None):
     if user_id is None:
@@ -279,11 +279,15 @@ def sarimax_model(n_future_months=1, user_id=None):
     model = SARIMAX(y_capped, exog=exog, order=best_params['order'], seasonal_order=best_params['seasonal_order'], enforce_stationarity=False, enforce_invertibility=False)
     best_model = model.fit(disp=False)
 
+    fitted = best_model.fittedvalues
+    mse = np.mean((y_capped - fitted) ** 2)
+    print(f"Model MSE: {mse:.2f}")
+
     future_features, future_exog = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
     predictions = best_model.forecast(steps=n_future_months, exog=future_exog)
     predictions = np.clip(predictions, 0, np.max(y) * 2)
 
-    return predictions[0] if n_future_months == 1 else predictions, months, y
+    return predictions[0] if n_future_months == 1 else predictions, months, y, mse
 
 def randomforest_model(n_future_months=1, user_id=None):
     if user_id is None:
@@ -305,7 +309,7 @@ def randomforest_model(n_future_months=1, user_id=None):
         'regressor__bootstrap': [False, True]
     }
 
-    best_params = run_gridsearch(x, y, pipeline_randomforest, param_grid)
+    best_params, best_mse = run_gridsearch(x, y, pipeline_randomforest, param_grid)
 
     best_pipeline = Pipeline([
     ('regressor', RandomForestRegressor())
@@ -321,7 +325,7 @@ def randomforest_model(n_future_months=1, user_id=None):
     feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
-    return predictions[0] if n_future_months == 1 else predictions, months, y
+    return predictions[0] if n_future_months == 1 else predictions, months, y, best_mse
 
 def xgboost_model(n_future_months=1, user_id=None):
     if user_id is None:
@@ -375,9 +379,9 @@ def xgboost_model(n_future_months=1, user_id=None):
         print(f"Best model MSE: {best_mse:.2f}")
         print(f"Best parameters: {grid_search.best_params_}")
 
-        return grid_search.best_params_
+        return grid_search.best_params_, best_mse
 
-    best_params = run_gridsearch_with_early_stopping(x_train, y_train, x_val, y_val, pipeline_xgb, param_grid)
+    best_params, best_mse = run_gridsearch_with_early_stopping(x_train, y_train, x_val, y_val, pipeline_xgb, param_grid)
 
     best_pipeline = Pipeline([
         ('scaler', StandardScaler()),
@@ -401,16 +405,17 @@ def xgboost_model(n_future_months=1, user_id=None):
     feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
-    return predictions[0] if n_future_months == 1 else predictions, months, y
+    return predictions[0] if n_future_months == 1 else predictions, months, y, best_mse
 
 def ensemble_model(n_future_months=1, user_id=None):
     if user_id is None:
         raise ValueError("user_id must be provided")
 
-    pred1, months, y = linear_model(n_future_months, user_id)
-    pred2, _, _ = polynomial_model(n_future_months, user_id)
-    pred3, _, _ = sarimax_model(n_future_months, user_id)
-    pred4, _, _ = xgboost_model(n_future_months, user_id)
+    pred1, months, y, mse1 = linear_model(n_future_months, user_id)
+    pred2, _, _, mse2 = polynomial_model(n_future_months, user_id)
+    pred3, _, _, mse3 = sarimax_model(n_future_months, user_id)
+    pred4, _, _, mse4 = xgboost_model(n_future_months, user_id)
     ensemble_pred = np.mean([pred1, pred2, pred3, pred4], axis=0) if n_future_months > 1 else np.mean([pred1, pred2, pred3, pred4])
+    ensemble_mse = np.mean([mse1, mse2, mse3, mse4])
 
-    return ensemble_pred, months, y
+    return ensemble_pred, months, y, ensemble_mse

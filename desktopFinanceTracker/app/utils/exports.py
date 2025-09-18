@@ -1,17 +1,15 @@
-# Export logic
-
 import sqlite3
-import os
+from pathlib import Path
 import csv
 import openpyxl
 from fpdf import FPDF
-import config
+from app.config import EXPORTS_PATH, DB_PATH
 from cryptography.fernet import Fernet
 
 def export_transactions_to_csv(user_id, filename):
     from database.db import encryption_key
     fernet = Fernet(encryption_key)
-    connect_to_database = sqlite3.connect(config.db_path)
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT id, date, category, description, amount, type FROM transactions WHERE user_id = ?', (user_id,))
     rows = db_cursor.fetchall()
@@ -27,7 +25,8 @@ def export_transactions_to_csv(user_id, filename):
 
     if not filename.endswith('.csv'):
         filename += '.csv'
-    filepath = os.path.join(config.exports_path, filename)
+    filepath = EXPORTS_PATH / filename
+    EXPORTS_PATH.mkdir(exist_ok=True)
 
     with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile, delimiter=';')
@@ -40,7 +39,7 @@ def export_transactions_to_csv(user_id, filename):
 def export_transactions_to_excel(user_id, filename):
     from database.db import encryption_key
     fernet = Fernet(encryption_key)
-    connect_to_database = sqlite3.connect(config.db_path)
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT id, date, category, description, amount, type FROM transactions WHERE user_id = ?', (user_id,))
     rows = db_cursor.fetchall()
@@ -56,7 +55,8 @@ def export_transactions_to_excel(user_id, filename):
 
     if not filename.endswith('xlsx'):
         filename += '.xlsx'
-    filepath = os.path.join(config.exports_path, filename)
+    filepath = EXPORTS_PATH / filename
+    EXPORTS_PATH.mkdir(exist_ok=True)
 
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
@@ -70,7 +70,7 @@ def export_transactions_to_excel(user_id, filename):
 def export_transactions_to_pdf(user_id, filename):
     from database.db import encryption_key
     fernet = Fernet(encryption_key)
-    connect_to_database = sqlite3.connect(config.db_path)
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT id, date, category, description, amount, type FROM transactions WHERE user_id = ?', (user_id,))
     rows = db_cursor.fetchall()
@@ -86,7 +86,8 @@ def export_transactions_to_pdf(user_id, filename):
 
     if not filename.endswith('.pdf'):
         filename += '.pdf'
-    filepath = os.path.join(config.exports_path, filename)
+    filepath = EXPORTS_PATH / filename
+    EXPORTS_PATH.mkdir(exist_ok=True)
 
     pdf = FPDF()
     pdf.add_page()
