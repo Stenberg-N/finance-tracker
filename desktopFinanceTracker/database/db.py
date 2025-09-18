@@ -2,10 +2,9 @@
 
 import sqlite3
 import datetime
-import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import config
+from pathlib import Path
+from app.config import DB_PATH, DB_BACKUP_PATH
 import bcrypt
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
@@ -14,8 +13,9 @@ import base64
 
 encryption_key = None
 
-def init_db():
-    connect_to_database = sqlite3.connect(config.db_path)
+def initDB():
+    DB_PATH.parent.mkdir(exist_ok=True)
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.executescript('''
         CREATE TABLE IF NOT EXISTS transactions (
@@ -41,26 +41,26 @@ def init_db():
     connect_to_database.commit()
     connect_to_database.close()
 
-def hash_password(password: str) -> bytes:
+def hashPassword(password: str) -> bytes:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
-def derive_key(password: str, salt: bytes = None) -> bytes:
+def deriveKey(password: str, salt: bytes = None) -> bytes:
     if salt is None:
         salt = os.urandom(16)
     kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000, backend=None)
     key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
     return key, salt
 
-def set_encryption_key(key: bytes):
+def setEncryptionKey(key: bytes):
     global encryption_key
     encryption_key = key
 
-def clear_encryption_key():
+def clearEncryptionKey():
     global encryption_key
     encryption_key = None
 
-def verify_login(username, password):
-    connect_to_database = sqlite3.connect(config.db_path)
+def verifyLogin(username, password):
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute("SELECT password_hash, salt FROM users WHERE username = ?", (username,))
     result = db_cursor.fetchone()
@@ -68,19 +68,19 @@ def verify_login(username, password):
     if result:
         password_hash, salt = result
         if bcrypt.checkpw(password.encode(), password_hash):
-            key, _ = derive_key(password, salt)
-            set_encryption_key(key)
+            key, _ = deriveKey(password, salt)
+            setEncryptionKey(key)
             return True
 
-    clear_encryption_key()
+    clearEncryptionKey()
     return False
 
-def insert_user(username, password):
+def insertUser(username, password):
     try:
-        connect_to_database = sqlite3.connect(config.db_path)
+        connect_to_database = sqlite3.connect(DB_PATH)
         db_cursor = connect_to_database.cursor()
-        password_hash = hash_password(password)
-        key, salt = derive_key(password)
+        password_hash = hashPassword(password)
+        key, salt = deriveKey(password)
         db_cursor.execute('INSERT INTO users (username, password_hash, salt) VALUES (?, ?, ?)', (username, password_hash, salt))
         connect_to_database.commit()
         connect_to_database.close()
@@ -92,17 +92,17 @@ def insert_user(username, password):
         connect_to_database.close()
         return False, f"Registration failed: {str(e)}"
 
-def get_user_id(username):
-    connect_to_database = sqlite3.connect(config.db_path)
+def getUserID(username):
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
     result = db_cursor.fetchone()
     connect_to_database.close()
     return result[0] if result else None
 
-def delete_user(username, password):
+def deleteUser(username, password):
     try:
-        connect_to_database = sqlite3.connect(config.db_path)
+        connect_to_database = sqlite3.connect(DB_PATH)
         db_cursor = connect_to_database.cursor()
         db_cursor.execute("SELECT id, password_hash FROM users WHERE username = ?", (username,))
         result = db_cursor.fetchone()
@@ -127,7 +127,7 @@ def delete_user(username, password):
         connect_to_database.close()
         return False, f"Deletion failed: {str(e)}"
 
-def insert_transaction(date, category, description, amount, type_, user_id):
+def insertTransaction(date, category, description, amount, type_, user_id):
     global encryption_key
     if encryption_key is None:
         raise ValueError("Encryption key is not set. Please log in.")
@@ -136,7 +136,7 @@ def insert_transaction(date, category, description, amount, type_, user_id):
     encrypted_category = fernet.encrypt(category.encode()).decode()
     encrypted_description = fernet.encrypt(description.encode()).decode()
     encrypted_amount = fernet.encrypt(str(amount).encode()).decode()
-    connect_to_database = sqlite3.connect(config.db_path)
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('''
         INSERT INTO transactions (date, category, description, amount, type, user_id)
@@ -146,12 +146,12 @@ def insert_transaction(date, category, description, amount, type_, user_id):
     connect_to_database.commit()
     connect_to_database.close()
 
-def view_all_transactions(user_id):
+def viewAllTransactions(user_id):
     global encryption_key
     if encryption_key is None:
         raise ValueError("Encryption key is not set. Please log in.")
     fernet = Fernet(encryption_key)
-    connect_to_database = sqlite3.connect(config.db_path)
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT id, date, category, description, amount, type FROM transactions WHERE user_id = ?', (user_id,))
     rows = db_cursor.fetchall()
@@ -168,12 +168,12 @@ def view_all_transactions(user_id):
             continue
     return decrypted_rows
 
-def view_transactions_by_month(month, year, user_id):
+def viewTransactionsByMonth(month, year, user_id):
     global encryption_key
     if encryption_key is None:
         raise ValueError("Encryption key is not set. Please log in.")
     fernet = Fernet(encryption_key)
-    connect_to_database = sqlite3.connect(config.db_path)
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('SELECT id, date, category, description, amount, type FROM transactions WHERE user_id = ?', (user_id,))
     rows = db_cursor.fetchall()
@@ -192,19 +192,19 @@ def view_transactions_by_month(month, year, user_id):
             continue
     return decrypted_rows
 
-def clear_all_transactions(user_id):
-    connect_to_database = sqlite3.connect(config.db_path)
+def clearAllTransactions(user_id):
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     db_cursor.execute('DELETE FROM transactions WHERE user_id = ?', (user_id,))
     connect_to_database.commit()
     connect_to_database.execute('VACUUM')
     connect_to_database.close()
 
-def delete_transactions_by_id(user_id, ids):
+def deleteTransactionsByID(user_id, ids):
     if not ids:
         return
 
-    connect_to_database = sqlite3.connect(config.db_path)
+    connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
     query = f"DELETE FROM transactions WHERE user_id = ? AND id IN ({','.join('?' for _ in ids)})"
     params = [user_id] + list(ids)
@@ -212,9 +212,10 @@ def delete_transactions_by_id(user_id, ids):
     connect_to_database.commit()
     connect_to_database.close()
 
-def backup_db():
-    connect_to_database = sqlite3.connect(config.db_path)
-    db_backup_conn = sqlite3.connect(config.db_backup_path)
+def backupDB():
+    connect_to_database = sqlite3.connect(DB_PATH)
+    DB_BACKUP_PATH.parent.mkdir(exist_ok=True)
+    db_backup_conn = sqlite3.connect(DB_BACKUP_PATH)
     connect_to_database.backup(db_backup_conn)
     connect_to_database.close()
     db_backup_conn.close()
