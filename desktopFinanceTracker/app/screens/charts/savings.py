@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.patheffects as pe
+import matplotlib.dates as mdates
 import datetime
 
 class savingsChart(Chart):
@@ -52,7 +53,7 @@ class savingsChart(Chart):
         savings_values = list(savings_data.values())
         date_objects = [datetime.datetime.strptime(date, "%d-%m-%Y") for date in dates]
 
-        MAX_POINTS = 200 # Change this value to affect the date intervals in the savings chart. Greater value = bigger intervals (bigger date gaps) -> Works better with larger transaction histories.
+        MAX_POINTS = 200 # Change this value to affect the date intervals in the savings chart. Greater value = more data shown
         if len(date_objects) > MAX_POINTS:
             month_last = {}
             for date, value in zip(date_objects, savings_values):
@@ -73,8 +74,9 @@ class savingsChart(Chart):
         ax.grid(True, alpha=0.3)
         ax.axhline(y=0, color='#C80000', linestyle='-', alpha=0.5)
 
-        ax.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%d-%m-%Y'))
-        ax.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=max(1, len(dates)//10)))
+        locator = mdates.AutoDateLocator(maxticks=15)
+        ax.xaxis.set_major_locator(locator)
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
 
         ANNOTATION_LIMIT = 6 # Edit this to affect the amount of markers on the chart.
