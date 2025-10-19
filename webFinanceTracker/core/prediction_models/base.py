@@ -118,7 +118,7 @@ class Base:
             param_grid=param_grid,
             cv=cv,
             scoring='neg_mean_squared_error',
-            n_jobs=2,
+            n_jobs=1,
             verbose=1
         )
 
