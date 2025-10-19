@@ -1,0 +1,1297 @@
+Date,Category,Description,Amount,Type
+2021-10-18,Salary,Employer paycheck,3067.54,income
+2021-10-19,Investment,Dividend payout,254.2,income
+2021-10-21,Freelance,Project,557.37,income
+2021-10-22,Bills,Rent,550.0,expense
+2021-10-23,Bills,Electricity bill,42.09,expense
+2021-10-24,Bills,Internet,27.8,expense
+2021-10-25,Shopping,Groceries,91.29,expense
+2021-10-26,Freelance,Project,307.22,income
+2021-10-27,Bills,Water bill,13.23,expense
+2021-10-28,Health,Medication,28.19,expense
+2021-10-29,Bills,Phone bill,29.16,expense
+2021-11-02,Bills,Internet,27.8,expense
+2021-11-03,Transport,Train,49.17,expense
+2021-11-04,Transport,Bus,34.11,expense
+2021-11-05,Bills,Rent,550.0,expense
+2021-11-06,Shopping,Jewerly,74.82,expense
+2021-11-07,Entertainment,Nightout,13.05,expense
+2021-11-09,Bills,Phone bill,27.69,expense
+2021-11-11,Salary,Employer paycheck,2884.47,income
+2021-11-12,Transport,Train,58.16,expense
+2021-11-13,Shopping,Skincare,269.47,expense
+2021-11-14,Transport,Rideshare,11.9,expense
+2021-11-15,Freelance,Project,564.0,income
+2021-11-16,Bills,Water bill,31.91,expense
+2021-11-17,Freelance,Invoice settlement,272.88,income
+2021-11-18,Freelance,Invoice settlement,465.4,income
+2021-11-19,Health,Gym membership,29.03,expense
+2021-11-20,Shopping,Clothes,283.65,expense
+2021-11-21,Entertainment,Concert,36.1,expense
+2021-11-22,Transport,Taxi,50.25,expense
+2021-11-23,Bills,Electricity bill,31.03,expense
+2021-11-26,Transport,Train,27.34,expense
+2021-11-27,Transport,Bus,61.08,expense
+2021-11-29,Shopping,Skincare,298.15,expense
+2021-11-30,Investment,Dividend payout,272.15,income
+2021-12-01,Bills,Phone bill,35.65,expense
+2021-12-02,Freelance,Project,172.47,income
+2021-12-03,Bills,Internet,27.8,expense
+2021-12-04,Bills,Water bill,27.42,expense
+2021-12-05,Salary,Employer paycheck,3103.0,income
+2021-12-06,Shopping,Clothes,235.67,expense
+2021-12-08,Freelance,Invoice settlement,242.13,income
+2021-12-09,Bills,Electricity bill,16.27,expense
+2021-12-10,Transport,Bus,40.22,expense
+2021-12-11,Bills,Rent,550.0,expense
+2021-12-12,Transport,Rideshare,68.85,expense
+2021-12-15,Transport,Taxi,51.79,expense
+2021-12-17,Investment,Dividend payout,76.88,income
+2021-12-18,Entertainment,Streaming service,28.16,expense
+2021-12-19,Shopping,Groceries,167.47,expense
+2021-12-21,Transport,Taxi,20.7,expense
+2021-12-24,Freelance,Invoice settlement,101.97,income
+2021-12-26,Shopping,Clothes,52.65,expense
+2021-12-27,Entertainment,Nightout,25.32,expense
+2021-12-28,Transport,Taxi,45.66,expense
+2021-12-29,Health,Accessories,28.69,expense
+2021-12-30,Transport,Gas,16.15,expense
+2021-12-31,Shopping,Groceries,80.73,expense
+2022-01-01,Freelance,Project,538.77,income
+2022-01-02,Shopping,Baking supplies,216.47,expense
+2022-01-03,Freelance,Invoice settlement,517.83,income
+2022-01-04,Investment,Dividend payout,226.25,income
+2022-01-05,Shopping,Skincare,124.42,expense
+2022-01-06,Shopping,Clothes,271.45,expense
+2022-01-07,Bills,Electricity bill,18.87,expense
+2022-01-08,Shopping,Tools,200.93,expense
+2022-01-10,Freelance,Invoice settlement,273.07,income
+2022-01-11,Bills,Internet,27.8,expense
+2022-01-12,Salary,Employer paycheck,3123.22,income
+2022-01-13,Bills,Water bill,43.12,expense
+2022-01-14,Entertainment,Nightout,5.24,expense
+2022-01-15,Entertainment,Nightout,44.42,expense
+2022-01-16,Transport,Train,65.77,expense
+2022-01-17,Transport,Taxi,26.51,expense
+2022-01-18,Transport,Train,48.24,expense
+2022-01-19,Transport,Train,6.02,expense
+2022-01-20,Transport,Rideshare,4.13,expense
+2022-01-21,Transport,Gas,16.72,expense
+2022-01-23,Bills,Phone bill,21.92,expense
+2022-01-24,Health,Gym membership,22.59,expense
+2022-01-25,Transport,Rideshare,23.36,expense
+2022-01-26,Transport,Bus,10.84,expense
+2022-01-28,Other,Household items,47.39,expense
+2022-01-30,Bills,Rent,550.0,expense
+2022-01-31,Other,Unexpected repair,28.64,expense
+2022-02-01,Freelance,Invoice settlement,181.65,income
+2022-02-02,Freelance,Invoice settlement,475.08,income
+2022-02-03,Health,Medication,23.25,expense
+2022-02-04,Freelance,Invoice settlement,165.29,income
+2022-02-05,Entertainment,Streaming service,35.51,expense
+2022-02-06,Shopping,Jewerly,210.78,expense
+2022-02-07,Transport,Taxi,65.18,expense
+2022-02-08,Transport,Taxi,69.07,expense
+2022-02-09,Shopping,Clothes,125.39,expense
+2022-02-10,Transport,Rideshare,43.55,expense
+2022-02-11,Entertainment,Nightout,37.44,expense
+2022-02-12,Transport,Rideshare,8.1,expense
+2022-02-13,Salary,Employer paycheck,2862.27,income
+2022-02-14,Transport,Rideshare,13.78,expense
+2022-02-15,Bills,Rent,550.0,expense
+2022-02-16,Investment,Dividend payout,249.63,income
+2022-02-17,Bills,Internet,27.8,expense
+2022-02-18,Bills,Water bill,29.31,expense
+2022-02-18,Bills,Electricity bill,43.38,expense
+2022-02-19,Shopping,Jewerly,228.6,expense
+2022-02-20,Transport,Train,66.46,expense
+2022-02-21,Transport,Taxi,45.45,expense
+2022-02-22,Bills,Phone bill,37.33,expense
+2022-02-23,Transport,Bus,46.89,expense
+2022-02-24,Other,Miscellaneous expense,16.01,expense
+2022-02-26,Other,Miscellaneous expense,19.86,expense
+2022-02-27,Shopping,Groceries,32.07,expense
+2022-02-28,Shopping,Baking supplies,275.75,expense
+2022-03-01,Shopping,Tools,55.64,expense
+2022-03-02,Bills,Electricity bill,42.62,expense
+2022-03-03,Bills,Phone bill,12.55,expense
+2022-03-04,Shopping,Baking supplies,252.41,expense
+2022-03-05,Transport,Gas,59.37,expense
+2022-03-06,Transport,Train,27.22,expense
+2022-03-07,Freelance,Project,501.04,income
+2022-03-09,Freelance,Invoice settlement,235.7,income
+2022-03-10,Entertainment,Concert,11.23,expense
+2022-03-11,Freelance,Invoice settlement,196.23,income
+2022-03-12,Bills,Water bill,13.82,expense
+2022-03-14,Salary,Employer paycheck,2986.36,income
+2022-03-15,Transport,Taxi,53.97,expense
+2022-03-16,Bills,Internet,27.8,expense
+2022-03-17,Transport,Bus,41.21,expense
+2022-03-19,Transport,Bus,22.6,expense
+2022-03-20,Entertainment,Concert,41.95,expense
+2022-03-21,Transport,Taxi,61.73,expense
+2022-03-23,Transport,Bus,50.88,expense
+2022-03-24,Investment,Dividend payout,182.55,income
+2022-03-25,Transport,Train,31.14,expense
+2022-03-26,Other,Unexpected repair,45.73,expense
+2022-03-27,Shopping,Baking supplies,159.63,expense
+2022-03-28,Bills,Rent,550.0,expense
+2022-03-29,Health,Gym membership,19.55,expense
+2022-03-30,Other,Unexpected repair,7.6,expense
+2022-03-31,Shopping,Skincare,10.56,expense
+2022-04-01,Shopping,Baking supplies,286.31,expense
+2022-04-02,Bills,Electricity bill,26.28,expense
+2022-04-03,Freelance,Invoice settlement,354.87,income
+2022-04-05,Freelance,Invoice settlement,561.62,income
+2022-04-06,Shopping,Jewerly,173.49,expense
+2022-04-07,Bills,Rent,550.0,expense
+2022-04-08,Entertainment,Movies,53.88,expense
+2022-04-09,Entertainment,Streaming service,16.51,expense
+2022-04-10,Bills,Internet,27.8,expense
+2022-04-12,Transport,Bus,52.01,expense
+2022-04-14,Freelance,Project,274.93,income
+2022-04-15,Transport,Train,16.46,expense
+2022-04-16,Transport,Gas,5.81,expense
+2022-04-17,Bills,Phone bill,30.74,expense
+2022-04-18,Transport,Rideshare,21.73,expense
+2022-04-19,Shopping,Jewerly,31.37,expense
+2022-04-20,Bills,Water bill,15.41,expense
+2022-04-21,Transport,Rideshare,67.03,expense
+2022-04-22,Transport,Taxi,30.69,expense
+2022-04-23,Transport,Gas,7.95,expense
+2022-04-24,Investment,Dividend payout,113.4,income
+2022-04-25,Transport,Bus,23.49,expense
+2022-04-26,Shopping,Baking supplies,183.69,expense
+2022-04-27,Health,Accessories,31.57,expense
+2022-04-28,Other,Charity donation,8.59,expense
+2022-04-29,Other,Charity donation,11.82,expense
+2022-04-30,Salary,Employer paycheck,2858.13,income
+2022-05-01,Bills,Internet,27.8,expense
+2022-05-02,Entertainment,Concert,15.37,expense
+2022-05-03,Entertainment,Streaming service,30.22,expense
+2022-05-04,Transport,Rideshare,33.24,expense
+2022-05-05,Bills,Phone bill,15.38,expense
+2022-05-06,Transport,Taxi,40.32,expense
+2022-05-07,Health,Medication,28.13,expense
+2022-05-08,Freelance,Invoice settlement,186.53,income
+2022-05-09,Transport,Rideshare,39.47,expense
+2022-05-10,Shopping,Clothes,88.73,expense
+2022-05-11,Freelance,Project,237.97,income
+2022-05-12,Transport,Train,69.4,expense
+2022-05-13,Transport,Bus,65.2,expense
+2022-05-14,Freelance,Invoice settlement,295.87,income
+2022-05-15,Transport,Train,41.2,expense
+2022-05-16,Salary,Employer paycheck,3099.15,income
+2022-05-17,Bills,Water bill,38.28,expense
+2022-05-18,Investment,Dividend payout,194.21,income
+2022-05-19,Shopping,Skincare,258.44,expense
+2022-05-20,Transport,Bus,64.35,expense
+2022-05-21,Transport,Bus,43.77,expense
+2022-05-23,Other,Charity donation,18.78,expense
+2022-05-24,Other,Charity donation,43.02,expense
+2022-05-26,Transport,Gas,36.79,expense
+2022-05-27,Bills,Rent,550.0,expense
+2022-05-29,Shopping,Clothes,123.44,expense
+2022-05-30,Bills,Electricity bill,27.03,expense
+2022-05-31,Shopping,Clothes,162.37,expense
+2022-06-01,Transport,Rideshare,42.47,expense
+2022-06-02,Transport,Taxi,9.65,expense
+2022-06-03,Salary,Employer paycheck,2832.31,income
+2022-06-04,Freelance,Invoice settlement,377.08,income
+2022-06-05,Transport,Bus,51.93,expense
+2022-06-06,Bills,Electricity bill,36.07,expense
+2022-06-07,Shopping,Baking supplies,86.61,expense
+2022-06-08,Entertainment,Movies,45.14,expense
+2022-06-09,Bills,Water bill,23.42,expense
+2022-06-11,Bills,Rent,550.0,expense
+2022-06-13,Bills,Phone bill,32.14,expense
+2022-06-14,Transport,Gas,5.28,expense
+2022-06-15,Freelance,Project,280.57,income
+2022-06-16,Transport,Rideshare,16.89,expense
+2022-06-17,Bills,Internet,27.8,expense
+2022-06-18,Shopping,Jewerly,203.16,expense
+2022-06-20,Transport,Bus,5.67,expense
+2022-06-21,Investment,Dividend payout,103.78,income
+2022-06-22,Health,Medication,31.87,expense
+2022-06-23,Freelance,Invoice settlement,174.96,income
+2022-06-24,Transport,Taxi,28.2,expense
+2022-06-25,Entertainment,Concert,24.3,expense
+2022-06-26,Transport,Taxi,31.16,expense
+2022-06-27,Other,Household items,40.64,expense
+2022-06-28,Other,Household items,49.16,expense
+2022-06-29,Shopping,Skincare,250.4,expense
+2022-06-30,Shopping,Clothes,230.81,expense
+2022-07-01,Bills,Rent,550.0,expense
+2022-07-02,Transport,Train,39.68,expense
+2022-07-03,Investment,Dividend payout,213.7,income
+2022-07-04,Freelance,Invoice settlement,285.13,income
+2022-07-05,Shopping,Groceries,221.28,expense
+2022-07-06,Bills,Internet,27.8,expense
+2022-07-08,Shopping,Tools,130.79,expense
+2022-07-09,Freelance,Invoice settlement,560.19,income
+2022-07-10,Freelance,Project,411.69,income
+2022-07-11,Entertainment,Concert,59.37,expense
+2022-07-12,Bills,Phone bill,37.87,expense
+2022-07-13,Shopping,Tools,223.79,expense
+2022-07-14,Salary,Employer paycheck,2977.87,income
+2022-07-15,Bills,Electricity bill,42.41,expense
+2022-07-16,Transport,Gas,31.43,expense
+2022-07-17,Transport,Gas,68.43,expense
+2022-07-18,Bills,Water bill,38.81,expense
+2022-07-19,Transport,Taxi,4.58,expense
+2022-07-20,Entertainment,Streaming service,51.4,expense
+2022-07-21,Transport,Bus,13.05,expense
+2022-07-22,Shopping,Clothes,295.66,expense
+2022-07-23,Transport,Gas,45.36,expense
+2022-07-25,Transport,Rideshare,12.87,expense
+2022-07-26,Transport,Train,43.27,expense
+2022-07-27,Other,Unexpected repair,28.12,expense
+2022-07-28,Other,Charity donation,18.21,expense
+2022-07-29,Transport,Gas,25.92,expense
+2022-07-30,Shopping,Tools,180.16,expense
+2022-07-31,Health,Medication,21.91,expense
+2022-08-01,Freelance,Invoice settlement,409.66,income
+2022-08-02,Bills,Phone bill,22.46,expense
+2022-08-03,Shopping,Skincare,230.22,expense
+2022-08-05,Entertainment,Nightout,23.76,expense
+2022-08-06,Entertainment,Concert,31.53,expense
+2022-08-07,Transport,Gas,35.55,expense
+2022-08-08,Freelance,Invoice settlement,432.18,income
+2022-08-10,Shopping,Baking supplies,14.01,expense
+2022-08-11,Bills,Water bill,10.6,expense
+2022-08-14,Freelance,Invoice settlement,453.73,income
+2022-08-15,Shopping,Baking supplies,103.74,expense
+2022-08-16,Transport,Bus,45.05,expense
+2022-08-17,Transport,Bus,55.49,expense
+2022-08-18,Salary,Employer paycheck,2924.74,income
+2022-08-19,Transport,Rideshare,58.45,expense
+2022-08-20,Transport,Gas,10.51,expense
+2022-08-21,Bills,Internet,27.8,expense
+2022-08-22,Transport,Bus,20.49,expense
+2022-08-23,Investment,Dividend payout,131.81,income
+2022-08-24,Bills,Rent,550.0,expense
+2022-08-25,Transport,Rideshare,14.83,expense
+2022-08-27,Health,Gym membership,15.29,expense
+2022-08-28,Transport,Bus,9.82,expense
+2022-08-29,Other,Miscellaneous expense,17.92,expense
+2022-08-30,Shopping,Skincare,221.35,expense
+2022-08-31,Bills,Electricity bill,26.32,expense
+2022-09-01,Freelance,Project,147.57,income
+2022-09-02,Investment,Dividend payout,254.88,income
+2022-09-03,Freelance,Invoice settlement,545.55,income
+2022-09-04,Shopping,Tools,260.24,expense
+2022-09-06,Shopping,Clothes,51.97,expense
+2022-09-07,Salary,Employer paycheck,3081.71,income
+2022-09-08,Freelance,Invoice settlement,393.21,income
+2022-09-09,Bills,Water bill,34.23,expense
+2022-09-11,Bills,Internet,27.8,expense
+2022-09-12,Shopping,Jewerly,136.46,expense
+2022-09-13,Bills,Electricity bill,36.49,expense
+2022-09-14,Entertainment,Movies,6.21,expense
+2022-09-15,Entertainment,Nightout,58.08,expense
+2022-09-16,Transport,Gas,37.15,expense
+2022-09-17,Transport,Gas,51.5,expense
+2022-09-18,Shopping,Clothes,57.96,expense
+2022-09-19,Transport,Gas,33.5,expense
+2022-09-20,Transport,Bus,60.14,expense
+2022-09-21,Bills,Rent,550.0,expense
+2022-09-22,Transport,Gas,48.28,expense
+2022-09-23,Health,Gym membership,20.56,expense
+2022-09-24,Transport,Train,22.32,expense
+2022-09-25,Transport,Taxi,58.77,expense
+2022-09-26,Bills,Phone bill,28.96,expense
+2022-09-27,Transport,Rideshare,28.83,expense
+2022-09-28,Other,Household items,26.18,expense
+2022-09-29,Other,Charity donation,35.84,expense
+2022-09-30,Entertainment,Concert,39.93,expense
+2022-10-01,Salary,Employer paycheck,3006.8,income
+2022-10-02,Bills,Internet,27.8,expense
+2022-10-04,Transport,Train,32.45,expense
+2022-10-05,Freelance,Project,278.97,income
+2022-10-07,Investment,Dividend payout,71.91,income
+2022-10-08,Bills,Electricity bill,22.52,expense
+2022-10-09,Health,Gym membership,27.79,expense
+2022-10-10,Transport,Bus,35.4,expense
+2022-10-11,Entertainment,Streaming service,56.61,expense
+2022-10-12,Freelance,Project,119.1,income
+2022-10-13,Transport,Gas,9.33,expense
+2022-10-15,Shopping,Clothes,257.21,expense
+2022-10-16,Freelance,Invoice settlement,346.71,income
+2022-10-17,Bills,Water bill,19.53,expense
+2022-10-17,Bills,Rent,550.0,expense
+2022-10-18,Entertainment,Concert,37.61,expense
+2022-10-19,Transport,Taxi,44.52,expense
+2022-10-20,Transport,Train,39.06,expense
+2022-10-21,Shopping,Groceries,179.01,expense
+2022-10-22,Bills,Phone bill,22.88,expense
+2022-10-23,Transport,Taxi,15.69,expense
+2022-10-24,Transport,Taxi,28.28,expense
+2022-10-25,Transport,Taxi,28.95,expense
+2022-10-26,Other,Household items,46.34,expense
+2022-10-27,Other,Unexpected repair,9.33,expense
+2022-10-28,Entertainment,Nightout,58.24,expense
+2022-10-29,Transport,Gas,2.13,expense
+2022-10-30,Shopping,Tools,197.36,expense
+2022-10-31,Shopping,Baking supplies,108.7,expense
+2022-11-01,Shopping,Tools,141.2,expense
+2022-11-02,Entertainment,Nightout,35.82,expense
+2022-11-03,Bills,Internet,27.8,expense
+2022-11-04,Bills,Electricity bill,20.67,expense
+2022-11-05,Freelance,Project,409.49,income
+2022-11-06,Freelance,Project,376.22,income
+2022-11-08,Entertainment,Concert,7.84,expense
+2022-11-09,Freelance,Invoice settlement,268.44,income
+2022-11-10,Bills,Phone bill,29.42,expense
+2022-11-11,Transport,Train,21.6,expense
+2022-11-12,Transport,Gas,30.46,expense
+2022-11-13,Transport,Rideshare,64.52,expense
+2022-11-14,Transport,Taxi,7.55,expense
+2022-11-15,Bills,Rent,550.0,expense
+2022-11-16,Salary,Employer paycheck,3052.76,income
+2022-11-17,Shopping,Clothes,199.66,expense
+2022-11-18,Transport,Bus,56.26,expense
+2022-11-19,Transport,Taxi,15.67,expense
+2022-11-20,Health,Gym membership,18.46,expense
+2022-11-21,Transport,Rideshare,68.55,expense
+2022-11-22,Transport,Bus,66.91,expense
+2022-11-23,Shopping,Groceries,116.73,expense
+2022-11-24,Shopping,Skincare,81.39,expense
+2022-11-25,Investment,Dividend payout,387.28,income
+2022-11-26,Bills,Water bill,27.25,expense
+2022-11-27,Other,Household items,6.99,expense
+2022-11-28,Other,Miscellaneous expense,10.14,expense
+2022-11-29,Shopping,Groceries,180.58,expense
+2022-11-30,Transport,Taxi,12.43,expense
+2022-12-01,Shopping,Baking supplies,19.91,expense
+2022-12-02,Freelance,Project,345.36,income
+2022-12-03,Bills,Phone bill,33.6,expense
+2022-12-04,Investment,Dividend payout,217.68,income
+2022-12-06,Health,Medication,29.82,expense
+2022-12-07,Bills,Internet,27.8,expense
+2022-12-08,Entertainment,Movies,56.37,expense
+2022-12-09,Shopping,Tools,133.34,expense
+2022-12-10,Freelance,Invoice settlement,548.53,income
+2022-12-11,Entertainment,Nightout,51.7,expense
+2022-12-12,Freelance,Project,485.16,income
+2022-12-13,Bills,Rent,550.0,expense
+2022-12-14,Transport,Train,56.46,expense
+2022-12-16,Transport,Train,59.6,expense
+2022-12-17,Salary,Employer paycheck,3000.52,income
+2022-12-18,Transport,Bus,41.31,expense
+2022-12-19,Transport,Bus,16.53,expense
+2022-12-21,Bills,Electricity bill,23.82,expense
+2022-12-22,Transport,Train,28.11,expense
+2022-12-23,Transport,Train,65.72,expense
+2022-12-24,Transport,Bus,66.09,expense
+2022-12-25,Transport,Rideshare,43.49,expense
+2022-12-26,Other,Miscellaneous expense,7.37,expense
+2022-12-27,Other,Household items,31.93,expense
+2022-12-28,Bills,Water bill,15.1,expense
+2022-12-29,Shopping,Skincare,94.73,expense
+2022-12-31,Shopping,Clothes,140.79,expense
+2023-01-02,Bills,Rent,550.0,expense
+2023-01-03,Freelance,Project,152.25,income
+2023-01-05,Bills,Internet,27.8,expense
+2023-01-06,Investment,Dividend payout,303.09,income
+2023-01-07,Shopping,Tools,139.7,expense
+2023-01-08,Freelance,Invoice settlement,360.57,income
+2023-01-09,Freelance,Project,265.61,income
+2023-01-10,Bills,Water bill,27.98,expense
+2023-01-11,Shopping,Clothes,12.6,expense
+2023-01-12,Health,Gym membership,26.56,expense
+2023-01-14,Entertainment,Streaming service,16.38,expense
+2023-01-16,Shopping,Jewerly,106.19,expense
+2023-01-17,Entertainment,Concert,28.97,expense
+2023-01-18,Transport,Train,63.45,expense
+2023-01-19,Salary,Employer paycheck,2940.51,income
+2023-01-20,Shopping,Jewerly,149.41,expense
+2023-01-21,Transport,Taxi,41.6,expense
+2023-01-22,Transport,Train,11.98,expense
+2023-01-23,Transport,Bus,20.15,expense
+2023-01-25,Transport,Taxi,29.59,expense
+2023-01-26,Bills,Phone bill,21.45,expense
+2023-01-27,Transport,Train,46.22,expense
+2023-01-28,Transport,Rideshare,47.6,expense
+2023-01-30,Bills,Electricity bill,31.79,expense
+2023-01-31,Transport,Taxi,48.07,expense
+2023-02-01,Transport,Rideshare,19.95,expense
+2023-02-02,Bills,Phone bill,13.68,expense
+2023-02-03,Health,Gym membership,18.89,expense
+2023-02-04,Investment,Dividend payout,230.2,income
+2023-02-07,Other,Charity donation,22.2,expense
+2023-02-08,Transport,Taxi,9.57,expense
+2023-02-09,Bills,Water bill,42.56,expense
+2023-02-10,Freelance,Invoice settlement,272.46,income
+2023-02-11,Transport,Bus,30.63,expense
+2023-02-12,Transport,Bus,56.57,expense
+2023-02-13,Salary,Employer paycheck,3026.19,income
+2023-02-14,Transport,Taxi,39.82,expense
+2023-02-15,Bills,Electricity bill,44.98,expense
+2023-02-16,Transport,Gas,14.21,expense
+2023-02-18,Transport,Taxi,10.67,expense
+2023-02-19,Bills,Rent,550.0,expense
+2023-02-20,Bills,Internet,27.8,expense
+2023-02-21,Shopping,Jewerly,191.35,expense
+2023-02-22,Transport,Bus,62.53,expense
+2023-02-23,Shopping,Clothes,37.27,expense
+2023-02-24,Shopping,Clothes,213.63,expense
+2023-02-25,Shopping,Tools,100.55,expense
+2023-02-26,Entertainment,Concert,9.79,expense
+2023-02-27,Entertainment,Concert,55.84,expense
+2023-02-28,Other,Household items,16.92,expense
+2023-03-01,Shopping,Groceries,31.43,expense
+2023-03-02,Entertainment,Movies,20.25,expense
+2023-03-03,Entertainment,Nightout,52.04,expense
+2023-03-04,Transport,Rideshare,36.11,expense
+2023-03-05,Investment,Dividend payout,203.55,income
+2023-03-06,Freelance,Project,411.85,income
+2023-03-07,Health,Accessories,17.22,expense
+2023-03-08,Shopping,Jewerly,253.17,expense
+2023-03-10,Freelance,Project,570.34,income
+2023-03-11,Bills,Internet,27.8,expense
+2023-03-12,Bills,Rent,550.0,expense
+2023-03-15,Transport,Gas,16.85,expense
+2023-03-16,Freelance,Invoice settlement,558.87,income
+2023-03-17,Transport,Bus,42.35,expense
+2023-03-18,Transport,Taxi,39.49,expense
+2023-03-19,Transport,Taxi,25.94,expense
+2023-03-20,Salary,Employer paycheck,3027.86,income
+2023-03-21,Shopping,Skincare,179.86,expense
+2023-03-22,Shopping,Clothes,47.1,expense
+2023-03-23,Transport,Train,6.15,expense
+2023-03-24,Transport,Bus,51.09,expense
+2023-03-25,Bills,Water bill,40.5,expense
+2023-03-26,Transport,Taxi,10.45,expense
+2023-03-27,Bills,Phone bill,33.43,expense
+2023-03-28,Other,Unexpected repair,13.84,expense
+2023-03-30,Bills,Electricity bill,29.28,expense
+2023-03-31,Other,Miscellaneous expense,31.71,expense
+2023-04-01,Shopping,Skincare,291.43,expense
+2023-04-02,Shopping,Jewerly,48.02,expense
+2023-04-03,Freelance,Project,396.9,income
+2023-04-04,Investment,Dividend payout,249.88,income
+2023-04-06,Transport,Rideshare,10.51,expense
+2023-04-07,Shopping,Groceries,264.9,expense
+2023-04-08,Bills,Rent,550.0,expense
+2023-04-09,Transport,Rideshare,15.66,expense
+2023-04-13,Freelance,Invoice settlement,186.03,income
+2023-04-16,Transport,Rideshare,12.26,expense
+2023-04-17,Entertainment,Nightout,17.07,expense
+2023-04-18,Bills,Water bill,15.65,expense
+2023-04-19,Salary,Employer paycheck,2983.36,income
+2023-04-20,Transport,Taxi,22.44,expense
+2023-04-21,Bills,Internet,27.8,expense
+2023-04-22,Transport,Bus,7.12,expense
+2023-04-23,Health,Accessories,18.05,expense
+2023-04-24,Entertainment,Concert,41.5,expense
+2023-04-25,Transport,Rideshare,3.3,expense
+2023-04-26,Bills,Electricity bill,20.5,expense
+2023-04-27,Bills,Phone bill,19.29,expense
+2023-04-28,Shopping,Tools,187.7,expense
+2023-04-29,Transport,Gas,67.43,expense
+2023-05-02,Freelance,Project,317.38,income
+2023-05-04,Freelance,Project,129.57,income
+2023-05-05,Salary,Employer paycheck,3076.69,income
+2023-05-05,Investment,Dividend payout,51.65,income
+2023-05-06,Bills,Internet,27.8,expense
+2023-05-07,Shopping,Jewerly,279.22,expense
+2023-05-08,Freelance,Invoice settlement,107.49,income
+2023-05-09,Shopping,Jewerly,65.29,expense
+2023-05-10,Shopping,Skincare,176.28,expense
+2023-05-11,Shopping,Clothes,128.55,expense
+2023-05-12,Bills,Electricity bill,10.93,expense
+2023-05-13,Entertainment,Streaming service,36.12,expense
+2023-05-14,Health,Accessories,19.4,expense
+2023-05-16,Entertainment,Streaming service,33.78,expense
+2023-05-17,Transport,Taxi,48.77,expense
+2023-05-18,Transport,Taxi,56.63,expense
+2023-05-19,Bills,Water bill,20.67,expense
+2023-05-20,Transport,Taxi,37.93,expense
+2023-05-21,Transport,Bus,26.77,expense
+2023-05-22,Bills,Phone bill,39.36,expense
+2023-05-23,Transport,Bus,39.41,expense
+2023-05-24,Transport,Bus,33.73,expense
+2023-05-25,Bills,Rent,550.0,expense
+2023-05-28,Transport,Bus,65.47,expense
+2023-05-29,Transport,Rideshare,19.09,expense
+2023-05-30,Other,Miscellaneous expense,26.39,expense
+2023-05-31,Other,Miscellaneous expense,25.88,expense
+2023-06-01,Shopping,Groceries,158.25,expense
+2023-06-02,Investment,Dividend payout,180.83,income
+2023-06-03,Entertainment,Streaming service,40.82,expense
+2023-06-04,Bills,Electricity bill,15.84,expense
+2023-06-05,Salary,Employer paycheck,3105.07,income
+2023-06-06,Freelance,Project,532.04,income
+2023-06-08,Transport,Bus,4.06,expense
+2023-06-09,Bills,Phone bill,10.25,expense
+2023-06-10,Transport,Bus,14.6,expense
+2023-06-11,Freelance,Project,136.66,income
+2023-06-12,Transport,Bus,22.05,expense
+2023-06-13,Shopping,Tools,200.46,expense
+2023-06-14,Transport,Train,51.48,expense
+2023-06-15,Bills,Rent,550.0,expense
+2023-06-16,Health,Accessories,31.08,expense
+2023-06-17,Freelance,Project,459.29,income
+2023-06-18,Transport,Bus,58.07,expense
+2023-06-19,Shopping,Clothes,80.09,expense
+2023-06-20,Entertainment,Movies,47.74,expense
+2023-06-22,Transport,Rideshare,68.2,expense
+2023-06-23,Shopping,Skincare,39.21,expense
+2023-06-24,Transport,Rideshare,60.36,expense
+2023-06-25,Bills,Water bill,11.29,expense
+2023-06-25,Bills,Internet,27.8,expense
+2023-06-27,Transport,Rideshare,44.03,expense
+2023-06-29,Other,Household items,14.39,expense
+2023-06-30,Other,Miscellaneous expense,30.41,expense
+2023-07-01,Freelance,Project,484.25,income
+2023-07-02,Entertainment,Streaming service,5.74,expense
+2023-07-03,Entertainment,Concert,32.49,expense
+2023-07-04,Investment,Dividend payout,84.85,income
+2023-07-05,Transport,Train,19.06,expense
+2023-07-06,Shopping,Skincare,285.3,expense
+2023-07-07,Freelance,Project,397.94,income
+2023-07-08,Freelance,Project,389.24,income
+2023-07-09,Salary,Employer paycheck,3025.28,income
+2023-07-10,Bills,Water bill,41.6,expense
+2023-07-11,Shopping,Clothes,273.84,expense
+2023-07-12,Transport,Taxi,57.59,expense
+2023-07-13,Bills,Internet,27.8,expense
+2023-07-14,Shopping,Jewerly,135.72,expense
+2023-07-15,Transport,Gas,51.99,expense
+2023-07-17,Transport,Taxi,47.75,expense
+2023-07-18,Transport,Taxi,52.26,expense
+2023-07-19,Bills,Phone bill,24.13,expense
+2023-07-20,Transport,Train,15.39,expense
+2023-07-22,Bills,Electricity bill,20.49,expense
+2023-07-23,Shopping,Clothes,137.63,expense
+2023-07-24,Transport,Gas,51.99,expense
+2023-07-25,Transport,Rideshare,57.1,expense
+2023-07-26,Bills,Rent,550.0,expense
+2023-07-27,Other,Unexpected repair,18.0,expense
+2023-07-28,Other,Unexpected repair,21.02,expense
+2023-07-29,Shopping,Jewerly,210.32,expense
+2023-07-30,Health,Accessories,17.55,expense
+2023-07-31,Entertainment,Concert,37.94,expense
+2023-08-02,Shopping,Clothes,277.96,expense
+2023-08-03,Freelance,Invoice settlement,220.68,income
+2023-08-04,Shopping,Skincare,280.86,expense
+2023-08-05,Shopping,Clothes,122.06,expense
+2023-08-06,Bills,Internet,27.8,expense
+2023-08-07,Shopping,Skincare,187.28,expense
+2023-08-08,Bills,Electricity bill,37.17,expense
+2023-08-10,Freelance,Project,346.28,income
+2023-08-11,Bills,Water bill,29.28,expense
+2023-08-12,Entertainment,Nightout,39.44,expense
+2023-08-13,Freelance,Invoice settlement,129.53,income
+2023-08-14,Entertainment,Movies,37.13,expense
+2023-08-16,Bills,Phone bill,17.17,expense
+2023-08-17,Transport,Bus,24.99,expense
+2023-08-18,Bills,Rent,550.0,expense
+2023-08-19,Transport,Train,54.4,expense
+2023-08-20,Transport,Gas,48.12,expense
+2023-08-22,Salary,Employer paycheck,2977.78,income
+2023-08-23,Transport,Train,53.05,expense
+2023-08-24,Investment,Dividend payout,188.24,income
+2023-08-25,Transport,Train,62.11,expense
+2023-08-26,Health,Accessories,17.29,expense
+2023-08-27,Transport,Bus,41.35,expense
+2023-08-28,Transport,Rideshare,65.74,expense
+2023-08-29,Transport,Gas,31.07,expense
+2023-08-30,Other,Miscellaneous expense,22.97,expense
+2023-08-31,Other,Charity donation,41.29,expense
+2023-09-02,Bills,Internet,27.8,expense
+2023-09-03,Shopping,Tools,158.96,expense
+2023-09-04,Shopping,Clothes,109.59,expense
+2023-09-05,Shopping,Groceries,158.11,expense
+2023-09-06,Shopping,Baking supplies,276.16,expense
+2023-09-07,Entertainment,Movies,49.77,expense
+2023-09-08,Bills,Water bill,18.86,expense
+2023-09-09,Health,Accessories,17.36,expense
+2023-09-10,Freelance,Invoice settlement,382.12,income
+2023-09-11,Freelance,Invoice settlement,310.08,income
+2023-09-12,Freelance,Project,511.46,income
+2023-09-13,Entertainment,Streaming service,12.41,expense
+2023-09-14,Transport,Gas,37.39,expense
+2023-09-15,Bills,Electricity bill,44.29,expense
+2023-09-17,Bills,Rent,550.0,expense
+2023-09-18,Transport,Bus,4.3,expense
+2023-09-19,Transport,Taxi,21.39,expense
+2023-09-20,Transport,Taxi,63.54,expense
+2023-09-21,Transport,Rideshare,50.92,expense
+2023-09-22,Bills,Phone bill,11.96,expense
+2023-09-24,Transport,Gas,12.16,expense
+2023-09-25,Salary,Employer paycheck,2880.79,income
+2023-09-26,Transport,Taxi,69.4,expense
+2023-09-27,Transport,Bus,8.32,expense
+2023-09-28,Other,Household items,27.65,expense
+2023-09-29,Investment,Dividend payout,384.25,income
+2023-09-30,Other,Household items,28.4,expense
+2023-10-01,Investment,Dividend payout,366.45,income
+2023-10-03,Shopping,Jewerly,131.65,expense
+2023-10-04,Transport,Gas,24.07,expense
+2023-10-06,Freelance,Invoice settlement,273.4,income
+2023-10-07,Shopping,Tools,82.11,expense
+2023-10-08,Freelance,Project,293.82,income
+2023-10-09,Freelance,Invoice settlement,443.75,income
+2023-10-10,Entertainment,Nightout,12.88,expense
+2023-10-12,Bills,Water bill,11.51,expense
+2023-10-13,Transport,Gas,29.69,expense
+2023-10-14,Transport,Taxi,24.91,expense
+2023-10-15,Bills,Internet,27.8,expense
+2023-10-16,Transport,Taxi,22.61,expense
+2023-10-17,Health,Medication,30.29,expense
+2023-10-18,Salary,Employer paycheck,2919.12,income
+2023-10-19,Transport,Taxi,64.57,expense
+2023-10-20,Transport,Rideshare,44.18,expense
+2023-10-21,Transport,Rideshare,28.41,expense
+2023-10-22,Bills,Phone bill,41.71,expense
+2023-10-23,Entertainment,Nightout,32.3,expense
+2023-10-24,Bills,Rent,550.0,expense
+2023-10-25,Transport,Rideshare,30.83,expense
+2023-10-26,Other,Household items,34.19,expense
+2023-10-27,Shopping,Baking supplies,167.91,expense
+2023-10-28,Other,Miscellaneous expense,49.96,expense
+2023-10-29,Shopping,Jewerly,16.58,expense
+2023-10-30,Bills,Electricity bill,36.65,expense
+2023-10-31,Shopping,Skincare,10.88,expense
+2023-11-01,Freelance,Invoice settlement,187.6,income
+2023-11-02,Shopping,Baking supplies,28.32,expense
+2023-11-03,Investment,Dividend payout,139.06,income
+2023-11-04,Freelance,Project,332.46,income
+2023-11-05,Entertainment,Concert,53.72,expense
+2023-11-06,Entertainment,Movies,55.45,expense
+2023-11-07,Transport,Train,46.96,expense
+2023-11-08,Salary,Employer paycheck,2851.35,income
+2023-11-09,Freelance,Invoice settlement,569.01,income
+2023-11-10,Transport,Bus,53.66,expense
+2023-11-11,Bills,Water bill,12.27,expense
+2023-11-11,Bills,Rent,550.0,expense
+2023-11-13,Bills,Internet,27.8,expense
+2023-11-15,Transport,Gas,61.96,expense
+2023-11-16,Shopping,Skincare,123.38,expense
+2023-11-18,Transport,Rideshare,62.09,expense
+2023-11-19,Transport,Gas,25.65,expense
+2023-11-20,Transport,Rideshare,21.75,expense
+2023-11-21,Transport,Taxi,53.68,expense
+2023-11-22,Shopping,Skincare,117.25,expense
+2023-11-23,Bills,Electricity bill,13.95,expense
+2023-11-24,Shopping,Skincare,74.83,expense
+2023-11-25,Transport,Bus,8.19,expense
+2023-11-26,Health,Medication,22.48,expense
+2023-11-28,Bills,Phone bill,38.45,expense
+2023-11-29,Other,Household items,11.18,expense
+2023-11-30,Other,Miscellaneous expense,17.2,expense
+2023-12-01,Shopping,Skincare,50.44,expense
+2023-12-02,Salary,Employer paycheck,2909.43,income
+2023-12-03,Entertainment,Movies,52.16,expense
+2023-12-04,Shopping,Baking supplies,246.11,expense
+2023-12-05,Freelance,Invoice settlement,199.85,income
+2023-12-07,Entertainment,Streaming service,58.73,expense
+2023-12-08,Bills,Internet,27.8,expense
+2023-12-09,Freelance,Project,440.66,income
+2023-12-10,Transport,Taxi,30.92,expense
+2023-12-11,Freelance,Project,125.7,income
+2023-12-12,Shopping,Tools,272.74,expense
+2023-12-13,Transport,Gas,11.35,expense
+2023-12-14,Transport,Taxi,43.97,expense
+2023-12-15,Transport,Train,12.69,expense
+2023-12-16,Transport,Train,37.71,expense
+2023-12-17,Transport,Train,60.01,expense
+2023-12-18,Transport,Taxi,31.17,expense
+2023-12-19,Transport,Train,40.23,expense
+2023-12-20,Health,Accessories,29.41,expense
+2023-12-21,Other,Charity donation,16.06,expense
+2023-12-22,Bills,Phone bill,16.63,expense
+2023-12-24,Bills,Water bill,23.7,expense
+2023-12-25,Investment,Dividend payout,358.05,income
+2023-12-26,Shopping,Jewerly,163.65,expense
+2023-12-27,Other,Charity donation,30.05,expense
+2023-12-28,Transport,Gas,50.47,expense
+2023-12-29,Bills,Electricity bill,16.13,expense
+2023-12-30,Bills,Rent,550.0,expense
+2023-12-31,Shopping,Baking supplies,288.03,expense
+2024-01-01,Freelance,Project,336.0,income
+2024-01-03,Investment,Dividend payout,274.34,income
+2024-01-04,Bills,Water bill,43.62,expense
+2024-01-04,Bills,Internet,27.8,expense
+2024-01-05,Shopping,Groceries,131.31,expense
+2024-01-07,Salary,Employer paycheck,3043.96,income
+2024-01-08,Entertainment,Movies,45.64,expense
+2024-01-09,Entertainment,Movies,31.27,expense
+2024-01-11,Bills,Electricity bill,14.21,expense
+2024-01-12,Freelance,Invoice settlement,491.61,income
+2024-01-14,Shopping,Skincare,131.67,expense
+2024-01-15,Transport,Train,13.39,expense
+2024-01-16,Transport,Train,62.38,expense
+2024-01-17,Freelance,Invoice settlement,257.07,income
+2024-01-18,Transport,Bus,67.7,expense
+2024-01-19,Transport,Taxi,25.65,expense
+2024-01-20,Transport,Bus,63.67,expense
+2024-01-21,Transport,Taxi,37.6,expense
+2024-01-22,Transport,Train,16.33,expense
+2024-01-23,Health,Medication,15.73,expense
+2024-01-24,Bills,Phone bill,42.0,expense
+2024-01-25,Transport,Train,52.39,expense
+2024-01-28,Other,Miscellaneous expense,9.67,expense
+2024-01-29,Shopping,Clothes,134.38,expense
+2024-01-30,Shopping,Groceries,115.73,expense
+2024-01-31,Bills,Rent,550.0,expense
+2024-02-01,Salary,Employer paycheck,2865.07,income
+2024-02-02,Shopping,Jewerly,91.42,expense
+2024-02-03,Shopping,Skincare,271.94,expense
+2024-02-04,Shopping,Groceries,82.93,expense
+2024-02-05,Bills,Internet,27.8,expense
+2024-02-06,Freelance,Project,355.59,income
+2024-02-07,Entertainment,Movies,15.24,expense
+2024-02-09,Freelance,Project,527.51,income
+2024-02-13,Bills,Phone bill,39.28,expense
+2024-02-14,Shopping,Baking supplies,144.04,expense
+2024-02-15,Entertainment,Nightout,35.24,expense
+2024-02-16,Transport,Train,50.37,expense
+2024-02-17,Transport,Gas,35.69,expense
+2024-02-18,Transport,Bus,44.53,expense
+2024-02-19,Investment,Dividend payout,336.47,income
+2024-02-20,Transport,Bus,17.04,expense
+2024-02-21,Transport,Rideshare,9.1,expense
+2024-02-22,Bills,Water bill,10.05,expense
+2024-02-23,Freelance,Project,202.64,income
+2024-02-24,Transport,Taxi,22.93,expense
+2024-02-25,Transport,Bus,6.64,expense
+2024-02-26,Bills,Rent,550.0,expense
+2024-02-26,Bills,Electricity bill,31.83,expense
+2024-02-27,Health,Accessories,27.22,expense
+2024-02-28,Transport,Train,4.57,expense
+2024-03-01,Shopping,Tools,192.86,expense
+2024-03-02,Transport,Train,30.95,expense
+2024-03-03,Bills,Phone bill,23.8,expense
+2024-03-04,Bills,Rent,550.0,expense
+2024-03-04,Bills,Water bill,11.33,expense
+2024-03-05,Freelance,Invoice settlement,599.3,income
+2024-03-06,Transport,Rideshare,41.91,expense
+2024-03-07,Transport,Bus,2.85,expense
+2024-03-08,Freelance,Project,200.54,income
+2024-03-10,Shopping,Groceries,64.58,expense
+2024-03-11,Transport,Bus,34.62,expense
+2024-03-12,Transport,Gas,33.58,expense
+2024-03-13,Shopping,Skincare,160.71,expense
+2024-03-14,Salary,Employer paycheck,2799.84,income
+2024-03-15,Freelance,Project,363.14,income
+2024-03-16,Entertainment,Nightout,30.61,expense
+2024-03-17,Transport,Bus,24.59,expense
+2024-03-18,Transport,Bus,60.46,expense
+2024-03-19,Bills,Electricity bill,29.43,expense
+2024-03-20,Transport,Gas,12.3,expense
+2024-03-21,Other,Charity donation,27.41,expense
+2024-03-22,Other,Household items,21.24,expense
+2024-03-23,Entertainment,Nightout,47.37,expense
+2024-03-24,Transport,Gas,30.04,expense
+2024-03-25,Bills,Internet,27.8,expense
+2024-03-26,Investment,Dividend payout,299.71,income
+2024-03-27,Shopping,Jewerly,250.84,expense
+2024-03-28,Other,Miscellaneous expense,26.21,expense
+2024-03-29,Shopping,Jewerly,51.3,expense
+2024-03-30,Entertainment,Nightout,56.32,expense
+2024-03-31,Health,Gym membership,21.61,expense
+2024-04-01,Freelance,Invoice settlement,590.98,income
+2024-04-04,Bills,Rent,550.0,expense
+2024-04-05,Bills,Water bill,43.9,expense
+2024-04-06,Shopping,Jewerly,49.72,expense
+2024-04-07,Freelance,Invoice settlement,236.47,income
+2024-04-08,Shopping,Baking supplies,296.47,expense
+2024-04-09,Shopping,Jewerly,226.68,expense
+2024-04-10,Freelance,Invoice settlement,259.53,income
+2024-04-11,Shopping,Clothes,10.8,expense
+2024-04-12,Bills,Phone bill,37.86,expense
+2024-04-13,Entertainment,Movies,37.37,expense
+2024-04-14,Entertainment,Movies,44.57,expense
+2024-04-15,Transport,Gas,53.66,expense
+2024-04-16,Bills,Internet,27.8,expense
+2024-04-17,Transport,Taxi,35.57,expense
+2024-04-19,Transport,Gas,48.73,expense
+2024-04-20,Transport,Gas,49.22,expense
+2024-04-21,Transport,Bus,25.01,expense
+2024-04-22,Transport,Gas,53.07,expense
+2024-04-23,Transport,Gas,23.12,expense
+2024-04-24,Investment,Dividend payout,78.2,income
+2024-04-25,Transport,Train,16.05,expense
+2024-04-26,Other,Charity donation,11.28,expense
+2024-04-27,Bills,Electricity bill,33.52,expense
+2024-04-29,Salary,Employer paycheck,2885.57,income
+2024-04-30,Health,Accessories,26.0,expense
+2024-05-01,Freelance,Invoice settlement,546.83,income
+2024-05-02,Shopping,Skincare,211.32,expense
+2024-05-03,Freelance,Project,146.2,income
+2024-05-04,Bills,Phone bill,10.14,expense
+2024-05-05,Shopping,Jewerly,123.51,expense
+2024-05-06,Entertainment,Movies,5.48,expense
+2024-05-07,Freelance,Invoice settlement,414.88,income
+2024-05-09,Entertainment,Concert,18.4,expense
+2024-05-10,Transport,Gas,56.58,expense
+2024-05-11,Bills,Internet,27.8,expense
+2024-05-11,Bills,Water bill,21.72,expense
+2024-05-11,Bills,Rent,550.0,expense
+2024-05-12,Transport,Bus,26.21,expense
+2024-05-13,Salary,Employer paycheck,3110.84,income
+2024-05-14,Transport,Gas,24.17,expense
+2024-05-16,Investment,Dividend payout,235.55,income
+2024-05-17,Transport,Gas,61.37,expense
+2024-05-18,Transport,Rideshare,15.09,expense
+2024-05-20,Transport,Train,33.64,expense
+2024-05-21,Transport,Rideshare,4.62,expense
+2024-05-22,Shopping,Clothes,56.89,expense
+2024-05-23,Transport,Rideshare,27.15,expense
+2024-05-24,Shopping,Jewerly,190.01,expense
+2024-05-25,Bills,Electricity bill,39.09,expense
+2024-05-26,Health,Medication,17.97,expense
+2024-05-28,Other,Charity donation,44.15,expense
+2024-05-29,Other,Charity donation,8.32,expense
+2024-05-30,Shopping,Skincare,70.23,expense
+2024-05-31,Other,Miscellaneous expense,22.54,expense
+2024-06-01,Entertainment,Streaming service,53.98,expense
+2024-06-02,Shopping,Tools,190.11,expense
+2024-06-03,Shopping,Skincare,92.56,expense
+2024-06-04,Salary,Employer paycheck,2843.92,income
+2024-06-05,Entertainment,Nightout,31.45,expense
+2024-06-06,Transport,Rideshare,55.19,expense
+2024-06-07,Bills,Water bill,18.89,expense
+2024-06-08,Transport,Bus,60.53,expense
+2024-06-09,Transport,Train,36.5,expense
+2024-06-10,Investment,Dividend payout,163.63,income
+2024-06-11,Shopping,Groceries,243.19,expense
+2024-06-12,Transport,Gas,39.83,expense
+2024-06-13,Health,Accessories,30.22,expense
+2024-06-14,Freelance,Project,476.26,income
+2024-06-15,Transport,Taxi,26.95,expense
+2024-06-16,Freelance,Project,502.17,income
+2024-06-17,Freelance,Invoice settlement,582.47,income
+2024-06-18,Transport,Taxi,50.3,expense
+2024-06-19,Transport,Taxi,51.33,expense
+2024-06-20,Transport,Bus,65.69,expense
+2024-06-21,Bills,Phone bill,32.45,expense
+2024-06-21,Bills,Electricity bill,15.16,expense
+2024-06-22,Other,Unexpected repair,23.25,expense
+2024-06-23,Bills,Rent,550.0,expense
+2024-06-24,Other,Charity donation,40.88,expense
+2024-06-26,Other,Household items,38.89,expense
+2024-06-27,Bills,Internet,27.8,expense
+2024-06-28,Shopping,Skincare,18.95,expense
+2024-06-29,Shopping,Baking supplies,40.26,expense
+2024-06-30,Entertainment,Movies,54.85,expense
+2024-07-01,Investment,Dividend payout,370.3,income
+2024-07-02,Shopping,Jewerly,53.91,expense
+2024-07-03,Shopping,Baking supplies,299.29,expense
+2024-07-05,Salary,Employer paycheck,2829.03,income
+2024-07-06,Shopping,Skincare,274.78,expense
+2024-07-07,Bills,Electricity bill,32.83,expense
+2024-07-08,Freelance,Invoice settlement,168.41,income
+2024-07-09,Entertainment,Movies,27.55,expense
+2024-07-11,Bills,Water bill,26.82,expense
+2024-07-11,Bills,Phone bill,20.42,expense
+2024-07-12,Shopping,Groceries,159.32,expense
+2024-07-13,Entertainment,Concert,14.2,expense
+2024-07-14,Transport,Bus,16.62,expense
+2024-07-15,Transport,Taxi,66.32,expense
+2024-07-16,Bills,Rent,550.0,expense
+2024-07-17,Freelance,Invoice settlement,476.9,income
+2024-07-19,Health,Accessories,15.15,expense
+2024-07-20,Freelance,Project,431.04,income
+2024-07-21,Transport,Gas,55.29,expense
+2024-07-22,Transport,Train,2.87,expense
+2024-07-23,Transport,Rideshare,40.0,expense
+2024-07-24,Transport,Rideshare,7.27,expense
+2024-07-25,Transport,Gas,8.51,expense
+2024-07-27,Transport,Rideshare,20.89,expense
+2024-07-28,Other,Miscellaneous expense,18.01,expense
+2024-07-29,Other,Household items,43.07,expense
+2024-07-30,Bills,Internet,27.8,expense
+2024-07-31,Shopping,Baking supplies,121.96,expense
+2024-08-01,Bills,Water bill,40.68,expense
+2024-08-02,Freelance,Invoice settlement,293.09,income
+2024-08-03,Investment,Dividend payout,55.1,income
+2024-08-04,Bills,Rent,550.0,expense
+2024-08-05,Bills,Phone bill,34.56,expense
+2024-08-06,Freelance,Project,235.2,income
+2024-08-08,Freelance,Project,318.49,income
+2024-08-09,Shopping,Jewerly,202.11,expense
+2024-08-10,Shopping,Clothes,140.75,expense
+2024-08-11,Shopping,Groceries,189.0,expense
+2024-08-12,Entertainment,Nightout,22.91,expense
+2024-08-13,Entertainment,Streaming service,14.6,expense
+2024-08-14,Shopping,Tools,110.81,expense
+2024-08-15,Salary,Employer paycheck,2825.43,income
+2024-08-16,Transport,Bus,34.46,expense
+2024-08-19,Transport,Taxi,30.07,expense
+2024-08-20,Transport,Taxi,9.21,expense
+2024-08-21,Transport,Gas,25.42,expense
+2024-08-22,Transport,Train,69.02,expense
+2024-08-23,Bills,Electricity bill,25.52,expense
+2024-08-24,Transport,Taxi,60.42,expense
+2024-08-25,Transport,Gas,14.19,expense
+2024-08-26,Transport,Bus,13.61,expense
+2024-08-27,Health,Gym membership,31.13,expense
+2024-08-28,Bills,Internet,27.8,expense
+2024-08-29,Other,Household items,19.92,expense
+2024-08-30,Other,Miscellaneous expense,31.55,expense
+2024-08-31,Entertainment,Nightout,51.35,expense
+2024-09-01,Transport,Taxi,11.46,expense
+2024-09-02,Freelance,Project,192.46,income
+2024-09-03,Health,Medication,30.45,expense
+2024-09-04,Entertainment,Nightout,22.5,expense
+2024-09-05,Freelance,Project,189.54,income
+2024-09-06,Shopping,Skincare,128.77,expense
+2024-09-07,Bills,Water bill,34.94,expense
+2024-09-08,Transport,Bus,60.7,expense
+2024-09-10,Freelance,Invoice settlement,339.12,income
+2024-09-11,Transport,Rideshare,11.28,expense
+2024-09-12,Shopping,Groceries,262.91,expense
+2024-09-14,Transport,Bus,48.77,expense
+2024-09-15,Transport,Rideshare,53.6,expense
+2024-09-16,Transport,Rideshare,27.26,expense
+2024-09-17,Bills,Electricity bill,15.42,expense
+2024-09-19,Transport,Train,57.76,expense
+2024-09-21,Bills,Rent,550.0,expense
+2024-09-22,Transport,Taxi,39.75,expense
+2024-09-23,Bills,Internet,27.8,expense
+2024-09-24,Shopping,Groceries,215.12,expense
+2024-09-26,Entertainment,Nightout,56.7,expense
+2024-09-27,Other,Charity donation,39.15,expense
+2024-09-28,Shopping,Groceries,66.45,expense
+2024-09-29,Bills,Phone bill,14.07,expense
+2024-09-30,Salary,Employer paycheck,3001.3,income
+2024-09-30,Investment,Dividend payout,351.18,income
+2024-10-01,Bills,Electricity bill,28.21,expense
+2024-10-02,Investment,Dividend payout,337.53,income
+2024-10-03,Bills,Rent,550.0,expense
+2024-10-04,Shopping,Baking supplies,186.31,expense
+2024-10-05,Health,Accessories,28.22,expense
+2024-10-08,Freelance,Project,420.99,income
+2024-10-09,Freelance,Invoice settlement,196.65,income
+2024-10-10,Transport,Bus,24.81,expense
+2024-10-11,Transport,Gas,58.99,expense
+2024-10-12,Transport,Rideshare,50.55,expense
+2024-10-13,Bills,Internet,27.8,expense
+2024-10-14,Freelance,Invoice settlement,531.61,income
+2024-10-15,Transport,Taxi,38.32,expense
+2024-10-16,Transport,Taxi,63.83,expense
+2024-10-17,Shopping,Jewerly,252.06,expense
+2024-10-18,Entertainment,Movies,25.53,expense
+2024-10-19,Shopping,Jewerly,244.54,expense
+2024-10-20,Transport,Train,60.38,expense
+2024-10-21,Transport,Train,9.42,expense
+2024-10-22,Salary,Employer paycheck,2824.99,income
+2024-10-23,Shopping,Jewerly,45.32,expense
+2024-10-24,Transport,Gas,13.48,expense
+2024-10-25,Bills,Water bill,41.25,expense
+2024-10-26,Bills,Phone bill,41.83,expense
+2024-10-27,Entertainment,Concert,19.62,expense
+2024-10-28,Other,Miscellaneous expense,12.06,expense
+2024-10-29,Other,Miscellaneous expense,31.94,expense
+2024-10-31,Shopping,Skincare,127.92,expense
+2024-11-01,Shopping,Jewerly,198.25,expense
+2024-11-02,Freelance,Invoice settlement,160.83,income
+2024-11-04,Shopping,Skincare,14.72,expense
+2024-11-06,Freelance,Project,217.74,income
+2024-11-07,Freelance,Invoice settlement,197.3,income
+2024-11-08,Shopping,Baking supplies,141.81,expense
+2024-11-09,Entertainment,Movies,10.44,expense
+2024-11-10,Investment,Dividend payout,395.82,income
+2024-11-11,Bills,Internet,27.8,expense
+2024-11-12,Shopping,Groceries,233.06,expense
+2024-11-13,Entertainment,Concert,37.41,expense
+2024-11-14,Transport,Rideshare,12.36,expense
+2024-11-15,Transport,Taxi,26.96,expense
+2024-11-16,Transport,Gas,48.69,expense
+2024-11-17,Transport,Taxi,18.21,expense
+2024-11-18,Transport,Gas,42.99,expense
+2024-11-19,Health,Medication,31.51,expense
+2024-11-20,Transport,Train,43.58,expense
+2024-11-22,Transport,Rideshare,27.13,expense
+2024-11-23,Transport,Rideshare,62.66,expense
+2024-11-24,Other,Miscellaneous expense,28.18,expense
+2024-11-25,Bills,Water bill,43.03,expense
+2024-11-25,Bills,Rent,550.0,expense
+2024-11-26,Salary,Employer paycheck,2844.68,income
+2024-11-27,Other,Charity donation,8.27,expense
+2024-11-28,Bills,Phone bill,20.14,expense
+2024-11-29,Shopping,Skincare,106.38,expense
+2024-11-30,Bills,Electricity bill,14.45,expense
+2024-12-01,Freelance,Project,192.56,income
+2024-12-03,Shopping,Skincare,60.87,expense
+2024-12-04,Shopping,Tools,88.44,expense
+2024-12-05,Bills,Rent,550.0,expense
+2024-12-06,Freelance,Project,503.41,income
+2024-12-07,Shopping,Baking supplies,278.39,expense
+2024-12-08,Freelance,Invoice settlement,140.9,income
+2024-12-09,Salary,Employer paycheck,2933.11,income
+2024-12-11,Bills,Water bill,10.27,expense
+2024-12-12,Entertainment,Movies,43.09,expense
+2024-12-15,Entertainment,Concert,52.39,expense
+2024-12-17,Transport,Bus,66.63,expense
+2024-12-18,Bills,Internet,27.8,expense
+2024-12-19,Transport,Train,25.75,expense
+2024-12-20,Transport,Train,2.75,expense
+2024-12-21,Bills,Phone bill,44.08,expense
+2024-12-22,Transport,Bus,66.92,expense
+2024-12-23,Health,Gym membership,28.79,expense
+2024-12-24,Investment,Dividend payout,227.43,income
+2024-12-25,Transport,Bus,38.12,expense
+2024-12-26,Transport,Taxi,16.52,expense
+2024-12-27,Transport,Train,35.82,expense
+2024-12-28,Shopping,Groceries,190.58,expense
+2024-12-29,Transport,Train,23.18,expense
+2024-12-30,Bills,Electricity bill,11.77,expense
+2024-12-31,Other,Miscellaneous expense,29.48,expense
+2025-01-01,Shopping,Groceries,273.66,expense
+2025-01-02,Transport,Rideshare,13.44,expense
+2025-01-03,Shopping,Baking supplies,55.7,expense
+2025-01-04,Health,Gym membership,19.89,expense
+2025-01-05,Freelance,Invoice settlement,362.33,income
+2025-01-06,Freelance,Project,574.84,income
+2025-01-07,Bills,Internet,27.8,expense
+2025-01-08,Freelance,Project,207.42,income
+2025-01-10,Transport,Taxi,20.28,expense
+2025-01-11,Transport,Rideshare,2.85,expense
+2025-01-12,Bills,Rent,550.0,expense
+2025-01-13,Transport,Train,34.75,expense
+2025-01-14,Transport,Taxi,60.31,expense
+2025-01-15,Transport,Train,53.6,expense
+2025-01-16,Entertainment,Movies,33.88,expense
+2025-01-17,Shopping,Tools,61.5,expense
+2025-01-18,Entertainment,Streaming service,46.13,expense
+2025-01-19,Salary,Employer paycheck,2833.63,income
+2025-01-20,Investment,Dividend payout,290.17,income
+2025-01-21,Transport,Taxi,65.28,expense
+2025-01-22,Other,Miscellaneous expense,42.74,expense
+2025-01-23,Bills,Phone bill,10.19,expense
+2025-01-24,Bills,Electricity bill,14.2,expense
+2025-01-25,Other,Charity donation,25.43,expense
+2025-01-27,Shopping,Groceries,182.18,expense
+2025-01-29,Shopping,Groceries,160.34,expense
+2025-01-30,Bills,Water bill,31.51,expense
+2025-01-31,Transport,Gas,45.78,expense
+2025-02-01,Shopping,Baking supplies,189.64,expense
+2025-02-02,Freelance,Invoice settlement,500.83,income
+2025-02-03,Shopping,Clothes,211.87,expense
+2025-02-04,Freelance,Invoice settlement,137.24,income
+2025-02-05,Shopping,Jewerly,98.21,expense
+2025-02-06,Freelance,Invoice settlement,277.28,income
+2025-02-07,Entertainment,Concert,29.51,expense
+2025-02-08,Bills,Internet,27.8,expense
+2025-02-09,Entertainment,Nightout,25.94,expense
+2025-02-10,Transport,Train,24.21,expense
+2025-02-11,Transport,Rideshare,2.77,expense
+2025-02-12,Health,Gym membership,25.29,expense
+2025-02-13,Salary,Employer paycheck,2877.7,income
+2025-02-14,Transport,Gas,19.53,expense
+2025-02-15,Transport,Gas,12.97,expense
+2025-02-16,Investment,Dividend payout,377.59,income
+2025-02-17,Transport,Rideshare,53.47,expense
+2025-02-18,Bills,Electricity bill,14.41,expense
+2025-02-19,Shopping,Clothes,164.49,expense
+2025-02-20,Transport,Gas,55.74,expense
+2025-02-21,Transport,Taxi,9.81,expense
+2025-02-22,Bills,Rent,550.0,expense
+2025-02-23,Bills,Water bill,20.84,expense
+2025-02-24,Transport,Taxi,32.67,expense
+2025-02-25,Other,Charity donation,35.67,expense
+2025-02-27,Bills,Phone bill,32.32,expense
+2025-03-01,Health,Accessories,16.0,expense
+2025-03-02,Salary,Employer paycheck,3032.77,income
+2025-03-03,Freelance,Invoice settlement,526.62,income
+2025-03-05,Shopping,Skincare,74.26,expense
+2025-03-06,Shopping,Skincare,210.6,expense
+2025-03-07,Bills,Internet,27.8,expense
+2025-03-07,Bills,Water bill,25.35,expense
+2025-03-08,Freelance,Invoice settlement,245.88,income
+2025-03-09,Investment,Dividend payout,331.58,income
+2025-03-12,Freelance,Project,229.16,income
+2025-03-13,Entertainment,Nightout,49.87,expense
+2025-03-14,Bills,Rent,550.0,expense
+2025-03-15,Entertainment,Streaming service,21.16,expense
+2025-03-16,Transport,Train,35.85,expense
+2025-03-18,Transport,Gas,42.85,expense
+2025-03-19,Transport,Gas,47.92,expense
+2025-03-20,Transport,Gas,48.0,expense
+2025-03-21,Bills,Phone bill,44.89,expense
+2025-03-22,Transport,Rideshare,60.26,expense
+2025-03-23,Transport,Gas,54.24,expense
+2025-03-24,Shopping,Tools,256.58,expense
+2025-03-25,Transport,Bus,8.83,expense
+2025-03-26,Shopping,Groceries,214.38,expense
+2025-03-27,Transport,Gas,22.21,expense
+2025-03-28,Other,Charity donation,17.27,expense
+2025-03-29,Bills,Electricity bill,18.36,expense
+2025-03-31,Other,Unexpected repair,31.74,expense
+2025-04-01,Shopping,Skincare,118.36,expense
+2025-04-02,Freelance,Invoice settlement,259.1,income
+2025-04-03,Shopping,Clothes,68.36,expense
+2025-04-04,Bills,Phone bill,24.84,expense
+2025-04-05,Entertainment,Movies,25.44,expense
+2025-04-06,Freelance,Invoice settlement,264.66,income
+2025-04-08,Freelance,Invoice settlement,435.61,income
+2025-04-09,Investment,Dividend payout,138.77,income
+2025-04-10,Entertainment,Concert,33.0,expense
+2025-04-11,Transport,Rideshare,27.54,expense
+2025-04-12,Bills,Internet,27.8,expense
+2025-04-13,Health,Medication,30.07,expense
+2025-04-14,Bills,Water bill,12.8,expense
+2025-04-15,Transport,Gas,19.07,expense
+2025-04-16,Transport,Gas,27.42,expense
+2025-04-17,Transport,Rideshare,69.05,expense
+2025-04-18,Transport,Rideshare,47.69,expense
+2025-04-21,Salary,Employer paycheck,3029.4,income
+2025-04-22,Shopping,Groceries,137.79,expense
+2025-04-23,Transport,Taxi,58.27,expense
+2025-04-24,Transport,Taxi,18.71,expense
+2025-04-25,Transport,Gas,18.09,expense
+2025-04-26,Other,Charity donation,23.12,expense
+2025-04-28,Bills,Rent,550.0,expense
+2025-04-29,Bills,Electricity bill,33.38,expense
+2025-04-30,Shopping,Groceries,31.65,expense
+2025-05-01,Entertainment,Movies,55.19,expense
+2025-05-02,Shopping,Jewerly,194.5,expense
+2025-05-03,Entertainment,Concert,37.51,expense
+2025-05-05,Transport,Bus,20.39,expense
+2025-05-07,Bills,Rent,550.0,expense
+2025-05-10,Freelance,Invoice settlement,572.39,income
+2025-05-11,Transport,Taxi,50.56,expense
+2025-05-12,Salary,Employer paycheck,3111.28,income
+2025-05-13,Bills,Electricity bill,31.86,expense
+2025-05-14,Shopping,Groceries,182.98,expense
+2025-05-15,Transport,Taxi,23.65,expense
+2025-05-16,Transport,Taxi,66.83,expense
+2025-05-17,Shopping,Clothes,68.18,expense
+2025-05-18,Bills,Phone bill,30.38,expense
+2025-05-19,Freelance,Invoice settlement,543.87,income
+2025-05-22,Bills,Water bill,14.4,expense
+2025-05-25,Health,Medication,26.78,expense
+2025-05-26,Bills,Internet,27.8,expense
+2025-05-27,Shopping,Tools,228.49,expense
+2025-05-28,Investment,Dividend payout,332.12,income
+2025-06-01,Shopping,Clothes,222.28,expense
+2025-06-02,Freelance,Invoice settlement,401.57,income
+2025-06-03,Freelance,Invoice settlement,319.01,income
+2025-06-04,Salary,Employer paycheck,2958.36,income
+2025-06-05,Freelance,Invoice settlement,302.91,income
+2025-06-06,Bills,Electricity bill,37.73,expense
+2025-06-07,Entertainment,Concert,56.31,expense
+2025-06-08,Entertainment,Streaming service,27.17,expense
+2025-06-09,Shopping,Baking supplies,129.59,expense
+2025-06-10,Transport,Train,26.57,expense
+2025-06-11,Health,Gym membership,24.64,expense
+2025-06-12,Shopping,Baking supplies,65.51,expense
+2025-06-13,Transport,Taxi,17.92,expense
+2025-06-14,Transport,Train,19.98,expense
+2025-06-15,Transport,Gas,42.88,expense
+2025-06-16,Transport,Rideshare,46.96,expense
+2025-06-17,Transport,Rideshare,2.96,expense
+2025-06-18,Shopping,Tools,117.44,expense
+2025-06-19,Bills,Internet,27.8,expense
+2025-06-20,Transport,Rideshare,6.98,expense
+2025-06-21,Transport,Rideshare,24.77,expense
+2025-06-22,Bills,Rent,550.0,expense
+2025-06-23,Investment,Dividend payout,284.41,income
+2025-06-24,Bills,Phone bill,12.57,expense
+2025-06-25,Other,Miscellaneous expense,11.25,expense
+2025-06-26,Other,Unexpected repair,7.44,expense
+2025-06-28,Shopping,Jewerly,112.42,expense
+2025-06-29,Shopping,Skincare,182.91,expense
+2025-06-30,Bills,Water bill,30.85,expense
+2025-07-01,Bills,Internet,27.8,expense
+2025-07-02,Investment,Dividend payout,292.43,income
+2025-07-04,Freelance,Invoice settlement,296.67,income
+2025-07-05,Entertainment,Concert,16.93,expense
+2025-07-06,Entertainment,Streaming service,52.42,expense
+2025-07-07,Freelance,Project,532.65,income
+2025-07-08,Transport,Train,24.46,expense
+2025-07-09,Bills,Water bill,28.05,expense
+2025-07-10,Shopping,Jewerly,151.3,expense
+2025-07-11,Bills,Rent,550.0,expense
+2025-07-13,Transport,Rideshare,53.89,expense
+2025-07-14,Freelance,Invoice settlement,147.03,income
+2025-07-15,Transport,Taxi,39.71,expense
+2025-07-16,Shopping,Clothes,274.22,expense
+2025-07-17,Health,Medication,31.7,expense
+2025-07-18,Shopping,Groceries,125.77,expense
+2025-07-19,Salary,Employer paycheck,2872.65,income
+2025-07-20,Transport,Bus,17.65,expense
+2025-07-21,Transport,Bus,38.21,expense
+2025-07-22,Transport,Train,58.82,expense
+2025-07-23,Bills,Electricity bill,42.66,expense
+2025-07-24,Transport,Taxi,61.23,expense
+2025-07-25,Transport,Bus,51.16,expense
+2025-07-26,Other,Charity donation,39.66,expense
+2025-07-27,Shopping,Groceries,228.86,expense
+2025-07-28,Bills,Phone bill,33.84,expense
+2025-07-29,Other,Charity donation,46.08,expense
+2025-07-30,Transport,Taxi,24.65,expense
+2025-07-31,Other,Household items,23.3,expense
+2025-08-01,Shopping,Tools,99.56,expense
+2025-08-02,Freelance,Project,491.61,income
+2025-08-03,Freelance,Project,143.35,income
+2025-08-04,Shopping,Jewerly,190.68,expense
+2025-08-05,Freelance,Invoice settlement,173.0,income
+2025-08-06,Shopping,Skincare,188.1,expense
+2025-08-07,Shopping,Clothes,249.08,expense
+2025-08-08,Entertainment,Nightout,28.94,expense
+2025-08-09,Bills,Rent,550.0,expense
+2025-08-10,Entertainment,Concert,38.08,expense
+2025-08-12,Transport,Train,27.82,expense
+2025-08-14,Transport,Gas,10.05,expense
+2025-08-15,Transport,Bus,51.52,expense
+2025-08-16,Transport,Gas,8.94,expense
+2025-08-17,Transport,Rideshare,25.92,expense
+2025-08-19,Bills,Phone bill,21.13,expense
+2025-08-20,Bills,Electricity bill,42.16,expense
+2025-08-22,Investment,Dividend payout,348.38,income
+2025-08-23,Health,Accessories,29.34,expense
+2025-08-24,Transport,Taxi,57.85,expense
+2025-08-25,Bills,Internet,27.8,expense
+2025-08-26,Bills,Water bill,14.38,expense
+2025-08-27,Transport,Train,54.65,expense
+2025-08-28,Transport,Train,10.57,expense
+2025-08-29,Other,Miscellaneous expense,14.09,expense
+2025-08-30,Other,Unexpected repair,38.93,expense
+2025-08-31,Salary,Employer paycheck,3003.63,income
+2025-09-01,Entertainment,Nightout,41.32,expense
+2025-09-02,Entertainment,Streaming service,5.6,expense
+2025-09-03,Freelance,Project,308.83,income
+2025-09-04,Transport,Bus,5.2,expense
+2025-09-05,Freelance,Project,106.9,income
+2025-09-06,Bills,Water bill,26.93,expense
+2025-09-07,Investment,Dividend payout,382.64,income
+2025-09-08,Shopping,Groceries,22.92,expense
+2025-09-09,Transport,Rideshare,43.73,expense
+2025-09-10,Freelance,Project,480.47,income
+2025-09-11,Bills,Internet,27.8,expense
+2025-09-12,Transport,Bus,28.19,expense
+2025-09-13,Health,Medication,15.71,expense
+2025-09-15,Bills,Rent,550.0,expense
+2025-09-15,Bills,Phone bill,13.03,expense
+2025-09-17,Shopping,Clothes,125.85,expense
+2025-09-19,Transport,Gas,21.54,expense
+2025-09-20,Shopping,Tools,238.23,expense
+2025-09-21,Shopping,Groceries,218.28,expense
+2025-09-22,Salary,Employer paycheck,2836.98,income
+2025-09-23,Transport,Gas,3.13,expense
+2025-09-24,Transport,Train,16.39,expense
+2025-09-25,Transport,Rideshare,9.88,expense
+2025-09-26,Transport,Rideshare,22.86,expense
+2025-09-28,Other,Unexpected repair,21.19,expense
+2025-09-29,Bills,Electricity bill,37.32,expense
+2025-09-30,Other,Unexpected repair,26.18,expense
+2025-10-01,Shopping,Baking supplies,97.71,expense
+2025-10-02,Shopping,Groceries,217.59,expense
+2025-10-03,Bills,Phone bill,11.28,expense
+2025-10-04,Shopping,Groceries,187.92,expense
+2025-10-05,Salary,Employer paycheck,2934.04,income
+2025-10-06,Investment,Dividend payout,220.42,income
+2025-10-07,Shopping,Groceries,212.71,expense
+2025-10-08,Entertainment,Streaming service,20.1,expense
+2025-10-09,Health,Accessories,22.61,expense
+2025-10-11,Bills,Water bill,14.08,expense
+2025-10-12,Bills,Internet,27.8,expense
+2025-10-13,Entertainment,Nightout,17.17,expense
+2025-10-14,Freelance,Project,293.07,income
+2025-10-16,Bills,Rent,550.0,expense
+2025-10-17,Bills,Electricity bill,26.12,expense

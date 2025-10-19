@@ -1,0 +1,1177 @@
+{% extends 'core/base_authenticated.html' %}
+{% load static %}
+{% block content %}
+
+    {% if user.username == 'demo' %}
+    <p class="alert-info">You are using the shared demo account. Changes (add/delete transactions) are visible to all demo users and reset hourly on login.</p>
+    {% endif %}
+    
+    <h1>Home</h1>
+
+    <h2 class="form-header">Add New Transactions</h2>
+
+    <div id="form-feed-container">
+        <form id="transactionForm" method="post" action="{% url 'home' %}">
+            {% csrf_token %}
+
+            <label for="date">Date:</label>
+            <input type="text" id="date" name="date" class="flatpickr" placeholder="Click to pick a date..." required>
+
+            <label for="category">Category:</label>
+            <input type="text" id="category" name="category" placeholder="e.g., Food, Salary" required>
+
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description" placeholder="e.g., Groceries" required>
+
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" name="amount" step="0.01" placeholder="e.g. 1,00 or 1.00" required>
+
+            <label>Type:</label>
+            <label class="radio-option">
+                <input type="radio" id="expense" name="type" value="expense" required>
+                <span class="radio-label expense">Expense</span>
+            </label>
+            <label class="radio-option">
+                <input type="radio" id="income" name="type" value="income" required>
+                <span class="radio-label income">Income</span>
+            </label>
+
+            <button type="submit">Add Transaction</button>
+        </form>
+
+        <div id="feed-container">
+            <h2>Spending Insights</h2>
+            <ul id="feed-messages"></ul>
+        </div>
+    </div>
+
+    <div class="bulk-actions" style="margin-bottom: 20px; display: none;">
+        <div class="bulk-controls">
+            <button id="selectAllBtn" class="btn-secondary">Select All</button>
+            <button id="clearSelectionBtn" class="btn-secondary" style="margin-left: 10px;">Clear Selection</button>
+            <button id="bulkDeleteBtn" class="btn-danger" style="margin-left: 10px;">Delete Selected (<span id="selectedCount">0</span>)</button>
+            <button id="deleteAllBtn" class="btn-danger" style="margin-left: 10px;">Delete All</button>
+        </div>
+        <div class="bulk-info">
+            <span id="bulkInfoText">No transactions selected</span>
+        </div>
+    </div>
+
+    <h2 class="table-header">Your Transactions</h2>
+
+    <div id="table-options">
+        <button id="infoBoxBtn" type="button">
+            <img src="{% static 'core/images/info-icon.svg' %}" class="info-icon">
+        </button>
+
+        <input type="text" name="search" id="searchBar" value="{{ search_query|default:'' }}" placeholder="Search...">
+
+        <button id="showImportBtn" type="button">Import CSV</button>
+
+        <button id="showExports" type="button">Exports</button>
+
+        <div id="exportBtns" class="hidden">
+            <a href="{% url 'export_pdf' %}" id="exportPDFBtn" class="btn-export-pdf">PDF</a>
+            <a href="{% url 'export_csv' %}" id="exportCSVBtn" class="btn-export-csv">CSV</a>
+        </div>
+
+        <div id="filler-block"></div>
+
+        <div id="pagination" style="display: {% if transactions %}flex{% else %}none{% endif %};">
+            <a href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% else %}javascript:void(0){% endif %}"
+                class="pagination-link {% if not page_obj.has_previous %}disabled{% endif %}">
+                <img src="{% static 'core/images/back-arrow.svg' %}" id="back-arrow">
+            </a>
+            <span>
+                Page <input class="input-page-number" type="number" value="{{ page_obj.number }}" min="1" max="{{ page_obj.paginator.num_pages }}"> of {{ page_obj.paginator.num_pages }}
+            </span>
+            <a href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% else %}javascript:void(0){% endif %}"
+                class="pagination-link {% if not page_obj.has_next %}disabled{% endif %}">
+                <img src="{% static 'core/images/next-arrow.svg' %}" id="next-arrow">
+            </a>
+        </div>
+    </div>
+
+    <div id="table-analytics">
+        <span>Transactions: {{ page_obj.paginator.count }}</span>
+        <span>Expenses: {{ expense_count }}</span>
+        <span>Income: {{ income_count }}</span>
+    </div>
+
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <div id="importModal-note">
+                <p>
+                    Importing from CSV may take a few seconds. A notification will pop-up when importing is finished.
+                </p>
+            </div>
+            <span id="X-closeImportBtn" class="close">&times;</span>
+            <h3>Import transaction data from CSV</h3>
+            <p>
+                If you want to import your transaction data, it needs to be in the form of a CSV file and have a specific structure. As for the name of the file, that does not matter. 
+                It only needs to end with the suffix '.csv' i.e. filename.csv
+                <br>As for the structure, the file needs 5 headers: Date, Category, Description, Amount and Type, and the following rows need to follow the same format, each transaction on its own row. Here's an example:
+            </p>
+            <p>
+                <br>Date,Category,Description,Amount,Type
+                <br>2025-01-01,Shopping,Groceries,250.50,expense
+                <br>2025-12-25,Utilities,Electric bill,179.98,expense
+                <br>2025-10-18,Freelance,Payment,750.00,income
+            </p>
+            <p>
+                <br>One method for creating a CSV file is by creating an empty text file, inserting the data inside it like in the example, saving it and changing the '.txt' suffix to '.csv' and confirming the file type change.
+                You might need to turn on file name extensions to change the suffix. On Windows 11 this can be achieved by opening file explorer and clicking the "View" option on the command bar. Next, hover over the "Show"
+                element and click "file name extensions".
+            </p>
+            <form id="import-form" method="POST" action="{% url 'import_csv' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label id="importLabel" for="csv_file">Upload CSV:</label>
+                <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                <button id="confirmImportBtn" type="submit">Import Transactions</button>
+            </form>
+            <button id="closeImportBtn">Close</button>
+        </div>
+    </div>
+
+    <div id="searchInfoModal" class="modal">
+        <div id="searchInfoContent" class="modal-content">
+            <span id="X-closeSearchInfoModal" class="close">&times;</span>
+            <h3>Info for searching items</h3>
+            <p>
+                Using the search box you can search transactions by any property: date, category, description, amount and type.
+                <br>Dates need to be searched using the format YYYY-MM-DD, so to search for a specific day, you would search e.g. 2025-12-31, and for a specific month e.g. 2025-10.
+            </p>
+            <button id="closeSearchInfoModal">Close</button>
+        </div>
+    </div>
+
+    {% if transactions %}
+    <div class="table-container" id="transactions-table">
+        <table id="transactionsTable">
+            <thead>
+                <tr>
+                    <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" style="transform: scale(1.2);"></th>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th style="width: 80px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr data-transaction-id="{{ t.id }}">
+                    <td><input type="checkbox" class="row-checkbox" value="{{ t.id }}"></td>
+                    <td>{{ t.date }}</td>
+                    <td>{{ t.category }}</td>
+                    <td>{{ t.description }}</td>
+                    <td>{{ t.amount }}</td>
+                    <td>
+                        <span class="{% if t.type == 'expense' %}expense{% else %}income{% endif %}">
+                            {{ t.type|title }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="delete-btn" data-id="{{ t.id }}" title="Delete transaction">
+                            <img src="{% static 'core/images/trash.svg' %}" alt="Delete" class="delete-icon">
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state" id="transactions-table">
+        <p>No transactions yet. Add your first one above!</p>
+        <img src="{% static 'core/images/wallet.svg' %}" alt="Empty wallet" style="width: 100px; opacity: 0.5;">
+    </div>
+    {% endif %}
+
+    <div id="bottom-pagination-spacer">
+        <div id="bottom-pagination" style="display: {% if transactions %}flex{% else %}none{% endif %};">
+            <a href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% else %}javascript:void(0){% endif %}"
+                class="pagination-link {% if not page_obj.has_previous %}disabled{% endif %}">
+                <img src="{% static 'core/images/back-arrow.svg' %}" id="back-arrow">
+            </a>
+            <span>
+                Page <input class="input-page-number" type="number" value="{{ page_obj.number }}" min="1" max="{{ page_obj.paginator.num_pages }}"> of {{ page_obj.paginator.num_pages }}
+            </span>
+            <a href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% else %}javascript:void(0){% endif %}"
+                class="pagination-link {% if not page_obj.has_next %}disabled{% endif %}">
+                <img src="{% static 'core/images/next-arrow.svg' %}" id="next-arrow">
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import {
+            selectedTransactions,
+            updateLocalStorage,
+            updateSelectionUI,
+            updateTableVisibility,
+            showMessage,
+            bindSelectAllCheckbox,
+            bindRowCheckboxes,
+            bindDeleteButtons,
+            bindSelectAllBtn,
+            bindClearSelectionBtn,
+            bindBulkDeleteBtn,
+            bindDeleteAllBtn,
+            toggleExportOptions,
+            showImportWindow,
+            closeImportWindow,
+            showSearchInfoModal,
+            closeSearchInfoModal,
+            formatDateForDisplay,
+            updateTableAnalytics,
+            fetchFeedMessages
+        } from '{% static "core/js/scripts.js" %}';
+        
+        window.urls = {
+            home: '{% url "home" %}',
+            importCsv: '{% url "import_csv" %}',
+            deleteTransaction: '/delete/',
+            bulkDelete: '/bulk-delete/',
+            analytics: '{% url "analytics" %}',
+            feedMessages: '{% url "feed_messages" %}'
+        };
+        window.csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        window.staticImages = {
+            wallet: '{% static "core/images/wallet.svg" %}',
+            trashcan: '{% static "core/images/trash.svg" %}'
+        };
+
+        document.getElementById('showExports').addEventListener('click', toggleExportOptions);
+        document.getElementById('showImportBtn').addEventListener('click', showImportWindow);
+        document.getElementById('closeImportBtn').addEventListener('click', closeImportWindow);
+        document.getElementById('infoBoxBtn').addEventListener('click', showSearchInfoModal);
+        document.getElementById('closeSearchInfoModal').addEventListener('click', closeSearchInfoModal);
+        document.getElementById('X-closeImportBtn').addEventListener('click', closeImportWindow);
+        document.getElementById('X-closeSearchInfoModal').addEventListener('click', closeSearchInfoModal)
+
+        const input = document.getElementById("searchBar");
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = input.value.trim().toLowerCase();
+                const url = new URL(window.location.href);
+                url.pathname = '{% url "home" %}';
+                url.searchParams.set('search', query);
+                url.searchParams.delete('page');
+                window.location.href = url.toString();
+            }
+        });
+
+        document.querySelectorAll('.input-page-number').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const pageNumber = input.value.trim();
+                    const url = new URL(window.location.href);
+                    url.pathname = '{% url "home" %}';
+                    url.searchParams.set('page', pageNumber);
+                    window.location.href = url.toString();
+                }
+            });
+        });
+
+        document.querySelectorAll('.pagination-link.disabled').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+            });
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('importModal');
+            if (event.target === modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 200);
+            }
+        };
+
+        window.onclick = function(e) {
+            const modal = document.getElementById('searchInfoModal');
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 200);
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeImportWindow();
+            }
+        });
+
+        document.getElementById('transactionForm').addEventListener('submit', function(event) {
+            const input = document.getElementById('amount');
+            const value = input.value.replace(',', '.');
+            input.value = value;
+        });
+
+        const datePicker = flatpickr("#date", {
+            dateFormat: "Y-m-d",
+            defaultDate: "today",
+            altInput: true,
+            altFormat: "F j, Y",
+            allowInput: false,
+            weekNumbers: true,
+            firstDayOfWeek: 1,
+            onChange: function(selectedDates, dateStr, instance) {
+                const input = document.getElementById('date');
+                if (selectedDates.length > 0) {
+                    input.setCustomValidity('');
+                } else {
+                    input.setCustomValidity('Please select a date');
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function(e) {
+            var scrollpos = sessionStorage.getItem('scrollpos');
+            if (scrollpos) {
+                window.scrollTo(0, scrollpos);
+                sessionStorage.removeItem('scrollpos');
+            }
+
+            bindRowCheckboxes();
+            bindSelectAllCheckbox();
+            bindDeleteButtons(window.csrfToken);
+            bindSelectAllBtn();
+            bindClearSelectionBtn();
+            bindDeleteAllBtn(window.csrfToken);
+            bindBulkDeleteBtn(window.csrfToken);
+            updateSelectionUI();
+            updateTableVisibility();
+            fetchFeedMessages();
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            sessionStorage.setItem('scrollpos', window.scrollY);
+        });
+
+        document.getElementById('import-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(window.urls.importCsv, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    fetch(window.urls.home, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newTableContainer = doc.querySelector('#transactions-table');
+                        const currentTableContainer = document.querySelector('#transactions-table');
+                        if (newTableContainer && currentTableContainer) {
+                            currentTableContainer.innerHTML = newTableContainer.innerHTML;
+                            currentTableContainer.classList.remove('empty-state');
+                            currentTableContainer.classList.add('table-container');
+                            currentTableContainer.style.display = 'block';
+
+                        }
+                        const newPagination = doc.querySelector('#pagination');
+                        const currentPagination = document.querySelector('#pagination');
+                        if (newPagination && currentPagination) {
+                            currentPagination.innerHTML = newPagination.innerHTML;
+                            currentPagination.style.display = newTableContainer.querySelector('tbody')?.children.length > 0 ? 'flex' : 'none';
+                        }
+                        const newBottomPagination = doc.querySelector('#bottom-pagination');
+                        const currentBottomPagination = document.querySelector('#bottom-pagination');
+                        if (newBottomPagination && currentBottomPagination) {
+                            currentBottomPagination.innerHTML = newBottomPagination.innerHTML;
+                            currentBottomPagination.style.display = newTableContainer.querySelector('tbody')?.children.length > 0 ? 'flex' : 'none';
+                        }
+                        const newAnalytics = doc.querySelector('#table-analytics');
+                        const currentAnalytics = document.querySelector('#table-analytics');
+                        if (newAnalytics && currentAnalytics) {
+                            currentAnalytics.innerHTML = newAnalytics.innerHTML;
+                        }
+
+                        bindSelectAllCheckbox();
+                        bindRowCheckboxes();
+                        bindDeleteButtons(window.csrfToken);
+                        updateTableVisibility();
+                        updateSelectionUI();
+                        selectedTransactions.clear();
+                        updateLocalStorage();
+                    })
+                    .catch(error => {
+                        console.error('Error refreshing transactions:', error);
+                        alert('Error refreshing transactions. Please reload the page.');
+                    });
+                } else {
+                    const errorMessage = data.error || 'Failed to import transactions';
+                    if (data.errors) {
+                        showMessage(`${errorMessage}: ${data.errors.join(', ')}`, 'error');
+                    } else {
+                        showMessage(errorMessage, 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            });
+        });
+
+        document.getElementById('transactionForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let tableBody = document.querySelector('#transactionsTable tbody');
+                    const tableContainer = document.getElementById('transactions-table');
+
+                    if (!tableBody) {
+                        tableContainer.classList.remove('empty-state');
+                        tableContainer.classList.add('table-container');
+                        tableContainer.style.display = 'block';
+                        tableContainer.innerHTML = `
+                            <table id="transactionsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" style="transform: scale(1.2);"></th>
+                                        <th>Date</th>
+                                        <th>Category</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Type</th>
+                                        <th style="width: 80px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        `;
+                        tableBody = document.querySelector('#transactionsTable tbody');
+                        document.querySelector('#pagination').style.display = 'flex';
+                        document.querySelector('#bottom-pagination').style.display = 'flex';
+                        bindSelectAllCheckbox();
+                    }
+
+                    const formattedDate = formatDateForDisplay(data.transaction.date);
+                    const newRow = document.createElement('tr');
+                    newRow.dataset.transactionId = data.transaction.id;
+                    newRow.innerHTML = `
+                        <td><input type="checkbox" class="row-checkbox" value="${data.transaction.id}"></td>
+                        <td>${formattedDate}</td>
+                        <td>${data.transaction.category}</td>
+                        <td>${data.transaction.description}</td>
+                        <td>${data.transaction.amount}</td>
+                        <td><span class="${data.transaction.type === 'expense' ? 'expense' : 'income'}">${data.transaction.type.charAt(0).toUpperCase() + data.transaction.type.slice(1)}</span></td>
+                        <td><button class="delete-btn" data-id="${data.transaction.id}" title="Delete transaction"><img src="${window.staticImages.trashcan}" alt="Delete" class="delete-icon"></button></td>
+                    `;
+                    tableBody.insertBefore(newRow, tableBody.firstChild);
+                    bindDeleteButtons(window.csrfToken);
+                    bindRowCheckboxes();
+                    bindSelectAllCheckbox();
+                    updateTableVisibility();
+                    updateSelectionUI();
+                    selectedTransactions.clear();
+                    updateLocalStorage();
+                    updateTableAnalytics();
+                    showMessage('Transaction added successfully!', 'success');
+                    this.reset();
+                    datePicker.clear();
+                    datePicker.setDate(new Date(), true);
+                    datePicker.config.onChange.forEach(fn => fn.call(datePicker, [new Date()], datePicker.formatDate(new Date(), datePicker.config.dateFormat), datePicker));
+                    fetchFeedMessages();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to add transaction'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error adding transaction. Please try again.');
+            });
+        });
+    </script>
+
+    <style>
+        .alert-info {
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 2px;
+            margin: -15px -15px 0 -15px;
+            background-color: #FAA000;
+            color: black;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #form-feed-container {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #transactionForm {
+            width: 50%;
+            margin-right: 7.5px;
+            max-height: 455px;
+        }
+
+        #feed-container {
+            background: #0c0c0c;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #404040;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            width: 50%;
+            margin-left: 7.5px;
+        }
+
+        #feed-container h2 {
+            color: #ecf0f1;
+            font-size: 1em;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        #feed-messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            color: #ecf0f1
+        }
+
+        #feed-messages li {
+            padding: 8px 0;
+            font-size: 0.8em;
+            border-bottom: 1pt solid rgba(236, 240, 241, 0.5);
+        }
+
+        #feed-messages li:last-child {
+            border-bottom: none;
+        }
+
+        .feed-description {
+            font-weight: 800;
+            color: #FAA000;
+        }
+
+        .feed-message-more {
+            color: #ff0000;
+            font-weight: bold;
+        }
+
+        .feed-message-less {
+            color: #2bff00;
+            font-weight: bold;
+        }
+
+        .feed-current-total, .feed-last-total {
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        .feed-percent {
+            color: #007bff;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        #table-options {
+            display: flex;
+            margin: 5px;
+            min-height: 45px;
+            max-height: 70px;
+        }
+
+        #table-analytics {
+            margin: 0 0 0 45px;
+            padding: 0;
+            height: 15px;
+        }
+
+        #table-analytics span {
+            font-size: 0.8em;
+            font-weight: 500;
+            color: #ecf0f1;
+            padding: 7px 10px 7px 10px;
+            border-left: 1pt solid rgba(236, 240, 241, 0.5);
+        }
+
+        #filler-block {
+            flex-grow: 1;
+        }
+
+        #infoBoxBtn {
+            padding: 6px 6px;
+            margin: 5px 10px 10px 0;
+            max-width: 30px;
+            max-height: 30px;
+            background-color: #007bff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-style: none;
+        }
+
+        #infoBoxBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .info-icon {
+            margin: 0;
+            padding: 0;
+            max-width: 18px;
+            max-height: 18px;
+            filter: brightness(0) invert(0.8);
+        }
+
+        #searchBar {
+            background-image: url('{% static "core/images/search-icon.svg" %}');
+            background-position: 5px center;
+            background-repeat: no-repeat;
+            background-size: 18px;
+            width: 220px;
+            font-size: 16;
+            padding: 12px 20px 12px 30px;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            outline: none;
+            height: 40px;
+            transform: scale(1);
+            transition: transform 0.1s ease-in-out;
+        }
+
+        #searchBar:focus {
+            transform: scale(1.05);
+            transition: transform 0.1s ease-in-out;
+        }
+
+        #pagination, #bottom-pagination {
+            display: flex;
+            justify-content: right;
+            align-items: center;
+            padding: 0;
+            width: auto;
+            height: 40px;
+        }
+
+        #back-arrow, #next-arrow {
+            display: flex;
+            filter: brightness(0) invert(1);
+            width: 32px;
+            height: 32px;
+            margin: 0 10px;
+        }
+
+        #pagination span, #bottom-pagination span {
+            color: #ecf0f1;
+            padding: 2px;
+            font-size: 0.8em;
+        }
+
+        #pagination a.disabled, #bottom-pagination a.disabled {
+            cursor: not-allowed;
+            opacity: 0.3;
+        }
+
+        #bottom-pagination-spacer {
+            margin: 5px;
+
+        }
+
+        .input-page-number {
+            min-width: 28px;
+            max-width: 42px;
+        }
+
+        #showExports, #showImportBtn {
+            background: #C81400;
+            color: #ecf0f1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 15px;
+            height: 40px;
+            transition: all 0.1s ease;
+        }
+
+        #exportBtns {
+            display: none;
+            margin-left: 5px;
+        }
+
+        #exportBtns.visible {
+            display: inline-block;
+            opacity: 1;
+            transform: translateX(0);
+            animation: fadeInSideways 0.15s ease-out none;
+            pointer-events: none;
+        }
+
+        #exportBtns.hidden {
+            opacity: 0;
+            transform: translateX(-30px);
+            animation: fadeOutSideways 0.15s ease-out none;
+            pointer-events: none;
+        }
+
+        #exportBtns.interactive {
+            pointer-events: auto;
+        }
+
+        #exportBtns a {
+            display: inline-block;
+            background: #C81400;
+            color: #ecf0f1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: none;
+            margin-bottom: 5px;
+            height: 40px;
+            transition: all 0.1s ease;
+        }
+
+        #exportBtns a:hover, #showExports:hover, #showImportBtn:hover {
+            transform: translateY(-2px) scale(1.03);
+            background: rgba(200, 20, 0, 0.7);
+        }
+
+        .flatpickr-calendar {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+        }
+
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover {
+            background: #007bff;
+            border-color: #007bff;
+        }
+
+        .flatpickr-day:hover {
+            background: #ecf0f1;
+            border-color: #bdc3c7;
+        }
+
+        .flatpickr {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M14 0h-13v1h13v-1z'/%3E%3Cpath d='M0 2v13h16v-13h-16zm16 12h-16v1h16v-1z'/%3E%3C/svg%3E") no-repeat 98% center;
+            background-size: 16px;
+        }
+
+        .flatpickr:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        #transactionForm {
+            border-radius: 8px;
+        }
+
+        .table-container {
+            background: #050505;
+            border-radius: 8px;
+            border: 1px solid #404040;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: {% if transactions %}block{% else %}none{% endif %};
+        }
+
+        .bulk-actions {
+            background: #0c0c0c;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.3s ease;
+        }
+
+        .bulk-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .bulk-info {
+            color: #ecf0f1;
+            font-size: 0.9em;
+        }
+
+        .btn-secondary, .btn-danger {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.1s ease;
+        }
+
+        .btn-secondary {
+            background: #252525;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #151515;
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .btn-danger {
+            background: #C81400;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: rgba(200, 20, 0, 0.7);
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .btn-danger:disabled {
+            background: #dee2e6;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .delete-btn {
+            background: #050505;
+            color: white;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            background: rgba(200, 20, 0, 0.2);
+            transform: scale(1.1);
+        }
+
+        .delete-icon {
+            width: 16px;
+            height: 16px;
+            filter: brightness(0) invert(0.8);
+        }
+
+        .delete-btn:hover .delete-icon {
+            filter: brightness(0) invert(0.8);
+        }
+
+        #transactionsTable {
+            width: 100%;
+            margin: 0;
+        }
+
+        #transactionsTable th,
+        #transactionsTable td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        #transactionsTable td {
+            border-bottom: 1px solid rgba(236, 240, 241, 0.08)
+        }
+
+        #transactionsTable th {
+            background-color: #0c0c0c;
+            color: #ecf0f1;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid #404040;
+        }
+
+        #transactionsTable tr {
+            background-color: #050505;
+        }
+
+        #transactionsTable tr:hover {
+            background: #151515;
+        }
+
+        .row-checkbox {
+            transform: scale(1.1);
+            cursor: pointer;
+        }
+
+        #selectAllCheckbox {
+            cursor: pointer;
+        }
+
+        .expense { 
+            color: #e74c3c; 
+            font-weight: bold; 
+            background: #fadbd8;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .income { 
+            color: #27ae60; 
+            font-weight: bold; 
+            background: #d5f4e6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state p {
+            color: #aaa;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state img {
+            filter: invert(41%) sepia(100%) saturate(4386%) hue-rotate(200deg) brightness(101%) contrast(101%);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+            transition: opacity 0.2s ease-in-out;
+            opacity: 0;
+        }
+
+        .modal.active {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: #050505;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #404040;
+            width: 80%;
+            max-width: 680px;
+            border-radius: 5px;
+            position: relative;
+            transition: transform 0.2s ease-in-out;
+            transform: scale(0.8);
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #C81400;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content h3 {
+            margin-top: 10px;
+            color: #ecf0f1;
+        }
+
+        .modal-content p {
+            line-height: 1.5;
+            font-size: 0.9em;
+            color: #ecf0f1;
+        }
+
+        #importModal-note {
+            position: absolute;
+            margin: 0;
+            padding: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background-color: #FAA000;
+            border: 1px solid #404040;
+            border-radius: 5px 5px 0 0;
+        }
+
+        #importModal-note p {
+            text-align: center;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: black;
+        }
+
+        .modal-content button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ecf0f1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #0056b3;
+        }
+
+        #import-form {
+            padding: 0;
+            margin: 10px 0 0 0;
+        }
+
+        #importLabel {
+            color: #ecf0f1;
+            margin: 12px;
+        }
+
+        #csv_file {
+            display: inline-block;
+            margin: 12px;
+        }
+
+        #confirmImportBtn {
+            display: inline-block;
+            margin: 12px;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bulk-actions {
+            animation: slideDown 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .bulk-actions {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+                justify-items: left;
+            }
+
+            .bulk-controls {
+                justify-content: center;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            #transactionsTable {
+                min-width: 600px;
+            }
+
+            .delete-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+
+            #form-feed-container {
+                flex-direction: column;
+            }
+
+            #feed-container, #transactionForm {
+                width: 100%;
+                margin: 0 0 20px 0;
+            }
+
+            .alert-info {
+                padding: 8px 8px 2px;
+            }
+        }
+
+        @keyframes fadeInSideways {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOutSideways {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+        }
+    </style>
+{% endblock %}

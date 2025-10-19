@@ -1,0 +1,60 @@
+{% extends 'core/base_unauthenticated.html' %}
+{% load static %}
+{% block content %}
+
+    <div class="demo-login-info">
+        <p>
+            Log in to the demo account <a href="{% url 'login' %}" style="color: #3498db; text-decoration: underline; font-weight: 800;">Here</a>
+            <br>or create your own account below.
+        </p>
+    </div>
+    <h1>Create Your Account</h1>
+
+    <p>Available test account slots: {{ available_slots }} / 3</p>
+    {% if available_slots == 0 %}
+        <p class="alert-warning">No test slots available. Please try again later. Accounts expire after 1 hour.</p>
+    {% endif %}
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags %}message-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Username:</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <span class="error">{{ form.username.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}">Password:</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+                <span class="error">{{ form.password1.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}">Confirm password:</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+                <span class="error">{{ form.password2.errors.0 }}</span>
+            {% endif %}
+        </div>
+        <input type="submit" value="Create Account" class="btn-primary">
+
+    </form>
+
+    <p style="margin: 20px 0 30px 0; color: #ecf0f1; font-size: 0.9em; text-align: center;">
+        Have an account?
+        <a href="{% url 'login' %}" style="color: #3498db; text-decoration: none; font-weight: 600;">Login</a>
+    </p>
+{% endblock %}

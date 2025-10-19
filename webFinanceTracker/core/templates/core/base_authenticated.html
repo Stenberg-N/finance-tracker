@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body>
+    <div class="page-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Finance Tracker</h2>
+                <p class="user-greeting">Welcome, {{ user.username }}!</p>
+            </div>
+
+            <ul class="nav-list">
+                <li><a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
+                <li><a href="{% url 'charts' %}" class="nav-link {% if request.resolver_match.url_name == 'charts' %}active{% endif %}">Charts</a></li>
+                <li><a href="{% url 'predictions' %}" class="nav-link {% if request.resolver_match.url_name == 'predictions' %}active{% endif %}">Predictions</a></li>
+            </ul>
+
+            <div class="sidebar-spacer"></div>
+
+            <div class="sidebar-footer">
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<div class="register-login-warning-container">
+    <p>
+        Note! This is a demo. While registration is possible, there is a hard limit set to 3 concurrent user accounts. New accounts do not have any data to test the app's features, so you need to add your own after account creation.
+        Your account WILL get deleted after an hour from creation. There is a ready-made demo account with data to test the app with. The account will be reset after an hour, so you can safely remove or add data to it.
+    </p>
+</div>
+<head>
+    <meta chartset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>Finance Tracker</h1>
+            <p>Track your income and expenses</p>
+        </div>
+
+        <div class="auth-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</body>
+</html>
