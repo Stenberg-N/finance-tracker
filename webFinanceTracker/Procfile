@@ -1,2 +1,2 @@
-web: gunicorn finance_tracker.wsgi --log-file -
+web: gunicorn --timeout 300 --workers 1 --bind 0.0.0.0:8000 finance_tracker.wsgi:application --log-file -
 release: python manage.py migrate && python manage.py collectstatic --noinput
