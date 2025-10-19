@@ -1,2 +1,2 @@
-web: gunicorn --timeout 300 --workers 2 --threads 2 --max-requests 1000 --max-requests-jitter 50 finance_tracker.wsgi:application --log-file -
+web: gunicorn --timeout 600 --workers 2 --threads 2 --max-requests 1000 --max-requests-jitter 50 finance_tracker.wsgi:application --log-file -
 release: python manage.py migrate && python manage.py collectstatic --noinput
