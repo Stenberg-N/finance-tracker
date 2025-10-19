@@ -1,7 +1,7 @@
 from core.prediction_models.base import Base
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.preprocessing import PolynomialFeatures, StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler, QuantileTransformer
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler
 import numpy as np
 
 class polynomialModel(Base):
@@ -20,13 +20,13 @@ class polynomialModel(Base):
                 'regressor': [Ridge(), Lasso(max_iter=10000)],
                 'regressor__alpha': [0.001, 0.01, 0.1, 1, 10, 50, 100, 1000],
                 'regressor__fit_intercept': [True, False],
-                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()],
+                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler()],
                 'poly__degree': [2]
             },
             {
                 'regressor': [LinearRegression()],
                 'regressor__fit_intercept': [True, False],
-                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()],
+                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler()],
                 'poly__degree': [2]
             }
             

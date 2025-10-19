@@ -1,7 +1,7 @@
 from core.prediction_models.base import Base
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression, HuberRegressor, Ridge, Lasso
-from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler, QuantileTransformer
+from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler
 import numpy as np
 
 class linearModel(Base):
@@ -18,20 +18,20 @@ class linearModel(Base):
             {
                 'regressor': [LinearRegression()],
                 'regressor__fit_intercept': [True, False],
-                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
+                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler()]
             },
             {
                 'regressor': [Ridge(), Lasso(max_iter=10000)],
                 'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
                 'regressor__fit_intercept': [True, False],
-                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
+                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler()]
             },
             {
                 'regressor': [HuberRegressor(max_iter=10000)],
                 'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
                 'regressor__epsilon': [1, 1.1, 1.35, 1.5, 1.8, 2.0],
                 'regressor__fit_intercept': [True, False],
-                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
+                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler()]
             }
         ]
         return pipeline, param_grid

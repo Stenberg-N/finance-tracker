@@ -1,5 +1,5 @@
 from core.prediction_models.base import Base
-from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler, QuantileTransformer
+from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import TimeSeriesSplit
 import xgboost as xgb
@@ -26,7 +26,7 @@ class xgboostModel(Base):
                 'regressor__booster': ['gbtree', 'gblinear', 'dart'],
                 'regressor__lambda': [0.001, 0.01, 0.1, 1, 10],
                 'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
-                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
+                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler()]
             }
         ]
 
