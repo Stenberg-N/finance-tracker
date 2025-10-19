@@ -31,6 +31,7 @@ DEBUG = os.environ.get('DJANGO_ENV', 'development') == 'development'
 
 ALLOWED_HOSTS = ['site--financetracker-app--kwlb8kg8h4nw.code.run', 'localhost', '127.0.0.1']
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
