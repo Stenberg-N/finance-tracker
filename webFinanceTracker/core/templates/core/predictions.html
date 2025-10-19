@@ -1,0 +1,348 @@
+{% extends 'core/base_authenticated.html' %}
+{% load static %}
+{% block content %}
+
+    <div id="warning-container">
+        <p>
+            Note! Machine learning models require multiple months of transactions to work and make acceptable predictions. Please confirm that you have at least 4 months of transaction data.
+        </p>
+    </div>
+
+    <h2 id="main-header">Prediction models</h2>
+
+    <form id="prediction-form">
+        <div id="prediction-options">
+
+            <label for="prediction-type">Choose prediction model:</label>
+            <select id="prediction-type" name="type">
+                <option value="linear">Linear</option>
+                <option value="polynomial">Polynomial</option>
+                <option value="sarimax">SARIMAX</option>
+                <option value="randomforest">Random Forest</option>
+                <option value="xgboost">XGBoost</option>
+                <option value="ensemble">Ensemble</option>
+            </select>
+
+            <label for="n-future">Months to predict:</label>
+            <input type="number" id="n-future" name="n_future" placeholder="6" value="1" min="1">
+
+            <label for="monthsAmount">Past months to show (optional | default: 12):</label>
+            <input type="number" id="monthsAmount" name="monthsAmount" placeholder="8">
+
+            <button id="generatebtn" type="button" onclick="runPrediction()">Generate</button>
+
+            <button id="infoboxBtn" type="button" onclick="showMSEInfo()">
+                <img src="{% static 'core/images/info-icon.svg' %}" class="info-icon">
+            </button>
+
+        </div>
+
+        <div id="status-block">
+            Status:
+            <div id="prediction-status">
+                Waiting...
+            </div>
+        </div>
+    </form>
+
+    <div id="prediction-result">
+        <img id="prediction-image" src="" style="display: none; max-width: 100%;">
+    </div>
+
+    <div id="mseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeMSEInfo()">&times;</span>
+            <h3>What is Mean Squared Error (MSE)?</h3>
+            <p>
+                Mean Squared Error (MSE) is a measure of how accurate a prediction model is. Calculation formula: (1/n) * Σ(actual - predicted)².
+                <br><br>
+                It calculates the average of the squared differences between the predicted values and the actual values. 
+                A lower MSE indicates that the model's predictions are closer to the actual data, that suggests better accuracy. 
+                In the context of your expense predictions, the MSE shown on the graph reflects how well the model fits your historical expense data. 
+                The lower the value is (closer to 0), the more accurate the model. Note! The value of MSE cannot go below 0.
+            </p>
+            <button onclick="closeMSEInfo()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function runPrediction() {
+            const formData = new FormData();
+            formData.append('type', document.getElementById('prediction-type').value);
+            formData.append('n_future', document.getElementById('n-future').value);
+            formData.append('monthsAmount', document.getElementById('monthsAmount').value);
+            const queryString = new URLSearchParams(formData).toString();
+            const img = document.getElementById('prediction-image');
+            const statusElement = document.getElementById('prediction-status');
+
+            statusElement.textContent = 'Making predictions... this can take a while';
+            statusElement.style.color = '#FAA000';
+
+            fetch('/generate-prediction/?' + queryString, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'image/png',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.text();
+            })
+            .then(data => {
+                img.src = data;
+                img.style.display = 'block';
+                statusElement.textContent = 'Finished';
+                statusElement.style.color = '#2bff00';
+            })
+            .catch(error => {
+                console.error('Error fetching prediction:', error);
+                alert(`Failed to generate prediction: ${error.message}`);
+                statusElement.textContent = 'Error while generating prediction';
+                statusElement.style.color = '#ff0000';
+            });
+        }
+
+        function showMSEInfo() {
+            const modal = document.getElementById('mseModal');
+            modal.style.display = 'block';
+            modal.classList.add('active');
+        }
+
+        function closeMSEInfo() {
+            const modal = document.getElementById('mseModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 200);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('mseModal');
+            if (event.target === modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 200);
+            }
+        };
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeMSEInfo();
+            }
+        });
+    </script>
+
+    <style>
+        #warning-container {
+            position: absolute;
+            margin: 0;
+            padding: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background-color: #FAA000;
+            color: black;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        #main-header {
+            color: #ecf0f1;
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        #prediction-result {
+            width: 100%;
+            max-height: calc(100vh - 150px);
+            margin: 0 auto;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        #prediction-image {
+            display: none;
+            width: 100%;
+            height: auto;
+            max-height: calc(100vh - 150px);
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        #prediction-form {
+            margin: 0;
+            padding: 0;
+            align-items: center;
+            max-width: 100%;
+            max-height: 150px;
+        }
+
+        #prediction-options {
+            font-size: 0.8em;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        #prediction-options label {
+            margin-left: 10px;
+            margin-right: 10px;
+            align-self: center;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        #prediction-options input {
+            color: black;
+            max-width: 52px;
+            margin: 10px;
+            height: 30px;
+        }
+
+        #prediction-options input::placeholder  {
+            color: #aaa;
+        }
+
+        #prediction-options select {
+            margin-right: 10px;
+            height: 30px;
+            max-width: 120px;
+        }
+
+        #prediction-options button {
+            padding: 8px 16px;
+            background-color: #C81400;
+            color: #ecf0f1;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+            max-width: 90px;
+        }
+
+        #prediction-options button:hover {
+            background-color: rgba(200, 20, 0, 0.7);
+        }
+
+        #prediction-options button#infoboxBtn {
+            padding: 6px 6px;
+            max-width: 30px;
+            max-height: 30px;
+            background-color: #007bff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #prediction-options button#infoboxBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .info-icon {
+            margin: 0;
+            padding: 0;
+            max-width: 18px;
+            max-height: 18px;
+            filter: brightness(0) invert(0.8);
+        }
+
+        #status-block {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            font-weight: bold;
+            color: #ecf0f1;
+            font-size: 1em;
+            margin: 0;
+            padding: 0;
+            margin-left: 10px;
+            margin-bottom: 2px;
+        }
+
+        #prediction-status {
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+            transition: opacity 0.2s ease-in-out;
+            opacity: 0;
+        }
+
+        .modal.active {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: #050505;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #404040;
+            width: 80%;
+            max-width: 680px;
+            border-radius: 5px;
+            position: relative;
+            transition: transform 0.2s ease-in-out;
+            transform: scale(0.8);
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #C81400;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+        }
+
+        .modal-content p {
+            line-height: 1.5;
+        }
+
+        .modal-content button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ecf0f1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+
+{% endblock %}

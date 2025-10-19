@@ -1,0 +1,795 @@
+{% extends 'core/base_authenticated.html' %}
+{% load static %}
+{% block content %}
+
+    <h2 id="main-header">Charts</h2>
+
+    <form id="chart-form">
+        <div class="chart-options" id="chart-options">
+            <label for="chart-type">Choose a chart:</label>
+            <select id="chart-type" name="type">
+                <option value="pie">Pie</option>
+                <option value="donut">Donut</option>
+                <option value="bar">Bar</option>
+                <option value="horizontalBar">Top 5 Expenses</option>
+                <option value="surplusDeficit">Surplus-Deficit</option>
+                <option value="savings">Savings</option>
+                <option value="barByDate">Monthly transactions</option>
+                <option value="monthlyCategorySplit">Stacked Bar</option>
+            </select>
+
+            <label for="year">Year (optional):</label>
+            <input type="number" id="year" name="year" min="1900" placeholder="2025">
+
+            <button type="button" id="generate-chart">Generate</button>
+
+            <button id="infoboxBtn" type="button" onclick="showInfoBox()">
+                <img src="{% static 'core/images/info-icon.svg' %}" class="info-icon">
+            </button>
+        </div>
+
+        <div id="status-block">
+            Status:
+            <div id="status-content">
+                Waiting...
+            </div>
+        </div>
+    </form>
+
+    <div id="infoModal" class="modal">
+        <div id="modal-content">
+            <span class="close" onclick="closeInfoBox()">&times;</span>
+            <h3>Chart types</h3>
+            <p>
+                <br>Surplus-Deficit:  Displays by month if you made profit or loss.
+                <br>Savings:  Displays cumulative savings. Best for viewing long-term trends.
+                <br>Monthly transactions:  Displays both the income and expenses per month.
+            </p>
+            <button onclick="closeInfoBox()">Close</button>
+        </div>
+    </div>
+
+    <div id="chart-container" class="chart-container">
+        <canvas id="chartCanvas" style="display: none;"></canvas>
+        <img id="chartImage" style="display: none;" alt="">
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        Chart.defaults.color = "#ecf0f1";
+        Chart.defaults.font.size = 14;
+
+        const transactions = {{ transactions_json | safe }};
+        let currentChart = null;
+
+        document.getElementById('generate-chart').addEventListener('click', function(e) {
+            e.preventDefault();
+            const chartType = document.getElementById('chart-type').value;
+            const yearInput = document.getElementById('year').value.trim();
+            const year = yearInput ? parseInt(yearInput) : null;
+
+            let filtered = transactions;
+            if (year) {
+                filtered = transactions.filter(t => new Date(t.date).getFullYear() === year);
+            }
+
+            const container = document.getElementById('chart-container');
+            const canvas = document.getElementById('chartCanvas');
+            const img = document.getElementById('chartImage');
+            const status = document.getElementById('status-content');
+
+            status.textContent = 'Generating chart...';
+            status.style.color = '#FAA000';
+
+            const noDataElem = document.getElementById('no-data-message');
+            if (noDataElem) {
+                noDataElem.remove();
+            }
+
+            if (currentChart) {
+                currentChart.destroy();
+                currentChart = null;
+            }
+
+            canvas.style.display = 'none';
+            img.style.display = 'none';
+            img.src = '';
+
+            if (filtered.length === 0) {
+                const p = document.createElement('p');
+                p.id = 'no-data-message';
+                p.textContent = `No transactions found${year ? ' for ' + year : ''}.`;
+                container.appendChild(p);
+                return;
+            }
+
+            const staticTypes = ['savings', 'barByDate'];
+            if (staticTypes.includes(chartType)) {
+                img.style.display = 'block';
+                img.alt = 'Loading chart...';
+                img.classList.remove('bar-chart', 'horizontalBar-chart', 'surplusDeficit-chart', 'savings-chart', 'barByDate-chart', 'monthlyCategorySplit-chart');
+                img.classList.add(`${chartType}-chart`);
+
+                const fetchURL = `/generate-chart/?type=${encodeURIComponent(chartType)}${year ? '&year=' + encodeURIComponent(year) : ''}`;
+                fetch(fetchURL)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error. Status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        if (!data.startsWith('data:image/png;base64,')) {
+                            throw new Error('Invalid image data received');
+                        }
+                        img.src = data;
+                        img.alt = `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart`;
+                        status.textContent = 'Finished';
+                        status.style.color = '#2bff00';
+                    })
+                    .catch(error => {
+                        console.error('Error loading chart:', error);
+                        img.style.display = 'none';
+                        status.textContent = 'Error while generating chart';
+                        status.style.color = '#ff0000';
+                        const p = document.createElement('p');
+                        p.id = 'no-data-message';
+                        p.textContent = 'Failed to load chart: ' + error.message;
+                        container.appendChild(p);
+                    });
+            } else {
+                canvas.style.display = 'block';
+                const ctx = canvas.getContext('2d');
+                let chartConfig = {};
+
+                const colors = [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+                    '#E7E9ED', '#C9CBCF', '#AD60E0', '#76D7C4', '#F1948A', '#F7DC6F'
+                ];
+
+                switch (chartType) {
+                    case 'pie':
+                    case 'donut':
+                        const expenses = filtered.filter(t => t.type === 'expense');
+                        const categoryTotals = expenses.reduce((acc, t) => {
+                            const cat = t.category || 'Uncategorized';
+                            acc[cat] = (acc[cat] || 0) + parseFloat(t.amount);
+                            return acc;
+                        }, {});
+                        const labels = Object.keys(categoryTotals);
+                        const data = Object.values(categoryTotals);
+
+                        if (labels.length === 0) {
+                            canvas.style.display = 'none';
+                            const p = document.createElement('p');
+                            p.id = 'no-data-message';
+                            p.textContent = 'No expense data available';
+                            container.appendChild(p);
+                            return;
+                        }
+
+                        chartConfig = {
+                            type: chartType === 'donut' ? 'doughnut' : 'pie',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    data: data,
+                                    backgroundColor: colors.slice(0, labels.length)
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: { position: 'top' },
+                                    title: {
+                                        display: true,
+                                        text: `Expenses by Category${year ? ` (${year})` : ''}`,
+                                        font: { size: 32 }
+                                    }
+                                }
+                            }
+                        };
+                        break;
+
+                    case 'bar':
+                        const barTotals = filtered.reduce((acc, t) => {
+                            const cat = t.category || 'Uncategorized';
+                            acc[cat] = (acc[cat] || 0) + parseFloat(t.amount);
+                            return acc;
+                        }, {});
+                        const barLabels = Object.keys(barTotals);
+                        const barData = Object.values(barTotals);
+
+                        if (barLabels.length === 0) {
+                            canvas.style.display = 'none';
+                            const p = document.createElement('p');
+                            p.id = 'no-data-message';
+                            p.textContent = 'No data available';
+                            container.appendChild(p);
+                            return;
+                        }
+
+                        chartConfig = {
+                            type: 'bar',
+                            data: {
+                                labels: barLabels,
+                                datasets: [{
+                                    label: 'Total Amount (€)',
+                                    data: barData,
+                                    backgroundColor: 'orange'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: `Total Amount by Category${year ? ` (${year})` : ''}`,
+                                        font: { size: 32 }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        border: {
+                                            display: false
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
+                                    },
+                                    y: {
+                                        border: {
+                                            display: false,
+                                            dash: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return [0, 0];
+                                                } else {
+                                                    return [10, 5];
+                                                }
+                                            }
+                                        },
+                                        grid: {
+                                            display: true,
+                                            lineWidth: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return 2.5
+                                                } else {
+                                                    return 1
+                                                }
+                                            },
+                                            color: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return '#50DC82'
+                                                } else {
+                                                    return 'rgba(236, 240, 241, 0.2)'
+                                                }
+                                            }
+                                        },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value, index, ticks) {
+                                                return value + '€';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        break;
+
+                    case 'monthlyCategorySplit':
+                        const stackedExpenses = filtered.filter(t => t.type === 'expense');
+
+                        if (stackedExpenses.length === 0) {
+                            canvas.style.display = 'none';
+                            const p = document.createElement('p');
+                            p.id = 'no-data-message';
+                            p.textContent = 'No expense data available';
+                            container.appendChild(p);
+                            return;
+                        }
+
+                        const monthlySums = {};
+                        const allCatDesc = new Set();
+
+                        stackedExpenses.forEach(t => {
+                            const month = new Date(t.date).toLocaleString('default', { month: 'short', year: 'numeric' });
+                            const cat = t.category || 'Uncategorized';
+                            const desc = t.description || 'No Description';
+                            const cd = `${cat}:${desc}`;
+                            const absAmount = Math.abs(parseFloat(t.amount));
+
+                            allCatDesc.add(cd);
+
+                            if (!monthlySums[month]) {
+                                monthlySums[month] = {};
+                            }
+                            if (!monthlySums[month][cd]) {
+                                monthlySums[month][cd] = 0;
+                            }
+                            monthlySums[month][cd] += absAmount;
+                        });
+
+                        const months = Object.keys(monthlySums).sort((a, b) => new Date(a) - new Date(b));
+                        const sortedCatDesc = Array.from(allCatDesc).sort();
+
+                        const datasets = sortedCatDesc.map((cd, i) => {
+                            const data = months.map(month => monthlySums[month][cd] || 0);
+                            const [cat, desc] = cd.split(':');
+                            return {
+                                label: `${cat}: ${desc}`,
+                                data: data,
+                                backgroundColor: colors[i % colors.length],
+                                stack: 'expenses'
+                            };
+                        });
+
+                        chartConfig = {
+                            type: 'bar',
+                            data: {
+                                labels: months,
+                                datasets: datasets
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: `Monthly Expenses by Category & Description${year ? ` (${year})` : ''}`,
+                                        font: { size: 32 }
+                                    },
+                                    legend: { position: 'right' }
+                                },
+                                scales: {
+                                    x: {
+                                        stacked: true,
+                                        border: {
+                                            display: false
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
+                                    },
+                                    y: {
+                                        stacked: true,
+                                        ticks: {
+                                            callback: function(value, index, ticks) {
+                                                return value + '€';
+                                            }
+                                        },
+                                        border: {
+                                            display: false,
+                                            dash: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return [0, 0];
+                                                } else {
+                                                    return [10, 5];
+                                                }
+                                            }
+                                        },
+                                        grid: {
+                                            display: true,
+                                            lineWidth: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return 2
+                                                } else {
+                                                    return 1
+                                                }
+                                            },
+                                            color: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return 'white'
+                                                } else {
+                                                    return 'rgba(236, 240, 241, 0.2)'
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        break;
+
+                    case 'horizontalBar':
+                        const topExpenses = filtered.filter(t => t.type === 'expense');
+                        if (topExpenses.length === 0) {
+                            canvas.style.display = 'none';
+                            const p = document.createElement('p');
+                            p.id = 'no-data-message';
+                            p.textContent = 'No expense data available';
+                            container.appendChild(p);
+                            return;
+                        }
+
+                        const expenseSums = {};
+                        topExpenses.forEach(t => {
+                            const cat = t.category || 'Uncategorized';
+                            const desc = t.description || 'No description';
+                            const key = `${cat}:${desc}`;
+                            const amount = Math.abs(parseFloat(t.amount));
+                            if (!expenseSums[key]) {
+                                expenseSums[key] = { category: cat, description: desc, total: 0 };
+                            }
+                            expenseSums[key].total += amount;
+                        });
+
+                        const sortedExpenses = Object.entries(expenseSums)
+                            .map(([key, value]) => ({
+                                label: `${value.category} - ${value.description}`,
+                                total: value.total
+                            }))
+                            .sort((a, b) => b.total - a.total)
+                            .slice(0, 5);
+
+                        const topLabels = sortedExpenses.map(e => e.label);
+                        const topData = sortedExpenses.map(e => e.total);
+
+                        if (topLabels.length === 0) {
+                            canvas.style.display = 'none';
+                            const p = document.createElement('p');
+                            p.id = 'no-data-message';
+                            p.textContent = 'No expense data available';
+                            container.appendChild(p);
+                            return;
+                        }
+
+                        chartConfig = {
+                            type: 'bar',
+                            data: {
+                                labels: topLabels,
+                                datasets: [{
+                                    label: 'Amount (€)',
+                                    data: topData,
+                                    backgroundColor: colors.slice(0, topLabels.length)
+                                }]
+                            },
+                            options: {
+                                indexAxis: 'y',
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: `Top 5 Expenses${year ? ` (${year})` : ''}`,
+                                        font: { size: 32 }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value, index, ticks) {
+                                                return value + '€';
+                                            }
+                                        },
+                                        border: {
+                                            display: false
+                                        },
+                                        grid: {
+                                            display: true,
+                                            color: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return 'white'
+                                                } else {
+                                                    return 'rgba(236, 240, 241, 0.2)'
+                                                }
+                                            },
+                                            lineWidth: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return 2.5
+                                                } else {
+                                                    return 1
+                                                }
+                                            }
+                                        }
+                                    },
+                                    y: {
+                                        border: {
+                                            display: false
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        break;
+
+                    case 'surplusDeficit':
+                        const surplusMonths = [...new Set(filtered.map(t => new Date(t.date).toLocaleString('default', { month: 'short', year: 'numeric' })))]
+                            .sort((a, b) => new Date(a) - new Date(b));
+
+                        if (surplusMonths.length === 0) {
+                            canvas.style.display = 'none';
+                            const p = document.createElement('p');
+                            p.id = 'no-data-message';
+                            p.textContent = 'No data available';
+                            container.appendChild(p);
+                            return;
+                        }
+
+                        const surplusData = surplusMonths.map(month => {
+                            const monthTrans = filtered.filter(t => new Date(t.date).toLocaleString('default', { month: 'short', year: 'numeric' }) === month);
+                            const income = monthTrans.filter(t => t.type === 'income').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                            const expense = monthTrans.filter(t => t.type === 'expense').reduce((sum, t) => sum + Math.abs(parseFloat(t.amount)), 0);
+                            return income - expense;
+                        });
+
+                        chartConfig = {
+                            type: 'bar',
+                            data: {
+                                labels: surplusMonths,
+                                datasets: [{
+                                    label: 'Surplus/Deficit (€)',
+                                    data: surplusData,
+                                    backgroundColor: surplusData.map(val => val >= 0 ? 'green' : 'red')
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: `Monthly Surplus-Deficit${year ? ` (${year})` : ''}`,
+                                        font: { size: 32 }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value, index, ticks) {
+                                                return value + '€';
+                                            }
+                                        },
+                                        border: {
+                                            display: false,
+                                            dash: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return [0, 0]
+                                                } else {
+                                                    return [5, 20]
+                                                }
+                                            }
+                                        },
+                                        grid: {
+                                            color: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return 'white'
+                                                } else if (context.tick.value > 0) {
+                                                    return 'rgba(0, 255, 0, 0.2)'
+                                                } else if (context.tick.value < 0) {
+                                                    return 'rgba(255, 0, 0, 0.2)'
+                                                }
+                                            },
+                                            lineWidth: function(context) {
+                                                if (context.tick.value === 0) {
+                                                    return 2
+                                                } else {
+                                                    return 1
+                                                }
+                                            }
+                                        }
+                                    },
+                                    x: {
+                                        border: {
+                                            display: false
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        break;
+
+                    default:
+                        const p = document.createElement('p');
+                        p.id = 'no-data-message';
+                        p.textContent = 'Chart type not implemented';
+                        container.appendChild(p);
+                        return;
+                }
+
+                currentChart = new Chart(ctx, chartConfig);
+                status.textContent = 'Finished';
+                status.style.color = '#2bff00';
+            }
+        });
+
+        function showInfoBox() {
+            const infoBox = document.getElementById('infoModal');
+            infoBox.style.display = 'block';
+            infoBox.classList.add('active');
+        }
+
+        function closeInfoBox() {
+            const infoBox = document.getElementById('infoModal');
+            infoBox.classList.remove('active');
+            setTimeout(() => {
+                infoBox.style.display = 'none';
+            }, 200);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('infoModal');
+            if (event.target === modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 200);
+            }
+        };
+    </script>
+
+    <style>
+        #main-header {
+            color: #ecf0f1;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        #chart-form {
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            max-height: 150px;
+            max-width: 100%;
+        }
+
+        .chart-options {
+            display: flex;
+            flex-direction: row;
+            font-size: 0.8em;
+        }
+
+        .chart-options h2 {
+            color: #ecf0f1;
+        }
+
+        .chart-options label {
+            margin-left: 10px;
+            margin-right: 10px;
+            align-self: center;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .chart-options input#year {
+            width: 70px;
+            height: 30px;
+            margin: 10px;
+        }
+
+        .chart-options select {
+            max-width: 150px;
+            height: 30px;
+            margin: 10px;
+        }
+
+        .chart-options button {
+            padding: 8px 16px;
+            background-color: #C81400;
+            color: #ecf0f1;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+            max-width: 90px;
+        }
+
+        .chart-options button:hover {
+            background-color: rgba(200, 20, 0, 0.7);
+        }
+
+        .chart-options button#infoboxBtn {
+            padding: 6px 6px;
+            max-width: 30px;
+            max-height: 30px;
+            background-color: #007bff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chart-options button#infoboxBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .info-icon {
+            margin: 0;
+            padding: 0;
+            max-width: 18px;
+            max-height: 18px;
+            filter: brightness(0) invert(0.8);
+        }
+
+        #status-block {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            margin-left: 10px;
+            margin-bottom: 2px;
+            font-size: 1em;
+            color: #ecf0f1;
+        }
+
+        #status-content {
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+            transition: opacity 0.2s ease-in-out;
+            opacity: 0;
+        }
+
+        .modal.active {
+            opacity: 1;
+        }
+
+        #modal-content {
+            background-color: #050505;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #404040;
+            width: 80%;
+            max-width: 680px;
+            border-radius: 5px;
+            transition: transform 0.2s ease-in-out;
+            transform: scale(0.8);
+        }
+
+        .modal.active #modal-content {
+            transform: scale(1);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #C81400;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #modal-content h3 {
+            margin-top: 0;
+        }
+
+        #modal-content button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ecf0f1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #modal-content button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+{% endblock %}
