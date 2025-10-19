@@ -16,6 +16,7 @@ packaging==25.0
 pandas==2.3.3
 patsy==1.0.1
 pillow==11.3.0
+psycopg==3.2.11
 pycparser==2.23
 pyparsing==3.2.5
 python-dateutil==2.9.0.post0
@@ -28,6 +29,7 @@ six==1.17.0
 sqlparse==0.5.3
 statsmodels==0.14.5
 threadpoolctl==3.6.0
+typing_extensions==4.15.0
 tzdata==2025.2
 whitenoise==6.11.0
 xgboost==3.0.5
