@@ -343,6 +343,70 @@
         .modal-content button:hover {
             background-color: #0056b3;
         }
+
+        @media (max-width: 1090px) {
+            #warning-container {
+                position: relative;
+                padding: 2px 5px;
+                margin: -10px -10px 0 -10px;
+            }
+
+            #prediction-result {
+                max-height: unset;
+                margin: 10px auto;
+                overflow: visible;
+                padding: 5px;
+            }
+
+            #prediction-image {
+                max-height: calc(100vh - 50px);
+                min-height: 250px;
+            }
+
+            #prediction-form {
+                max-height: unset;
+            }
+
+            #prediction-options {
+                flex-direction: column;
+                font-size: 0.95em;
+                align-items: stretch;
+                padding: 10px;
+                gap: 10px;
+            }
+
+            #prediction-options label {
+                align-self: flex-start;
+            }
+
+            #prediction-options input {
+                height: 40px;
+                max-width: 95%;
+                margin: 0 10px;
+            }
+
+            #prediction-options select {
+                margin-left: 10px;
+                height: 40px;
+            }
+
+            #prediction-options button {
+                max-width: unset;
+                height: 45px;
+                max-width: 120px;
+                width: 100%;
+            }
+
+            #prediction-options button#infoboxBtn {
+                max-width: 40px;
+                max-height: 40px;
+            }
+
+            .info-icon {
+                max-width: 24px;
+                max-height: 24px;
+            }
+        }
     </style>
 
 {% endblock %}
