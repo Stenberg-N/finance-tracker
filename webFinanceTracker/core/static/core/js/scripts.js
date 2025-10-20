@@ -54,7 +54,7 @@ export function toggleExportOptions() {
             options.style.display = 'none';
         }, 150);
     } else {
-        options.style.display = 'inline-block';
+        options.style.display = 'flex';
         options.classList.remove('hidden');
         options.classList.add('visible');
         setTimeout(() => {

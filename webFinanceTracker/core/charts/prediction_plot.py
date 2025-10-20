@@ -37,7 +37,7 @@ def generate_prediction_plot(months, actuals, predictions, monthsAmount=12, mse=
         future_labels.append(future_month.strftime("%b %Y"))
 
     plt.style.use('dark_background')
-    fig, ax = plt.subplots(figsize=(18, 9), dpi=120, facecolor="#050505")
+    fig, ax = plt.subplots(figsize=(18, 9), dpi=150, facecolor="#050505")
 
     ax.plot(months_labels, filtered_actuals, marker='o', label="Actual expenses", color="#2bff00")
     ax.plot([months_labels[-1]] + future_labels, [actuals[-1]] + list(predictions), marker='o', linestyle="--", color="white", label="Predicted expenses")

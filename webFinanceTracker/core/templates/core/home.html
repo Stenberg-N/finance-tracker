@@ -27,16 +27,19 @@
             <input type="number" id="amount" name="amount" step="0.01" placeholder="e.g. 1,00 or 1.00" required>
 
             <label>Type:</label>
-            <label class="radio-option">
-                <input type="radio" id="expense" name="type" value="expense" required>
-                <span class="radio-label expense">Expense</span>
-            </label>
-            <label class="radio-option">
-                <input type="radio" id="income" name="type" value="income" required>
-                <span class="radio-label income">Income</span>
-            </label>
+            <div id="transactionForm-type">
+                <label class="radio-option">
+                    <input type="radio" id="expense" name="type" value="expense" required>
+                    <span class="radio-label expense">Expense</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" id="income" name="type" value="income" required>
+                    <span class="radio-label income">Income</span>
+                </label>
+            </div>
 
             <button type="submit">Add Transaction</button>
+
         </form>
 
         <div id="feed-container">
@@ -47,7 +50,7 @@
 
     <div class="bulk-actions" style="margin-bottom: 20px; display: none;">
         <div class="bulk-controls">
-            <button id="selectAllBtn" class="btn-secondary">Select All</button>
+            <button id="selectAllBtn" class="btn-secondary" style="margin-left: 10px;">Select All</button>
             <button id="clearSelectionBtn" class="btn-secondary" style="margin-left: 10px;">Clear Selection</button>
             <button id="bulkDeleteBtn" class="btn-danger" style="margin-left: 10px;">Delete Selected (<span id="selectedCount">0</span>)</button>
             <button id="deleteAllBtn" class="btn-danger" style="margin-left: 10px;">Delete All</button>
@@ -60,11 +63,13 @@
     <h2 class="table-header">Your Transactions</h2>
 
     <div id="table-options">
-        <button id="infoBoxBtn" type="button">
-            <img src="{% static 'core/images/info-icon.svg' %}" class="info-icon">
-        </button>
+        <div id="info-searchbar-container">
+            <button id="infoBoxBtn" type="button">
+                <img src="{% static 'core/images/info-icon.svg' %}" class="info-icon">
+            </button>
 
-        <input type="text" name="search" id="searchBar" value="{{ search_query|default:'' }}" placeholder="Search...">
+            <input type="text" name="search" id="searchBar" value="{{ search_query|default:'' }}" placeholder="Search...">
+        </div>
 
         <button id="showImportBtn" type="button">Import CSV</button>
 
@@ -162,17 +167,17 @@
             <tbody>
                 {% for t in transactions %}
                 <tr data-transaction-id="{{ t.id }}">
-                    <td><input type="checkbox" class="row-checkbox" value="{{ t.id }}"></td>
-                    <td>{{ t.date }}</td>
-                    <td>{{ t.category }}</td>
-                    <td>{{ t.description }}</td>
-                    <td>{{ t.amount }}</td>
-                    <td>
+                    <td data-label="Select"><input type="checkbox" class="row-checkbox" value="{{ t.id }}"></td>
+                    <td data-label="Date">{{ t.date }}</td>
+                    <td data-label="Category">{{ t.category }}</td>
+                    <td data-label="Description">{{ t.description }}</td>
+                    <td data-label="Amount">{{ t.amount }}</td>
+                    <td data-label="Type">
                         <span class="{% if t.type == 'expense' %}expense{% else %}income{% endif %}">
                             {{ t.type|title }}
                         </span>
                     </td>
-                    <td>
+                    <td data-label="Actions">
                         <button class="delete-btn" data-id="{{ t.id }}" title="Delete transaction">
                             <img src="{% static 'core/images/trash.svg' %}" alt="Delete" class="delete-icon">
                         </button>
@@ -480,13 +485,13 @@
                     const newRow = document.createElement('tr');
                     newRow.dataset.transactionId = data.transaction.id;
                     newRow.innerHTML = `
-                        <td><input type="checkbox" class="row-checkbox" value="${data.transaction.id}"></td>
-                        <td>${formattedDate}</td>
-                        <td>${data.transaction.category}</td>
-                        <td>${data.transaction.description}</td>
-                        <td>${data.transaction.amount}</td>
-                        <td><span class="${data.transaction.type === 'expense' ? 'expense' : 'income'}">${data.transaction.type.charAt(0).toUpperCase() + data.transaction.type.slice(1)}</span></td>
-                        <td><button class="delete-btn" data-id="${data.transaction.id}" title="Delete transaction"><img src="${window.staticImages.trashcan}" alt="Delete" class="delete-icon"></button></td>
+                        <td data-label="Select"><input type="checkbox" class="row-checkbox" value="${data.transaction.id}"></td>
+                        <td data-label="Date">${formattedDate}</td>
+                        <td data-label="Category">${data.transaction.category}</td>
+                        <td data-label="Description">${data.transaction.description}</td>
+                        <td data-label="Amount">${data.transaction.amount}</td>
+                        <td data-label="Type"><span class="${data.transaction.type === 'expense' ? 'expense' : 'income'}">${data.transaction.type.charAt(0).toUpperCase() + data.transaction.type.slice(1)}</span></td>
+                        <td data-label="Actions"><button class="delete-btn" data-id="${data.transaction.id}" title="Delete transaction"><img src="${window.staticImages.trashcan}" alt="Delete" class="delete-icon"></button></td>
                     `;
                     tableBody.insertBefore(newRow, tableBody.firstChild);
                     bindDeleteButtons(window.csrfToken);
@@ -539,7 +544,13 @@
         #transactionForm {
             width: 50%;
             margin-right: 7.5px;
-            max-height: 455px;
+            border-radius: 8px;
+        }
+
+        #transactionForm-type {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
         }
 
         #feed-container {
@@ -608,7 +619,7 @@
             display: flex;
             margin: 5px;
             min-height: 45px;
-            max-height: 70px;
+            max-height: 85px;
         }
 
         #table-analytics {
@@ -627,6 +638,12 @@
 
         #filler-block {
             flex-grow: 1;
+        }
+
+        #info-searchbar-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
         }
 
         #infoBoxBtn {
@@ -660,7 +677,6 @@
             background-repeat: no-repeat;
             background-size: 18px;
             width: 220px;
-            font-size: 16;
             padding: 12px 20px 12px 30px;
             border: 1px solid #404040;
             border-radius: 8px;
@@ -761,6 +777,7 @@
             font-size: 0.9em;
             text-decoration: none;
             margin-bottom: 5px;
+            margin-left: 5px;
             height: 40px;
             transition: all 0.1s ease;
         }
@@ -801,10 +818,6 @@
             border-color: #007bff;
             outline: none;
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-
-        #transactionForm {
-            border-radius: 8px;
         }
 
         .table-container {
@@ -1112,43 +1125,221 @@
             animation: slideDown 0.3s ease;
         }
 
-        @media (max-width: 768px) {
-            .bulk-actions {
-                flex-direction: column;
-                gap: 12px;
-                align-items: stretch;
-                justify-items: left;
-            }
-
-            .bulk-controls {
-                justify-content: center;
-            }
-
+        @media (max-width: 1090px) {
             .table-container {
-                overflow-x: auto;
+                overflow-x: hidden;
+                border: none;
             }
 
-            #transactionsTable {
-                min-width: 600px;
-            }
-
-            .delete-btn {
-                width: 28px;
-                height: 28px;
-                font-size: 12px;
+            #feed-container, #transactionForm {
+                max-width: unset;
+                width: 100%;
+                margin: 0 0 20px 0;
             }
 
             #form-feed-container {
                 flex-direction: column;
             }
 
-            #feed-container, #transactionForm {
+            #info-searchbar-container {
+                margin-bottom: 10px;
+            }
+
+            #table-options {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 10px;
+                min-height: unset;
+                max-height: unset;
+            }
+
+            #showImportBtn, #showExports {
                 width: 100%;
-                margin: 0 0 20px 0;
+                max-width: 200px;
+                padding: 12px;
+                font-size: 1em;
+                height: 48px;
+            }
+
+            #exportBtns {
+                display: none;
+                flex-direction: column;
+                gap: 10px;
+                margin-left: 15px;
+            }
+
+            #exportBtns a {
+                width: 100%;
+                max-width: 200px;
+                text-align: center;
+                padding: 12px;
+                height: 48px;
+                margin-bottom: 0;
+                margin-left: 0;
+            }
+
+            #exportBtns.visible, #exportBtns.hidden {
+                animation: none;
+            }
+
+            #transactionsTable {
+                display: block;
+                min-width: unset;
+                background: linear-gradient(0deg, #050505 0%, #202020 100%);
+            }
+
+            #transactionsTable thead {
+                display: none;
+            }
+
+            #transactionsTable tbody, #transactionsTable tr {
+                display: block;
+            }
+
+            #transactionsTable tr {
+                background: #0c0c0c;
+                border: 1px solid #404040;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                padding: 10px;
+            }
+
+            #transactionsTable td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 10px;
+                border-bottom: none;
+                font-size: 0.9em;
+            }
+
+            #transactionsTable td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                color: #ecf0f1;
+                flex: 1;
+            }
+
+            #transactionsTable td[data-label="Actions"] {
+                justify-content: center;
+            }
+
+            #transactionsTable td[data-label="Actions"]::before {
+                content: none;
+            }
+
+            #pagination, #bottom-pagination {
+                height: 50px;
+                margin-top: 15px;
+                max-width: 330px;
+                flex-direction: row;
+                align-self: flex-end;
+                justify-self: right;
+            }
+
+            #back-arrow, #next-arrow {
+                width: 40px;
+                height: 40px;
+                margin: 0 15px;
+            }
+
+            #pagination span, #bottom-pagination span {
+                font-size: 1em;
+            }
+
+            .input-page-number {
+                min-width: 40px;
+                max-width: 60px;
+                padding: 5px;
+                font-size: 1em;
+            }
+
+            #pagination a, #bottom-pagination a {
+                padding: 10px;
+            }
+
+            #infoBoxBtn {
+                max-width: 40px;
+                max-height: 40px;
+                padding: 8px;
+                margin: 5px 10px;
+            }
+
+            .info-icon {
+                max-width: 24px;
+                max-height: 24px;
+            }
+
+            #searchBar {
+                width: 100%;
+                max-width: 300px;
+                padding-left: 35px;
+                font-size: 1em;
+            }
+
+            #filler-block {
+                display: none;
+            }
+
+            .bulk-actions {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+                justify-items: center;
+            }
+
+            .bulk-controls {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .bulk-controls button {
+                font-size: 0.9em;
+                padding: 10px;
+                flex: 1 1 45%;
+                margin: 5px;
+            }
+
+            .modal-content {
+                width: 90%;
+                max-width: 500px;
+                margin: 10% auto;
+                padding: 15px;
+            }
+
+            .modal-content p {
+                font-size: 0.85em;
+            }
+
+            #importModal-note p {
+                font-size: 0.75em;
+            }
+
+            #table-analytics {
+                height: unset;
+                max-width: 350px;
             }
 
             .alert-info {
                 padding: 8px 8px 2px;
+                margin: -10px -10px 0 -10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #pagination, #bottom-pagination {
+                justify-self: center;
+                align-self: center;
+                height: 50px;
+                margin-top: 15px;
+            }
+
+            #table-analytics {
+                display: flex;
+                flex-direction: column;
+                height: unset;
+                margin: 0;
             }
         }
 
