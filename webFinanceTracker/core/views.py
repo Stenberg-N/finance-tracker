@@ -604,7 +604,7 @@ def import_csv(request):
                     amount = row['Amount'].strip()
                     type_ = row['Type'].strip()
 
-                    if not all([category, description, amount, type]):
+                    if not all([category, description, amount, type_]):
                         errors.append(f"Missing fields in row: {row}")
                         continue
 
