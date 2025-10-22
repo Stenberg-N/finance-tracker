@@ -3,8 +3,12 @@ import datetime
 from app.config import DB_BACKUP_PATH
 from database.db import insertTransaction, backupDB
 from app.utils.exports import export_transactions_to_csv, export_transactions_to_excel, export_transactions_to_pdf
+from app.utils.import_csv import import_csv
 from app.utils.feedmessages import generateFeedMessages
 from CTkMessagebox import CTkMessagebox
+import tkinter.filedialog as filedialog
+import os
+import threading
 
 class homeScreen(ctk.CTkFrame):
     def __init__(self, parent, app):
@@ -19,6 +23,7 @@ class homeScreen(ctk.CTkFrame):
         self.feedFrame = None
         self.feedLabels = []
         self.greetLabel = None
+        self.selected_file = None
 
         self.buildUI()
 
@@ -32,7 +37,9 @@ class homeScreen(ctk.CTkFrame):
 
         utilityFrame = ctk.CTkFrame(self, fg_color="transparent")
         utilityFrame.grid(row=0, column=0, sticky="sw")
-        ctk.CTkButton(utilityFrame, text="Backup Database", command=self.backupDatabase).pack(padx=10)
+        ctk.CTkButton(utilityFrame, text="Backup Database", command=self.backupDatabase).pack(side="left", padx=(10, 5))
+        self.import_button = ctk.CTkButton(utilityFrame, text="Import CSV", command=self.import_data)
+        self.import_button.pack(side="left", padx=5)
 
         addExportFrame = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
         addExportFrame.grid(row=1, column=1, sticky="nsew")
@@ -187,6 +194,48 @@ class homeScreen(ctk.CTkFrame):
             CTkMessagebox(title="Success", message=f"Database has been successfully backed up to {DB_BACKUP_PATH}", icon="check")
         except Exception as e:
             CTkMessagebox(title="Error", message=f"Backup failed: {str(e)}", icon="cancel")
+
+    def import_data(self):
+        file_path = filedialog.askopenfilename(title="Select CSV file to import", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")], initialdir=os.path.expanduser("~"))
+
+        self.selected_file = file_path
+
+        self.import_button.configure(state="disabled", text="Importing...")
+        self.update_idletasks()
+
+        if not file_path:
+            return
+
+        import_thread = threading.Thread(target=self._import_in_background, args=(file_path,), daemon=True)
+        import_thread.start()
+
+    def _import_in_background(self, file_path):
+        user_id = self.app.getUserID()
+
+        try:
+            imported_count, errors = import_csv(user_id, file_path)
+
+            self.after(0, self._on_import_complete, imported_count, errors)
+
+        except Exception as e:
+            self.after(0, self._on_import_error, str(e))
+
+    def _on_import_complete(self, imported_count, errors):
+        self.import_button.configure(state="normal", text="Import CSV")
+
+        if imported_count > 0:
+            if errors:
+                CTkMessagebox(title="Import Complete", message=f'{imported_count} imported\n {len(errors)} errors occurred', icon="info")
+            else:
+                CTkMessagebox(title="Success", message=f'{imported_count} transaction(s) imported successfully', icon="check")
+        else:
+                CTkMessagebox(title="No imports", message="No new transactions found to import", icon="info")
+
+        self.updateFeed()
+
+    def _on_import_error(self, error_message):
+        self.import_button.configure(state="normal", text="Import CSV")
+        CTkMessagebox(title="No imports", message=f'{error_message}', icon="cancel")
 
     def export(self, formatType):
         user_id = self.app.getUserID()

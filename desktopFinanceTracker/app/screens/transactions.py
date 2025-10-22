@@ -31,12 +31,27 @@ class transactionsScreen(ctk.CTkFrame):
         style.layout("Edge.Treeview", [("Edge.Treeview.treearea", {"sticky": "nsew"})])
         style.configure("Edge.Treeview", highlightthickness=0, bd=0)
         style.configure("Treeview", background="#181818", foreground="white", fieldbackground="#181818")
+        style.configure("Dark.Vertical.TScrollbar",
+                        gripcount=0,
+                        background="#404040",
+                        troughcolor="#181818",
+                        bordercolor="#252525",
+                        arrowcolor="#ffffff",
+                        darkcolor="#404040",
+                        lightcolor="#505050",
+                        troughrelief="flat",
+                        relief="flat",
+                        borderwidth=1)
         style.configure("Treeview.Heading", relief="none", background="#303030", foreground="white", fieldbackground="#303030")
         style.map("Treeview.Heading", background=[('active', '#252525')])
+        style.map("Dark.Vertical.TScrollbar", background=[('active', '#505050'), ('pressed', '#303030')])
 
         columns = ("c1", "c2", "c3", "c4", "c5", "c6")
         self.tree = tk.ttk.Treeview(self, column=columns, show="headings", style="Edge.Treeview")
         headers = ["ID", "Date", "Category", "Description", "Amount", "Type"]
+
+        verticalScrollbar = tk.ttk.Scrollbar(self, orient="vertical", command=self.tree.yview, style="Dark.Vertical.TScrollbar")
+        self.tree.configure(yscrollcommand=verticalScrollbar.set)
 
         def treeviewSortColumn(tv, col, col_index, reverse):
             data = [(tv.set(k, col), k) for k in tv.get_children("")]
@@ -58,7 +73,8 @@ class transactionsScreen(ctk.CTkFrame):
             self.tree.heading(col, text=header, command=lambda _col=col, _idx=idx: treeviewSortColumn(self.tree, _col, _idx, False))
             self.tree.column(col, anchor=ctk.CENTER)
 
-        self.tree.pack(expand=True, fill="both")
+        self.tree.pack(side="left", expand=True, fill="both")
+        verticalScrollbar.pack(side="right", fill="y")
 
         deleteButton = ctk.CTkButton(searchbarFrame, text="Delete", font=ctk.CTkFont(size=12), fg_color="#D10000", hover_color="#9B0000", width=60, command=self.deleteSelectedTransactions)
         deleteButton.grid(row=0, column=0, padx=(0, 10), sticky="w")
