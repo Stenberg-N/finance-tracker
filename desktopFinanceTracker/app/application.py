@@ -83,13 +83,13 @@ class Application(ctk.CTk):
             self.sidebarButtons["logout"] = ctk.CTkButton(self.buttonFrame, text="Logout", command=self.logout, corner_radius=0, height=40, fg_color="#303030", hover_color="#252525")
 
             for key in ["home", "transactions", "charts", "predictions"]:
-                self.sidebarButtons[key].pack(side="top", fill="both", pady=2)
+                self.sidebarButtons[key].pack(side="top", fill="both", pady=(0, 5))
 
             spacer = ctk.CTkFrame(self.buttonFrame, fg_color="transparent", width=80)
             spacer.pack(side="top", fill="both", expand=True)
 
             for key in ["logout", "deleteData", "deleteAccount"]:
-                self.sidebarButtons[key].pack(side="bottom", fill="both", pady=2)
+                self.sidebarButtons[key].pack(side="bottom", fill="both", pady=(5, 0))
 
         self.buttonFrame.grid(row=0, column=0, sticky="ns")
 

@@ -56,7 +56,7 @@ class chartsScreen(ctk.CTkFrame):
 
         ctk.CTkLabel(self, text="Charts", font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
         ctk.CTkLabel(self, textvariable=self.chartNameVar, font=ctk.CTkFont(size=24, weight="bold")).pack(pady=(10, 0))
-        ctk.CTkLabel(self, textvariable=self.chartDescVar, wraplength=600, justify="left").pack(pady=(0, 20))
+        ctk.CTkLabel(self, textvariable=self.chartDescVar, wraplength=600, justify="left", height=50).pack(pady=(0, 20))
 
         filterFrame = ctk.CTkFrame(self, fg_color="transparent")
         filterFrame.pack(anchor=ctk.W, padx=20, pady=5)

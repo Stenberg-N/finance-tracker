@@ -138,6 +138,17 @@ def insertTransaction(date, category, description, amount, type_, user_id):
     encrypted_amount = fernet.encrypt(str(amount).encode()).decode()
     connect_to_database = sqlite3.connect(DB_PATH)
     db_cursor = connect_to_database.cursor()
+
+    db_cursor.execute('''
+        SELECT id FROM transactions
+        WHERE description = ? AND date = ? AND amount = ?
+        AND user_id = ?
+    ''', (encrypted_description, encrypted_date, encrypted_amount, user_id))
+
+    if db_cursor.fetchone():
+        connect_to_database.close()
+        return None, False
+
     db_cursor.execute('''
         INSERT INTO transactions (date, category, description, amount, type, user_id)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -145,6 +156,7 @@ def insertTransaction(date, category, description, amount, type_, user_id):
 
     connect_to_database.commit()
     connect_to_database.close()
+    return db_cursor.lastrowid, True
 
 def viewAllTransactions(user_id):
     global encryption_key

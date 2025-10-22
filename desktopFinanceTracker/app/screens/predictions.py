@@ -53,7 +53,7 @@ def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_exp
     ax.set_xlabel("Month")
     ax.set_ylabel("Expenses (€)")
     ax.set_title("Monthly expenses & prediction")
-    ax.set_yticks(np.arange(min(actuals), max(actuals) + max(predicted_expense) + 500, 500))
+    ax.set_yticks(np.arange(0, max(actuals) + max(predicted_expense) + 500, 500))
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.tick_params(axis="x", rotation=45)
