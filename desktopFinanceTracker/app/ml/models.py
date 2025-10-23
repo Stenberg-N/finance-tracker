@@ -1,15 +1,16 @@
 from database.db import viewAllTransactions
 import numpy as np
-import datetime
-from sklearn.linear_model import LinearRegression, HuberRegressor, Ridge, Lasso
+import datetime, math, gc, optuna
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler, QuantileTransformer
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.metrics import mean_squared_error
 import xgboost as xgb
 import pandas as pd
-import math
 
 def fetch_data(user_id):
     rows = viewAllTransactions(user_id)
@@ -101,9 +102,15 @@ def generate_future_features(months, y, n_future_months, category_pivot, all_cat
 
     return future_features, future_exog
 
-def run_gridsearch(x, y, pipeline, param_grid):
+def fit_variance_threshold(x):
+    variance_selector = VarianceThreshold(threshold=0.001)
+    variance_selector.fit(x)
+    print(f"Features after VarianceThreshold: {variance_selector.get_support().sum()}")
+    return variance_selector
 
-    cv = TimeSeriesSplit(n_splits=3)
+def run_gridsearch(x, y, pipeline, param_grid):
+    n_splits = max(1, min(3, (len(y) - 1) // 2))
+    cv = TimeSeriesSplit(n_splits=n_splits)
 
     gridsearch = GridSearchCV(
         pipeline,
@@ -120,11 +127,12 @@ def run_gridsearch(x, y, pipeline, param_grid):
     print(f"Best model MSE: {best_mse:.2f}")
     print(f"Best parameters: {gridsearch.best_params_}")
 
-    return gridsearch.best_params_, best_mse
+    return gridsearch.best_params_, best_mse, gridsearch
 
-def feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months):
+def feature_iteration(n_future_months, best_pipeline, future_features, variance_selector, predictions, recent_y, y, months):
     for i in range(n_future_months):
-        pred = best_pipeline.predict(future_features[i:i+1])[0]
+        future_row_transformed = variance_selector.transform(future_features[i:i+1])
+        pred = best_pipeline.predict(future_row_transformed)[0]
         pred = np.clip(pred, 0, np.max(y) * 2)
         predictions.append(float(pred))
 
@@ -145,6 +153,9 @@ def linear_model(n_future_months=1, user_id=None):
     months, x, y, all_categories, _ = get_months_x_y(user_id)
     _, category_pivot, _ = fetch_data(user_id)
 
+    if len(y) < 4:
+        raise ValueError("Insufficient data: Need at least 4 months of expenses for training.")
+
     pipeline_linear = Pipeline([
         ('scaler', StandardScaler()),
         ('regressor', LinearRegression())
@@ -161,31 +172,22 @@ def linear_model(n_future_months=1, user_id=None):
             'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
             'regressor__fit_intercept': [True, False],
             'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
-        },
-        {
-            'regressor': [HuberRegressor(max_iter=10000)],
-            'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
-            'regressor__epsilon': [1, 1.1, 1.35, 1.5, 1.8, 2.0],
-            'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
         }
     ]
 
-    best_params, best_mse = run_gridsearch(x, y, pipeline_linear, param_grid)
+    variance_selector = fit_variance_threshold(x)
+    x_transformed = variance_selector.transform(x)
 
-    best_pipeline = Pipeline([
-        ('scaler', StandardScaler()),
-        ('regressor', LinearRegression())
-    ])
+    _, best_mse, gridsearch = run_gridsearch(x_transformed, y, pipeline_linear, param_grid)
 
-    best_pipeline.set_params(**best_params)
-    best_pipeline.fit(x, y)
+    best_pipeline = gridsearch.best_estimator_
+    best_pipeline.fit(x_transformed, y)
 
     future_features, _ = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
     predictions = []
     recent_y = list(y)
 
-    feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
+    feature_iteration(n_future_months, best_pipeline, future_features, variance_selector, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y, best_mse
@@ -197,6 +199,9 @@ def polynomial_model(n_future_months=1, user_id=None):
     months, x, y, all_categories, _ = get_months_x_y(user_id)
     _, category_pivot, _ = fetch_data(user_id)
 
+    if len(y) < 4:
+        raise ValueError("Insufficient data: Need at least 4 months of expenses for training.")
+
     pipeline_poly = Pipeline([
         ('poly', PolynomialFeatures()),
         ('scaler', StandardScaler()),
@@ -206,37 +211,26 @@ def polynomial_model(n_future_months=1, user_id=None):
     param_grid = [
         {
             'regressor': [Ridge(), Lasso(max_iter=10000)],
-            'regressor__alpha': [0.001, 0.01, 0.1, 0.5, 1, 10],
-            'regressor__fit_intercept': [True, False],
-            'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()],
-            'poly__degree': [2, 3, 4]
-        },
-        {
-            'regressor': [HuberRegressor(max_iter=10000)],
             'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
-            'regressor__epsilon': [1, 1.1, 1.35, 1.5, 1.8],
             'regressor__fit_intercept': [True, False],
             'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()],
-            'poly__degree': [2, 3, 4]
+            'poly__degree': [2, 3]
         }
     ]
 
-    best_params, best_mse = run_gridsearch(x, y, pipeline_poly, param_grid)
+    variance_selector = fit_variance_threshold(x)
+    x_transformed = variance_selector.transform(x)
 
-    best_pipeline = Pipeline([
-        ('poly', PolynomialFeatures()),
-        ('scaler', StandardScaler()),
-        ('regressor', LinearRegression())
-    ])
+    _, best_mse, gridsearch = run_gridsearch(x_transformed, y, pipeline_poly, param_grid)
 
-    best_pipeline.set_params(**best_params)
-    best_pipeline.fit(x, y)
+    best_pipeline = gridsearch.best_estimator_
+    best_pipeline.fit(x_transformed, y)
 
     future_features, _ = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
     predictions = []
     recent_y = list(y)
 
-    feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
+    feature_iteration(n_future_months, best_pipeline, future_features, variance_selector, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y, best_mse
@@ -248,7 +242,10 @@ def sarimax_model(n_future_months=1, user_id=None):
     months, x, y, all_categories, exog = get_months_x_y(user_id)
     _, category_pivot, _ = fetch_data(user_id)
 
-    y_capped = np.clip(y, 0, np.percentile(y, 95))
+    if len(y) < 12:
+        raise ValueError("Insufficient data: Need at least 12 months of expenses for training.")
+
+    y_capped = np.clip(y, 0, np.percentile(y, 99))
 
     def fit_sarimax(params):
         try:
@@ -256,7 +253,8 @@ def sarimax_model(n_future_months=1, user_id=None):
             seasonal_order = params['seasonal_order']
             model = SARIMAX(y_capped, exog=exog, order=order, seasonal_order=seasonal_order, enforce_stationarity=False, enforce_invertibility=False)
             return -model.fit(disp=False).aic
-        except:
+        except Exception as e:
+            print(f'Error fitting SARIMAX with params: {params}: {e}')
             return np.inf
 
     param_grid = {
@@ -266,12 +264,13 @@ def sarimax_model(n_future_months=1, user_id=None):
 
     best_score = np.inf
     best_params = None
-    for params in param_grid['order']:
-        for s_params in param_grid['seasonal_order']:
-            score = fit_sarimax({'order': params, 'seasonal_order': s_params})
+    for order in param_grid['order']:
+        for seasonal_order in param_grid['seasonal_order']:
+            params = {'order': order, 'seasonal_order': seasonal_order}
+            score = fit_sarimax(params)
             if score < best_score:
                 best_score = score
-                best_params = {'order': params, 'seasonal_order': s_params}
+                best_params = params
 
     print(f"Best score: {best_score:}")
     print(f"Best parameters: {best_params}")
@@ -283,7 +282,7 @@ def sarimax_model(n_future_months=1, user_id=None):
     mse = np.mean((y_capped - fitted) ** 2)
     print(f"Model MSE: {mse:.2f}")
 
-    future_features, future_exog = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
+    _, future_exog = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
     predictions = best_model.forecast(steps=n_future_months, exog=future_exog)
     predictions = np.clip(predictions, 0, np.max(y) * 2)
 
@@ -295,6 +294,9 @@ def randomforest_model(n_future_months=1, user_id=None):
 
     months, x, y, all_categories, _ = get_months_x_y(user_id)
     _, category_pivot, _ = fetch_data(user_id)
+
+    if len(y) < 4:
+        raise ValueError("Insufficient data: Need at least 4 months of expenses for training.")
 
     pipeline_randomforest = Pipeline([
         ('regressor', RandomForestRegressor())
@@ -309,20 +311,19 @@ def randomforest_model(n_future_months=1, user_id=None):
         'regressor__bootstrap': [False, True]
     }
 
-    best_params, best_mse = run_gridsearch(x, y, pipeline_randomforest, param_grid)
+    variance_selector = fit_variance_threshold(x)
+    x_transformed = variance_selector.transform(x)
 
-    best_pipeline = Pipeline([
-    ('regressor', RandomForestRegressor())
-    ])
+    _, best_mse, gridsearch = run_gridsearch(x_transformed, y, pipeline_randomforest, param_grid)
 
-    best_pipeline.set_params(**best_params)
-    best_pipeline.fit(x, y)
+    best_pipeline = gridsearch.best_estimator_
+    best_pipeline.fit(x_transformed, y)
 
     future_features, _ = generate_future_features(months, y, n_future_months, category_pivot, all_categories)
     predictions = []
     recent_y = list(y)
 
-    feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
+    feature_iteration(n_future_months, best_pipeline, future_features, variance_selector, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
     return predictions[0] if n_future_months == 1 else predictions, months, y, best_mse
@@ -334,64 +335,83 @@ def xgboost_model(n_future_months=1, user_id=None):
     months, x, y, all_categories, _ = get_months_x_y(user_id)
     _, category_pivot, _ = fetch_data(user_id)
 
-    pipeline_xgb = Pipeline([
-        ('scaler', StandardScaler()),
-        ('regressor', xgb.XGBRegressor(
-            objective="reg:squarederror",
-            early_stopping_rounds=10,
-            eval_metric="rmse"))
-    ])
+    if len(y) < 4:
+        raise ValueError("Insufficient data: Need at least 4 months of expenses for training.")
 
-    param_grid = {
-        'regressor__n_estimators': [25, 50, 100, 150],
-        'regressor__learning_rate': [0.1, 0.3, 0.5],
-        'regressor__booster': ['gbtree', 'gblinear', 'dart'],
-        'regressor__lambda': [0.001, 0.01, 0.1, 0, 1, 10],
-        'regressor__alpha': [0.001, 0.01, 0.1, 0, 1, 10, 100],
-        'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler(), QuantileTransformer()]
-    }
+    variance_selector = fit_variance_threshold(x)
+    x_transformed = variance_selector.transform(x)
 
-    tscv = TimeSeriesSplit(n_splits=3)
+    val_split = max(1, int(len(x_transformed) * 0.9))
+    x_train, x_val = x_transformed[:val_split], x_transformed[val_split:]
+    y_train, y_val = y[:val_split], y[val_split:]
 
-    for train_index, test_index in tscv.split(x):
-        x_train_full, x_test = x[train_index], x[test_index]
-        y_train_full, y_test = y[train_index], y[test_index]
+    def objective(trial):
+        params = {
+            'n_estimators': 1000,
+            'learning_rate': trial.suggest_float('learning_rate', 0.1, 0.5, log=True),
+            'booster': trial.suggest_categorical('booster', ['gbtree', 'gblinear', 'dart']),
+            'lambda': trial.suggest_float('lambda', 0.001, 10, log=True),
+            'alpha': trial.suggest_float('alpha', 0.001, 100, log=True),
+            'subsample': trial.suggest_float('subsample', 0.1, 1),
+            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 1),
+            'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.5, 1),
+            'max_depth': trial.suggest_int('max_depth', 2, 10),
+            'n_jobs': -1,
+            'objective': 'reg:squarederror',
+            'eval_metric': 'rmse',
+            'early_stopping_rounds': 20,
+            'verbosity': 0
+        }
+        scaler_choice = trial.suggest_categorical('scaler', ['standard', 'robust', 'minmax', 'maxabs', 'quantile'])
+        if scaler_choice == 'standard':
+            scaler = StandardScaler()
+        elif scaler_choice == 'robust':
+            scaler = RobustScaler()
+        elif scaler_choice == 'minmax':
+            scaler = MinMaxScaler()
+        elif scaler_choice == 'maxabs':
+            scaler = MaxAbsScaler()
+        else:
+            scaler = QuantileTransformer()
 
-        val_split = int(len(x_train_full) * 0.9)
-        x_train, x_val = x_train_full[:val_split], x_train_full[val_split:]
-        y_train, y_val = y_train_full[:val_split], y_train_full[val_split:]
-
-    def run_gridsearch_with_early_stopping(x_train, y_train, x_val, y_val, pipeline, param_grid):
-        grid_search = GridSearchCV(
-            pipeline,
-            param_grid,
-            cv=tscv,
-            scoring='neg_mean_squared_error',
-            n_jobs=-1
-        )
-        grid_search.fit(
+        pipeline = Pipeline([
+            ('scaler', scaler),
+            ('regressor', xgb.XGBRegressor(**params))
+        ])
+        pipeline.fit(
             x_train, y_train,
             regressor__eval_set=[(x_val, y_val)],
             regressor__verbose=False
         )
 
-        best_mse = -grid_search.best_score_
-        print(f"Best model MSE: {best_mse:.2f}")
-        print(f"Best parameters: {grid_search.best_params_}")
+        predictions = pipeline.predict(x_val)
+        return mean_squared_error(y_val, predictions)
 
-        return grid_search.best_params_, best_mse
+    study = optuna.create_study(direction='minimize')
+    study.optimize(objective, n_trials=250)
 
-    best_params, best_mse = run_gridsearch_with_early_stopping(x_train, y_train, x_val, y_val, pipeline_xgb, param_grid)
+    best_params= study.best_params
+    best_mse = study.best_value
+    print(f'Best parameters: {best_params}')
+    print(f'Best model MSE: {best_mse:.2f}')
+
+    scaler_choice = best_params.pop('scaler')
+    if scaler_choice == 'standard':
+        scaler = StandardScaler()
+    elif scaler_choice == 'robust':
+        scaler = RobustScaler()
+    elif scaler_choice == 'minmax':
+        scaler = MinMaxScaler()
+    elif scaler_choice == 'maxabs':
+        scaler = MaxAbsScaler()
+    else:
+        scaler = QuantileTransformer()
 
     best_pipeline = Pipeline([
-        ('scaler', StandardScaler()),
-        ('regressor', xgb.XGBRegressor(
-            objective="reg:squarederror",
-            eval_metric="rmse",
-            early_stopping_rounds=10))
+        ('scaler', scaler),
+        ('regressor', xgb.XGBRegressor(**best_params, n_estimators=1000, n_jobs=-1))
     ])
 
-    best_pipeline.set_params(**best_params)
     best_pipeline.fit(
         x_train, y_train,
         regressor__eval_set=[(x_val, y_val)],
@@ -402,9 +422,13 @@ def xgboost_model(n_future_months=1, user_id=None):
     predictions = []
     recent_y = list(y)
 
-    feature_iteration(n_future_months, best_pipeline, future_features, predictions, recent_y, y, months)
+    feature_iteration(n_future_months, best_pipeline, future_features, variance_selector, predictions, recent_y, y, months)
 
     predictions = np.array(predictions, dtype=float)
+
+    del study
+    gc.collect()
+
     return predictions[0] if n_future_months == 1 else predictions, months, y, best_mse
 
 def ensemble_model(n_future_months=1, user_id=None):
