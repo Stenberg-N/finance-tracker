@@ -1,161 +1,146 @@
 from core.prediction_models.base import Base
+from django.conf import settings
 from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler, MaxAbsScaler
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import mean_squared_error
 import xgboost as xgb
 import numpy as np
+import optuna, gc
+from optuna.samplers import TPESampler
+from optuna.pruners import MedianPruner
 
 class xgboostModel(Base):
     def __init__(self, transactions, n_future_months=1):
         super().__init__(transactions, n_future_months)
 
-    def get_pipeline_and_grid(self):
+        self.scalers = {
+            'standard': StandardScaler(),
+            'robust': RobustScaler(),
+            'minmax': MinMaxScaler(),
+            'maxabs': MaxAbsScaler()
+        }
+        self.scaler_options = list(self.scalers.keys())
 
-        pipeline = Pipeline([
-            ('scaler', StandardScaler()),
-            ('regressor', xgb.XGBRegressor(
-                objective="reg:squarederror",
-                early_stopping_rounds=10,
-                eval_metric="rmse"))
-        ])
+    def get_storage_url(self):
+        db_settings = settings.DATABASES['default']
+        engine = db_settings['ENGINE']
 
-        param_grid = [
-            {
-                'regressor__n_estimators': [100, 150],
-                'regressor__learning_rate': [0.1, 0.3, 0.5],
-                'regressor__booster': ['gbtree', 'gblinear', 'dart'],
-                'regressor__lambda': [0.001, 0.01, 0.1, 1, 10],
-                'regressor__alpha': [0.001, 0.01, 0.1, 1, 10],
-                'scaler': [StandardScaler(), RobustScaler(), MinMaxScaler(), MaxAbsScaler()]
-            }
-        ]
+        if engine == 'django.db.backends.sqlite3':
+            db_path = db_settings['NAME']
+            storage_url = f"sqlite:///{db_path}"
+        elif engine == 'django.db.backends.postgresql':
+            user = db_settings.get('USER')
+            password = db_settings.get('PASSWORD')
+            host = db_settings.get('HOST')
+            port = db_settings.get('PORT')
+            name = db_settings.get('NAME')
+            storage_url = f"postgresql://{user}:{password}@{host}:{port}/{name}"
+        else:
+            raise ValueError(f"Unsupported database engine: {engine}")
+        
+        return storage_url
 
-        return pipeline, param_grid
-
-    def run_gridsearch(self, pipeline, param_grid):
-        n_splits = max(1, min(3, (len(self.y) - 1) // 2))
-        tscv = TimeSeriesSplit(n_splits=n_splits)
-        print(f"Data size: {len(self.y)} months, n_splits: {n_splits}")
-
+    def prepare_data(self):
         self.fit_variance_threshold(self.x)
         X_transformed = self.variance_selector.transform(self.x)
-        print(f"Full features: {(self.x).shape[1]}, After VarianceThreshold: {X_transformed.shape[1]}")
 
-        best_score = np.inf
-        best_params = None
-        
-        for params in param_grid:
-            for n_estimators in params['regressor__n_estimators']:
-                for learning_rate in params['regressor__learning_rate']:
-                    for booster in params['regressor__booster']:
-                        for lambda_ in params['regressor__lambda']:
-                            for alpha in params['regressor__alpha']:
-                                for scaler in params['scaler']:
-                                    current_params = {
-                                        'scaler': scaler,
-                                        'regressor__n_estimators': n_estimators,
-                                        'regressor__learning_rate': learning_rate,
-                                        'regressor__booster': booster,
-                                        'regressor__lambda': lambda_,
-                                        'regressor__alpha': alpha,
-                                    }
-                                    pipeline.set_params(**current_params)
+        val_split = max(1, int(len(X_transformed) * 0.8))
+        x_train, x_val = X_transformed[:val_split], X_transformed[val_split:]
+        y_train, y_val = self.y[:val_split], self.y[val_split:]
 
-                                    mse_scores = []
-                                    
-                                    for train_index, test_index in tscv.split(X_transformed):
-                                        x_train_full, x_test = X_transformed[train_index], X_transformed[test_index]
-                                        y_train_full, y_test = self.y[train_index], self.y[test_index]
+        return x_train, y_train, x_val, y_val
 
-                                        val_split = max(1, int(len(x_train_full) * 0.9))
-                                        x_train, x_val = x_train_full[:val_split], x_train_full[val_split:]
-                                        y_train, y_val = y_train_full[:val_split], y_train_full[val_split:]
+    def objective(self, trial):
+        x_train, y_train, x_val, y_val = self.prepare_data()
 
-                                        pipeline.fit(
-                                            x_train, y_train,
-                                            regressor__eval_set=[(x_val, y_val)],
-                                            regressor__verbose=False
-                                        )
+        params = {
+            'n_estimators': 200,
+            'learning_rate': trial.suggest_float('learning_rate', 0.35, 0.5),
+            'booster': trial.suggest_categorical('booster', ['gbtree', 'gblinear', 'dart']),
+            'lambda': trial.suggest_float('lambda', 0.001, 1),
+            'alpha': trial.suggest_float('alpha', 0.01, 10),
+            'subsample': trial.suggest_float('subsample', 0.5, 1),
+            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.8, 1),
+            'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.8, 1),
+            'max_depth': trial.suggest_int('max_depth', 4, 10),
+            'n_jobs': -1,
+            'objective': 'reg:squarederror',
+            'eval_metric': 'rmse',
+            'early_stopping_rounds': 5,
+            'verbosity': 0
+        }
 
-                                        y_pred = pipeline.predict(x_test)
-                                        mse = np.mean((y_test - y_pred) ** 2)
-                                        mse_scores.append(mse)
+        if params['booster'] == 'gblinear':
+            params.pop('subsample', None)
+            params.pop('max_depth', None)
+            params.pop('colsample_bylevel', None)
+            params.pop('colsample_bytree', None)
 
-                                    avg_mse = np.mean(mse_scores)
-                                    if avg_mse < best_score:
-                                        best_score = avg_mse
-                                        best_params = current_params
+        pipeline = Pipeline([
+            ('scaler', self.scalers[trial.suggest_categorical('scaler', self.scaler_options)]),
+            ('regressor', xgb.XGBRegressor(**params))
+        ])
+        pipeline.fit(
+            x_train, y_train,
+            regressor__eval_set=[(x_val, y_val)],
+            regressor__verbose=False
+        )
 
-        print(f"Best model MSE: {best_score:.2f}")
-        print(f"Best parameters: {best_params}")
-
-        return best_params, best_score
+        predictions = pipeline.predict(x_val)
+        return mean_squared_error(y_val, predictions)
     
     def predict(self):
         if len(self.y) < 4:
             raise ValueError("Insufficient data: Need at least 4 months of expenses for training.")
         
-        y_capped = np.clip(self.y, 0, np.percentile(self.y, 95))
+        x_train, y_train, x_val, y_val = self.prepare_data()
+        storage_url = self.get_storage_url()
 
-        pipeline, param_grid = self.get_pipeline_and_grid()
+        sampler = TPESampler(n_startup_trials=5)
+        pruner = MedianPruner(n_min_trials=5, n_warmup_steps=5)
+        study = optuna.create_study(direction='minimize', sampler=sampler, pruner=pruner, storage=storage_url)
+        study.optimize(self.objective, n_trials=160)
 
-        if len(self.y) < 6:
-            print(f"Data size: {len(self.y)} months, using fallback")
-            self.fit_variance_threshold(self.x)
-            X_transformed = self.variance_selector.transform(self.x)
-            default_pipeline = Pipeline([
-                ('scaler', RobustScaler()),
-                ('regressor', xgb.XGBRegressor(
-                    objective="reg:squarederror",
-                    n_estimators=100,
-                    learning_rate=[0.1, 0.3],
-                    booster='gbtree',
-                    lambda_=[0.01, 0.1, 1],
-                    alpha=[0.01, 0.1, 1],
-                    early_stopping_rounds=10,
-                    eval_metric="rmse"))
-            ])
-            val_split = max(1, int(len(X_transformed) * 0.9))
-            x_train, x_val = X_transformed[:val_split], X_transformed[val_split:]
-            y_train, y_val = y_capped[:val_split], y_capped[val_split:]
+        best_params = study.best_params
+        best_mse = study.best_value
+        print(f'Best parameters: {best_params}')
+        print(f'Best model MSE: {best_mse:.2f}')
 
-            default_pipeline.fit(
-                x_train, y_train,
-                regressor__eval_set=[(x_val, y_val)],
-                regressor__verbose=False
-            )
-            best_pipeline = default_pipeline
-            best_mse = None
-        else:
-            best_params, best_mse = self.run_gridsearch(pipeline, param_grid)
-            best_pipeline = Pipeline([
-                ('scaler', StandardScaler()),
-                ('regressor', xgb.XGBRegressor(
-                    objective="reg:squarederror",
-                    early_stopping_rounds=10,
-                    eval_metric="rmse"))
-            ])
-            self.fit_variance_threshold(self.x)
-            X_transformed = self.variance_selector.transform(self.x)
+        try:
+            optuna.delete_study(study_name=study.study_name, storage=storage_url)
+            print(f"Deleted study {study.study_name} from database")
+        except Exception as e:
+            print(f"Failed to delete study {study.study_name}: {str(e)}")
 
-            val_split = max(1, int(len(X_transformed) * 0.9))
-            x_train, x_val = X_transformed[:val_split], X_transformed[val_split:]
-            y_train, y_val = y_capped[:val_split], y_capped[val_split:]
+        if best_params['booster'] == 'gblinear':
+            best_params.pop('subsample', None)
+            best_params.pop('max_depth', None)
+            best_params.pop('colsample_bylevel', None)
+            best_params.pop('colsample_bytree', None)
 
-            best_pipeline.set_params(**best_params)
-            best_pipeline.fit(
-                x_train, y_train,
-                regressor__eval_set=[(x_val, y_val)],
-                regressor__verbose=False
-            )
+        scaler_choice = best_params.pop('scaler')
+        best_pipeline = Pipeline([
+            ('scaler', self.scalers[scaler_choice]),
+            ('regressor', xgb.XGBRegressor(**best_params, n_estimators=1000, n_jobs=-1))
+        ])
+
+        best_pipeline.fit(
+            x_train, y_train,
+            regressor__eval_set=[(x_val, y_val)],
+            regressor__verbose=False
+        )
 
         future_features, _ = self.generate_future_features()
         future_features_transformed = self.variance_selector.transform(future_features)
         predictions = []
-        recent_y = list(y_capped)
+        recent_y = list(self.y)
 
         self.feature_iteration(best_pipeline, future_features_transformed, predictions, recent_y)
 
         predictions = np.array(predictions, dtype=float)
         predictions = np.clip(predictions, 0, np.max(self.y) * 2)
+
+        del study
+        gc.collect()
+
         return predictions[0] if self.n_future_months == 1 else predictions, self.months, self.y, best_mse
