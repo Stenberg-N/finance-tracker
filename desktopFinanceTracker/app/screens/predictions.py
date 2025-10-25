@@ -35,8 +35,8 @@ def draw_prediction_plot(months_labels, actuals, next_month_label, predicted_exp
         future_month = (next_month + datetime.timedelta(days=31 * (i+1))).replace(day=1)
         future_labels.append(future_month.strftime("%b %Y"))
 
-    ax.plot(months_labels, actuals, marker='o', label="Actual expenses", color="blue")
-    ax.plot([months_labels[-1]] + future_labels, [actuals[-1]] + list(predicted_expense), marker='o', linestyle="--", color="orange", label="Predicted expenses")
+    ax.plot(months_labels, actuals, marker='o', label="Actual expenses", color="#2bff00")
+    ax.plot([months_labels[-1]] + future_labels, [actuals[-1]] + list(predicted_expense), marker='o', linestyle="--", color="white", label="Predicted expenses")
     ax.scatter(future_labels, predicted_expense, color="red", zorder=5)
 
     last_y = None
@@ -84,14 +84,14 @@ class predictionScreen(ctk.CTkFrame):
         ctk.CTkLabel(self,
                      text="Different machine learning models that make predictions based on your data in your database. For the models to make acceptable predictions, they require a certain amount of data.",
                      justify="left").pack()
-        
+
         descriptionFrame = ctk.CTkFrame(self, height=1, fg_color="transparent")
         descriptionFrame.pack(fill="x")
         descriptionFrame.pack_propagate(False)
-        
+
         self.description_label = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=18), wraplength=1200, justify="left")
         self.description_label.pack(pady=(5, 20))
-        
+
         self.optionFrame = ctk.CTkFrame(self, fg_color="transparent")
         self.optionFrame.pack(anchor=ctk.W, padx=20, pady=5)
 
@@ -103,7 +103,7 @@ class predictionScreen(ctk.CTkFrame):
             "modelMSE": ctk.CTkFrame(self.optionFrame, fg_color="transparent"),
             "infoButton": ctk.CTkFrame(self.optionFrame, fg_color="transparent")
         }
-        
+
         for frame in frames.values():
             frame.pack(padx=5, side="left")
 
@@ -198,7 +198,7 @@ class predictionScreen(ctk.CTkFrame):
             if result is None:
                 self.app.after(0, lambda: self.showError("Prediction failed. Please ensure you have enough data and are logged in."))
                 return
-            
+
             predicted_expense, months, actuals, mse = result
 
             months_labels = [datetime.datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in months]

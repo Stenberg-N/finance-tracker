@@ -103,7 +103,7 @@ class Application(ctk.CTk):
             self.frames["home"].updateFeed()
             return True
         return False
-    
+
     def logout(self):
         self.currentUser = None
         clearEncryptionKey()
@@ -120,7 +120,7 @@ class Application(ctk.CTk):
 
     def getUserID(self):
         return getUserID(self.currentUser)
-    
+
     def requireLogin(self, func):
         def wrapper(*args, **kwargs):
             if self.currentUser is None:
@@ -129,35 +129,44 @@ class Application(ctk.CTk):
                 return
             return func(*args, **kwargs)
         return wrapper
-    
+
     def runPredictionModel(self, model_type, n_future_months=1):
         if not self.currentUser:
             return None
-        
+
         user_id = self.getUserID()
         if user_id is None:
             return None
-        
+
         try:
-            from app.ml.models import (
-                linear_model, polynomial_model, sarimax_model, randomforest_model, ensemble_model, xgboost_model
-            )
-            
+            from app.ml.linear import linear_model
+            from app.ml.polynomial import polynomial_model
+            from app.ml.sarimax import sarimax_model
+            from app.ml.randomforest import randomforest_model
+            from app.ml.xgboost import xgboost_model
+            from app.ml.ensemble import ensemble_model
+
             if model_type == 'linear':
-                return linear_model(n_future_months=n_future_months, user_id=user_id)
+                model = linear_model(n_future_months=n_future_months, user_id=user_id)
+                return model.predict()
             elif model_type == 'polynomial':
-                return polynomial_model(n_future_months=n_future_months, user_id=user_id)
+                model = polynomial_model(n_future_months=n_future_months, user_id=user_id)
+                return model.predict()
             elif model_type == 'sarimax':
-                return sarimax_model(n_future_months=n_future_months, user_id=user_id)
+                model = sarimax_model(n_future_months=n_future_months, user_id=user_id)
+                return model.predict()
             elif model_type == 'randomforest':
-                return randomforest_model(n_future_months=n_future_months, user_id=user_id)
-            elif model_type == 'ensemble':
-                return ensemble_model(n_future_months=n_future_months, user_id=user_id)
+                model = randomforest_model(n_future_months=n_future_months, user_id=user_id)
+                return model.predict()
             elif model_type == 'xgboost':
-                return xgboost_model(n_future_months=n_future_months, user_id=user_id)
+                model = xgboost_model(n_future_months=n_future_months, user_id=user_id)
+                return model.predict()
+            elif model_type == 'ensemble':
+                model = ensemble_model(n_future_months=n_future_months, user_id=user_id)
+                return model.predict()
             else:
                 raise ValueError(f"Unknown model type: {model_type}")
-                
+
         except Exception as e:
             print(f"ML Error in {model_type}: {str(e)}")
             return None
