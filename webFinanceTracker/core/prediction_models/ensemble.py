@@ -8,6 +8,7 @@ import numpy as np
 class ensembleModel(Base):
     def __init__(self, transactions, n_future_months=1):
         super().__init__(transactions, n_future_months)
+        self.transactions = transactions
 
     def predict(self):
         if len(self.y) < 12:
@@ -50,7 +51,12 @@ class ensembleModel(Base):
         
         weights = [1/mse if mse > 0 else 0 for mse in valid_mses]
         weights = np.array(weights) / np.sum(weights)
-        ensemble_pred = np.mean(valid_predictions, axis=0, weights=weights) if self.n_future_months > 1 else np.mean(valid_predictions)
+
+        if self.n_future_months > 1:
+            ensemble_pred = np.average(valid_predictions, axis=0, weights=weights)
+        else:
+            ensemble_pred = np.average(valid_predictions, weights=weights)
+
         ensemble_mse = np.mean(valid_mses) if valid_mses else None
 
         return ensemble_pred if self.n_future_months == 1 else (ensemble_pred, months, y, ensemble_mse)
