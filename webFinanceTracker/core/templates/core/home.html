@@ -3,7 +3,10 @@
 {% block content %}
 
     {% if user.username == 'demo' %}
-    <p class="alert-info">You are using the shared demo account. Changes (add/delete transactions) are visible to all demo users and reset hourly on login.</p>
+    <p class="alert-info">
+        You are using the shared demo account. Changes (add/delete transactions) are visible to all demo users and reset hourly on login.
+        <br>Note! Since the app tracks expenses from now and compares them to last month (from now), the spending insights can be empty. The data on this account goes as far as October 2025.
+    </p>
     {% endif %}
     
     <h1>Home</h1>
