@@ -1,10 +1,18 @@
 from pathlib import Path
+import os, appdirs
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
+APP_NAME = 'desktopFinanceTracker'
+APP_AUTHOR = 'Stenberg-N'
 
-DB_DIR = ROOT_DIR / 'database'
-EXPORTS_DIR = ROOT_DIR / 'exports'
+USER_DATA_DIR = appdirs.user_data_dir(APP_NAME, APP_AUTHOR)
+os.makedirs(USER_DATA_DIR, exist_ok=True)
 
-DB_PATH = DB_DIR / 'finance.db'
-DB_BACKUP_PATH = DB_DIR / 'backup_finance.db'
-EXPORTS_PATH = EXPORTS_DIR
+DB_DIR = os.path.join(USER_DATA_DIR, 'database')
+os.makedirs(DB_DIR, exist_ok=True)
+
+EXPORTS_DIR = os.path.join(USER_DATA_DIR, 'exports')
+os.makedirs(EXPORTS_DIR, exist_ok=True)
+
+DB_PATH = Path(DB_DIR) / 'finance.db'
+DB_BACKUP_PATH = Path(DB_DIR) / 'backup_finance.db'
+EXPORTS_PATH = Path(EXPORTS_DIR)

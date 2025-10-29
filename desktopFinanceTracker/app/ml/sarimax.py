@@ -17,11 +17,13 @@ class sarimax_model(Base):
         if len(self.y) < 12:
             raise ValueError("Insufficient data: Need at least 12 months of expenses for training.")
 
+        y_capped = np.clip(self.y, 0, np.percentile(self.y, 99))
+
         def fit_sarimax(params):
             try:
                 order = params['order']
                 seasonal_order = params['seasonal_order']
-                model = SARIMAX(self.y, exog=self.exog, order=order, seasonal_order=seasonal_order, enforce_stationarity=False, enforce_invertibility=False)
+                model = SARIMAX(y_capped, exog=self.exog, order=order, seasonal_order=seasonal_order, enforce_stationarity=False, enforce_invertibility=False)
                 return -model.fit(disp=False).aic
             except Exception as e:
                 print(f'Error fitting SARIMAX with params: {params}: {e}')
@@ -45,11 +47,11 @@ class sarimax_model(Base):
         print(f"Best score: {best_score:}")
         print(f"Best parameters: {best_params}")
 
-        model = SARIMAX(self.y, exog=self.exog, order=best_params['order'], seasonal_order=best_params['seasonal_order'], enforce_stationarity=False, enforce_invertibility=False)
+        model = SARIMAX(y_capped, exog=self.exog, order=best_params['order'], seasonal_order=best_params['seasonal_order'], enforce_stationarity=False, enforce_invertibility=False)
         best_model = model.fit(disp=False)
 
         fitted = best_model.fittedvalues
-        mse = np.mean((self.y - fitted) ** 2)
+        mse = np.mean((y_capped - fitted) ** 2)
         print(f"Model MSE: {mse}")
 
         _, future_exog = self.generate_future_features()
