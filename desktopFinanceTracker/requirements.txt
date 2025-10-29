@@ -1,4 +1,6 @@
 alembic==1.17.0
+altgraph==0.17.4
+appdirs==1.4.4
 bcrypt==4.3.0
 cffi==2.0.0
 colorama==0.4.6
@@ -26,11 +28,15 @@ optuna==4.5.0
 packaging==25.0
 pandas==2.3.2
 patsy==1.0.1
+pefile==2023.2.7
 pillow==11.3.0
 pycparser==2.23
+pyinstaller==6.16.0
+pyinstaller-hooks-contrib==2025.9
 pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 pytz==2025.2
+pywin32-ctypes==0.2.3
 PyYAML==6.0.3
 scikit-learn==1.7.2
 scipy==1.16.1

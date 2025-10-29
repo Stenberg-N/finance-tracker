@@ -3,3 +3,6 @@ __pycache__/
 finance.db
 backup_finance.db
 venv/
+/build/
+/dist/
+*.spec

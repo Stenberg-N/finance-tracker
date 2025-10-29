@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import datetime
-from app.config import DB_BACKUP_PATH
+from app.config import DB_BACKUP_PATH, EXPORTS_PATH
 from database.db import insertTransaction, backupDB
 from app.utils.exports import export_transactions_to_csv, export_transactions_to_excel, export_transactions_to_pdf
 from app.utils.import_csv import import_csv
@@ -246,7 +246,7 @@ class homeScreen(ctk.CTkFrame):
             export_transactions_to_pdf(user_id, filename)
         elif formatType == 'excel':
             export_transactions_to_excel(user_id, filename)
-        CTkMessagebox(title="Success", message=f"Exported to {formatType.upper()}!", icon="check")
+        CTkMessagebox(title="Success", message=f"Exported to {formatType.upper()} at {EXPORTS_PATH}!", icon="check")
 
     def clearEntries(self):
         self.dateEntry.delete(0, "end")
