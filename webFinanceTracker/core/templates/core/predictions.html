@@ -181,6 +181,7 @@
             align-items: center;
             max-width: 100%;
             max-height: 150px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 1);
         }
 
         #prediction-options {
@@ -200,9 +201,16 @@
 
         #prediction-options input {
             color: black;
-            max-width: 52px;
+            max-width: 56px;
             margin: 10px;
             height: 30px;
+            background: transparent;
+            color: #ecf0f1;
+            border: 1px solid #404040;
+        }
+
+        #prediction-options input:focus {
+            outline: 2px solid #0ee274;
         }
 
         #prediction-options input::placeholder  {
@@ -213,6 +221,23 @@
             margin-right: 10px;
             height: 30px;
             max-width: 120px;
+            background: transparent;
+            color: #ecf0f1;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: 4px;
+            border: 1px solid #404040;
+            padding-left: 5px;
+        }
+
+        #prediction-options select:focus {
+            outline: 2px solid #0ee274;
+        }
+
+        #prediction-options select option {
+            background: #0c0c0c;
+            color: #ecf0f1;
         }
 
         #prediction-options button {
@@ -228,6 +253,8 @@
 
         #prediction-options button:hover {
             background-color: rgba(200, 20, 0, 0.7);
+            transform: translateY(-2px) scale(1.05);
+            transition: all 0.1s ease;
         }
 
         #prediction-options button#infoboxBtn {

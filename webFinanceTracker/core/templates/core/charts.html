@@ -637,6 +637,7 @@
             padding: 0;
             max-height: 150px;
             max-width: 100%;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 1);
         }
 
         .chart-options {
@@ -661,12 +662,39 @@
             width: 70px;
             height: 30px;
             margin: 10px;
+            background: transparent;
+            border: 1px solid #404040;
+        }
+
+        .chart-options input#year::placeholder {
+            color: #aaa;
+        }
+
+        .chart-options input#year:focus {
+            outline: 2px solid #0ee274;
         }
 
         .chart-options select {
             max-width: 150px;
             height: 30px;
             margin: 10px;
+            background: transparent;
+            color: #ecf0f1;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: 4px;
+            border: 1px solid #404040;
+            padding-left: 5px;
+        }
+
+        .chart-options select:focus {
+            outline: 2px solid #0ee274;
+        }
+
+        .chart-options select option {
+            background: #0c0c0c;
+            color: #ecf0f1;
         }
 
         .chart-options button {
@@ -682,6 +710,8 @@
 
         .chart-options button:hover {
             background-color: rgba(200, 20, 0, 0.7);
+            transform: translateY(-2px) scale(1.05);
+            transition: all 0.1s ease;
         }
 
         .chart-options button#infoboxBtn {

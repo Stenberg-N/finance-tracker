@@ -47,6 +47,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Application definition
 
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

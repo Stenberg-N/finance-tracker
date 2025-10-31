@@ -162,13 +162,13 @@
         <table id="transactionsTable">
             <thead>
                 <tr>
-                    <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" style="transform: scale(1.2);"></th>
+                    <th><input type="checkbox" id="selectAllCheckbox" style="transform: scale(1.2);"></th>
                     <th>Date</th>
                     <th>Category</th>
                     <th>Description</th>
                     <th>Amount</th>
                     <th>Type</th>
-                    <th style="width: 80px;">Actions</th>
+                    <th style="text-align: right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -184,7 +184,7 @@
                             {{ t.type|title }}
                         </span>
                     </td>
-                    <td data-label="Actions">
+                    <td data-label="Actions" style="padding-right: 25px;">
                         <button class="delete-btn" data-id="{{ t.id }}" title="Delete transaction">
                             <img src="{% static 'core/images/trash.svg' %}" alt="Delete" class="delete-icon">
                         </button>
@@ -425,6 +425,7 @@
                         updateSelectionUI();
                         selectedTransactions.clear();
                         updateLocalStorage();
+                        fetchFeedMessages();
                     })
                     .catch(error => {
                         console.error('Error refreshing transactions:', error);
@@ -552,6 +553,28 @@
             width: 50%;
             margin-right: 7.5px;
             border-radius: 8px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 1);
+        }
+
+        #transactionForm input[type="text"],
+        #transactionForm input[type="number"] {
+            background: transparent;
+            border: 1px solid #404040;
+            color: #ecf0f1;
+        }
+
+        #transactionForm input.flatpickr {
+            max-height: 37px;
+        }
+
+        #transactionForm input[type="text"]:focus,
+        #transactionForm input[type="number"]:focus {
+            outline: 2px solid #0ee274;
+        }
+
+        #transactionForm input[type="text"]::placeholder,
+        #transactionForm input[type="number"]::placeholder {
+            color: #aaa;
         }
 
         #transactionForm-type {
@@ -565,7 +588,7 @@
             padding: 20px;
             border-radius: 8px;
             border: 1px solid #404040;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 1);
             margin-bottom: 20px;
             width: 50%;
             margin-left: 7.5px;
@@ -674,6 +697,9 @@
 
         #infoBoxBtn:hover {
             background-color: #0056b3;
+            cursor: pointer;
+            transform: translateY(-2px) scale(1.05);
+            transition: all 0.1s ease;
         }
 
         .info-icon {
@@ -702,6 +728,8 @@
         #searchBar:focus {
             transform: scale(1.05);
             transition: transform 0.1s ease-in-out;
+            border: none;
+            outline: 2px solid #0ee274;
         }
 
         #pagination, #bottom-pagination {
@@ -739,8 +767,18 @@
         }
 
         .input-page-number {
+            padding-left: 4px;
             min-width: 28px;
-            max-width: 42px;
+            max-width: 46px;
+            min-height: 20px;
+            background: transparent;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            color: #ecf0f1;
+        }
+
+        .input-page-number:focus {
+            outline: 2px solid #0ee274;
         }
 
         #showExports, #showImportBtn {
@@ -802,7 +840,7 @@
         }
 
         .flatpickr-calendar {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 1);
             border-radius: 8px;
         }
 
@@ -820,7 +858,7 @@
         .flatpickr {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #404040;
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 16px;
@@ -828,17 +866,10 @@
             background-size: 16px;
         }
 
-        .flatpickr:focus {
-            border-color: #007bff;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-
         .table-container {
             background: #050505;
             border-radius: 8px;
             border: 1px solid #404040;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             overflow: hidden;
             margin-top: 20px;
             margin-bottom: 20px;
@@ -941,11 +972,12 @@
         #transactionsTable th,
         #transactionsTable td {
             padding: 12px;
-            text-align: left;
+            justify-items: right;
         }
 
         #transactionsTable td {
-            border-bottom: 1px solid rgba(236, 240, 241, 0.08)
+            border-bottom: 1px solid rgba(236, 240, 241, 0.08);
+            text-align: left;
         }
 
         #transactionsTable th {
