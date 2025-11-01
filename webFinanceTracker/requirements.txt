@@ -23,7 +23,7 @@ packaging==25.0
 pandas==2.3.3
 patsy==1.0.1
 pillow==11.3.0
-psycopg==3.2.11
+psycopg2-binary==2.9.11
 pycparser==2.23
 pyparsing==3.2.5
 python-dateutil==2.9.0.post0
