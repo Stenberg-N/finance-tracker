@@ -148,7 +148,7 @@ body {
 
 .auth-form input[type="text"]:focus,
 .auth-form input[type="password"]:focus {
-    outline: 2px solid #0ee274;
+    outline: 3px solid #0ee274;
 }
 
 .auth-form input[type="submit"] {
@@ -188,7 +188,6 @@ body {
     height: 100%;
     overflow: hidden;
     flex-shrink: 0;
-    background-color: none;
 }
 
 .sidebar {
@@ -249,8 +248,9 @@ body {
 
 .nav-link.active {
     background-color: #353535;
-    color: #ecf0f1;
+    color: #C81400;
     position: relative;
+    font-weight: bold;
 }
 
 .nav-link.active::before {
@@ -269,6 +269,7 @@ body {
     width: 100%;
     height: 100%;
     border: none;
+    max-width: unset;
 }
 
 .sidebar-footer .logout-btn {

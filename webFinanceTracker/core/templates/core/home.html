@@ -70,8 +70,12 @@
             <button id="infoBoxBtn" type="button">
                 <img src="{% static 'core/images/info-icon.svg' %}" class="info-icon">
             </button>
-
-            <input type="text" name="search" id="searchBar" value="{{ search_query|default:'' }}" placeholder="Search...">
+            <div id="search-container">
+                <button id="search-button">
+                    <img src="{% static 'core/images/search-icon.svg' %}" id="search-icon">
+                </button>
+                <input type="text" name="search" id="searchBar" value="{{ search_query|default:'' }}" placeholder="Search...">
+            </div>
         </div>
 
         <button id="showImportBtn" type="button">Import CSV</button>
@@ -273,6 +277,15 @@
                 url.searchParams.delete('page');
                 window.location.href = url.toString();
             }
+        });
+
+        document.getElementById('search-button').addEventListener('click', function(e) {
+            const query = input.value.trim().toLowerCase();
+            const url = new URL(window.location.href);
+            url.pathname = '{% url "home" %}';
+            url.searchParams.set('search', query);
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
         });
 
         document.querySelectorAll('.input-page-number').forEach(input => {
@@ -561,6 +574,7 @@
             background: transparent;
             border: 1px solid #404040;
             color: #ecf0f1;
+            max-height: 37px;
         }
 
         #transactionForm input.flatpickr {
@@ -569,12 +583,17 @@
 
         #transactionForm input[type="text"]:focus,
         #transactionForm input[type="number"]:focus {
-            outline: 2px solid #0ee274;
+            outline: 3px solid #0ee274;
         }
 
         #transactionForm input[type="text"]::placeholder,
         #transactionForm input[type="number"]::placeholder {
             color: #aaa;
+        }
+
+        #transactionForm input[type="number"]::-webkit-inner-spin-button {
+            height: 37px;
+            width: 100px;
         }
 
         #transactionForm-type {
@@ -680,11 +699,12 @@
             display: flex;
             flex-direction: row;
             align-items: center;
+            gap: 10px;
         }
 
         #infoBoxBtn {
             padding: 6px 6px;
-            margin: 5px 10px 10px 0;
+            margin: 5px 10px 5px 0;
             max-width: 30px;
             max-height: 30px;
             background-color: #007bff;
@@ -710,26 +730,64 @@
             filter: brightness(0) invert(0.8);
         }
 
-        #searchBar {
-            background-image: url('{% static "core/images/search-icon.svg" %}');
-            background-position: 5px center;
-            background-repeat: no-repeat;
-            background-size: 18px;
-            width: 220px;
-            padding: 12px 20px 12px 30px;
-            border: 1px solid #404040;
-            border-radius: 8px;
-            outline: none;
-            height: 40px;
-            transform: scale(1);
-            transition: transform 0.1s ease-in-out;
+        #search-container {
+            display: flex;
+            flex-direction: row;
         }
 
-        #searchBar:focus {
-            transform: scale(1.05);
-            transition: transform 0.1s ease-in-out;
+        #searchBar {
+            background: transparent;
+            width: 180px;
+            padding: 12px 8px;
+            border: 1px solid #404040;
+            border-left: 0;
+            border-radius: 0 8px 8px 0;
+            outline: none;
+            height: 40px;
+            color: #ecf0f1;
+        }
+
+        #searchBar::placeholder {
+            color: #aaa;
+        }
+
+        #search-container:has(#searchBar:focus) {
             border: none;
-            outline: 2px solid #0ee274;
+            outline: 3px solid #0ee274;
+            border-radius: 8px;
+        }
+
+        #search-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #C81400;
+            max-width: 36px;
+            width: 36px;
+            height: 40px;
+            border-radius: 8px 0 0 8px;
+            outline: none;
+            border: none;
+            border-right: 0;
+            padding: 5px;
+        }
+
+        #search-button:hover {
+            background: rgba(200, 20, 0, 0.7);
+            cursor: pointer;
+        }
+
+        #search-button:has(#search-icon):hover {
+            transform: scale(1.08);
+            transition: all 0.1s ease;
+        }
+
+        #search-icon {
+            margin: 0;
+            padding: 0;
+            max-width: 20px;
+            max-height: 20px;
+            filter: brightness(0) invert(1);
         }
 
         #pagination, #bottom-pagination {
@@ -778,7 +836,7 @@
         }
 
         .input-page-number:focus {
-            outline: 2px solid #0ee274;
+            outline: 3px solid #0ee274;
         }
 
         #showExports, #showImportBtn {
@@ -846,8 +904,8 @@
 
         .flatpickr-day.selected,
         .flatpickr-day.selected:hover {
-            background: #007bff;
-            border-color: #007bff;
+            background: #0ee274;
+            border-color: #0ee274;
         }
 
         .flatpickr-day:hover {
@@ -1345,11 +1403,21 @@
                 max-height: 24px;
             }
 
+            #search-container {
+                height: 100%;
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
             #searchBar {
                 width: 100%;
                 max-width: 300px;
-                padding-left: 35px;
                 font-size: 1em;
+            }
+
+            #search-button {
+                width: 100%;
             }
 
             #filler-block {
