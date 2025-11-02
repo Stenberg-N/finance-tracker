@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 from sklearn.feature_selection import VarianceThreshold
+from joblib import parallel_backend
 
 class Base:
     def __init__(self, user_id, n_future_months=1, skip_fetch=False):
@@ -125,7 +126,8 @@ class Base:
             n_jobs=-1
         )
 
-        gridsearch.fit(x_transformed, self.y)
+        with parallel_backend('threading'):
+            gridsearch.fit(x_transformed, self.y)
 
         best_mse = -gridsearch.best_score_
         print(f"Best model MSE: {best_mse:.2f}")
