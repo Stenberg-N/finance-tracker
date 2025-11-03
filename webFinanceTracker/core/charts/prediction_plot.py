@@ -48,8 +48,8 @@ def generate_prediction_plot(months, actuals, predictions, monthsAmount=12, mse=
     for label, pred in zip(future_labels, predictions):
         y_offset = 10
         if last_y is not None and abs(pred - last_y) < 100:
-            y_offset += 50
-        ax.annotate(f"Predicted: {pred:.2f}", (label, pred), xytext=(0, y_offset), textcoords="offset points", ha="center", va="bottom", color="red", arrowprops=dict(arrowstyle="->", color="gray"))
+            y_offset += 70
+        ax.annotate(f"Predicted: {pred:.2f}", (label, pred), xytext=(0, y_offset), textcoords="offset points", ha="center", va="bottom", color="red", arrowprops=dict(arrowstyle="->", color="#FAA000"))
         last_y = pred
 
     ax.set_xlabel("Month")
