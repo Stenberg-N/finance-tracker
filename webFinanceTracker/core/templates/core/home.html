@@ -484,13 +484,13 @@
                             <table id="transactionsTable">
                                 <thead>
                                     <tr>
-                                        <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" style="transform: scale(1.2);"></th>
+                                        <th><input type="checkbox" id="selectAllCheckbox" style="transform: scale(1.2);"></th>
                                         <th>Date</th>
                                         <th>Category</th>
                                         <th>Description</th>
                                         <th>Amount</th>
                                         <th>Type</th>
-                                        <th style="width: 80px;">Actions</th>
+                                        <th style="text-align: right;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -512,7 +512,7 @@
                         <td data-label="Description">${data.transaction.description}</td>
                         <td data-label="Amount">${data.transaction.amount}</td>
                         <td data-label="Type"><span class="${data.transaction.type === 'expense' ? 'expense' : 'income'}">${data.transaction.type.charAt(0).toUpperCase() + data.transaction.type.slice(1)}</span></td>
-                        <td data-label="Actions"><button class="delete-btn" data-id="${data.transaction.id}" title="Delete transaction"><img src="${window.staticImages.trashcan}" alt="Delete" class="delete-icon"></button></td>
+                        <td data-label="Actions" style="padding-right: 25px;"><button class="delete-btn" data-id="${data.transaction.id}" title="Delete transaction"><img src="${window.staticImages.trashcan}" alt="Delete" class="delete-icon"></button></td>
                     `;
                     tableBody.insertBefore(newRow, tableBody.firstChild);
                     bindDeleteButtons(window.csrfToken);
