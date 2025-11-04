@@ -95,6 +95,8 @@ The desktop app is a standalone Python executable packaged with PyInstaller. No 
 1. Download the latest release from [GitHub Releases](https://github.com/Stenberg-N/finance-tracker/releases).
 2. Extract the ZIP file.
 3. Run the executable: FinanceTracker.exe
+4. Register and make an account
+5. Login to your account
 
 ## Usage
 - **Adding Transactions**: Use the form on the home page or import from files.
