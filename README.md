@@ -10,6 +10,7 @@ A personal finance tracker with data visualizations, machine learning models for
 - **Machine Learning Models**: Linear, Polynomial, Random Forest, XGBoost, SARIMAX models + ensemble model where Linear, Polynomial, XGBoost and SARIMAX models are combined.
 - **Data Management**: Import data in CSV and export in CSV, PDF and Excel (Web app does not support exporting in Excel).
 - **Transaction Feed**: Monitors your spending and compares your accumulated expenses in the current month to last month's and gives you insight if you have started spending on something new or if you have spent less or more on a specific category (e.g. electricity, groceries).
+- **User Authentication and Encryption**: Your transaction data is encrypted. Both versions require an account. The desktop version supports multiple users sharing the system. Your data will reside in your user's Local folder inside AppData, which is specific for each user, so other users won't be able to access it if not logged in as you.
 
 ## Screenshots
 ### Web App Home Screen
