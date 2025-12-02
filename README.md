@@ -5,6 +5,8 @@
 
 A personal finance tracker with data visualizations, machine learning models for expense predictions, import and export functionality, and a transaction feed to reflect changes in your transactions. Available for desktop and web. A demo is also available and hosted at Northflank with login credentials for you to test the app with. Built to help users monitor spending and forecast budgets.
 
+[Jump to Demo](#demo)
+
 ## Features
 - **Data Visualization**: Multiple charts including simple pie, donut and bar charts to stacked bar, TOP 5 and cumulative charts.
 - **Machine Learning Models**: Linear, Polynomial, Random Forest, XGBoost, SARIMAX models + ensemble model where Linear, Polynomial, XGBoost and SARIMAX models are combined.
