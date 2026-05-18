@@ -3,7 +3,9 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-purple.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Latest Release](https://img.shields.io/github/v/release/Stenberg-N/finance-tracker?label=Desktop)](https://github.com/Stenberg-N/finance-tracker/releases)
 
-A personal finance tracker with data visualizations, machine learning models for expense predictions, import and export functionality, and a transaction feed to reflect changes in your transactions. Available for desktop and web. A demo is also available and hosted at Northflank with login credentials for you to test the app with. Built to help users monitor spending and forecast budgets.
+### This project is included in [FinRadar](https://github.com/Stenberg-N/fin-radar), and will therefore not be updated in the near future.
+
+A personal finance tracker with data visualizations, machine learning models for expense predictions, import and export functionality, and a transaction feed to reflect changes in your transactions. Available for desktop and web. A demo is also available and hosted at Northflank with login credentials for you to test the app with. Built for my needs to monitor spending and forecast budget.
 
 [Jump to Demo](#demo)
 
@@ -53,26 +55,26 @@ When logging on the account, it will take a few seconds since it is loading the 
 
 ## Installation
 ### Web Version
-1. Clone the repository:
+#### Clone the repository:
 ```text
 git clone https://github.com/Stenberg-N/finance-tracker.git
 cd finance-tracker/webFinanceTracker
 ```
-2. Set up a virtual environment:
+#### Set up a virtual environment:
 ```text
 python -m venv venv
 venv/Scripts/activate
 ```
-3. Install dependencies:
+#### Install dependencies:
 ```text
 pip install -r requirements.txt
 ```
-4. Create a Django SECRET_KEY and DATA_ENCRYPTION_KEY:<br>
-The SECRET_KEY:
+#### Create a Django SECRET_KEY and DATA_ENCRYPTION_KEY:<br>
+##### The SECRET_KEY:
 ```text
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
-The DATA_ENCRYPTION_KEY:
+##### The DATA_ENCRYPTION_KEY:
 ```text
 python -c "import os; import base64; new_key = base64.urlsafe_b64encode(os.urandom(32)); print(new_key)"
 ```
@@ -80,18 +82,18 @@ Or you can use e.g. the secrets module and create longer keys if that's somethin
 ```text
 python -c "import secrets; new_key = secrets.token_hex(100); print(new_key)"
 ```
-5. Create a .env file to the root directory (webFinanceTracker/) and add three variables in it:
+#### Create a .env file to the root directory (webFinanceTracker/) and add three variables in it:
 ```text
 DJANGO_ENV=development
 DJANGO_SECRET_KEY=your secret key you printed
 DATA_ENCRYPTION_KEY=your data encryption key you printed
 ```
-6. Apply migrations and start the server:
+#### Apply migrations and start the server:
 ```text
 python manage.py migrate
 python manage.py runserver
 ```
-7. Access at http://localhost:8000
+#### Access at http://localhost:8000
 
 ### Desktop Version
 The desktop app is a standalone Python executable packaged with PyInstaller. No installation required beyond downloading.
